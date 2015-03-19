@@ -829,8 +829,12 @@ class ImageManagerDownload(Screen):
 				self.boxtype = 'ET-5x00'
 			elif getMachineMake() == 'et6x00':
 				self.boxtype = 'ET-6x00'
+			elif getMachineMake() == 'et7x00':
+				self.boxtype = 'ET-7x00'
 			elif getMachineMake() == 'et8000':
 				self.boxtype = 'ET-8x00'
+			elif getMachineMake() == 'et8500':
+				self.boxtype = 'ET-8500'
 			elif getMachineMake() == 'et9x00':
 				self.boxtype = 'ET-9x00'
 			elif getMachineMake() == 'et10000':
@@ -940,7 +944,7 @@ class ImageManagerDownload(Screen):
 			file = self.BackupDirectory + self.selectedimage
 
 			mycmd1 = _("echo 'Downloading Image.'")
-			mycmd2 = "wget -q http://www.openvix.co.uk/openvix-builds/" + self.boxtype + "/" + self.selectedimage + " -O " + self.BackupDirectory + "image.zip"
+			mycmd2 = "wget -q http://192.168.0.26/openvix-builds/" + self.boxtype + "/" + self.selectedimage + " -O " + self.BackupDirectory + "image.zip"
 			mycmd3 = "mv " + self.BackupDirectory + "image.zip " + file
 			self.session.open(ScreenConsole, title=_('Downloading Image...'), cmdlist=[mycmd1, mycmd2, mycmd3], closeOnSuccess=True)
 
