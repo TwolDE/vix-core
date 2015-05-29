@@ -733,7 +733,7 @@ class ImageBackup(Screen):
 				line = "openvix-" + self.BackupDate
 				fileout.write(line)
 				fileout.close()
-			if getMachineBuild() in ('gb800solo', 'gb800se'):
+			if path.exists('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat'):
 				copy('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat', self.MAINDESTROOT + '/burn.bat')
 		print '[ImageManager] Stage4: Removing Swap.'
 		if path.exists(self.swapdevice + config.imagemanager.folderprefix.value + "-swapfile_backup"):
@@ -838,7 +838,7 @@ class ImageManagerDownload(Screen):
 			elif getMachineMake() == 'et7x00':
 				self.boxtype = 'ET-7x00'
 			elif getMachineMake() == 'et8000':
-				self.boxtype = 'ET-8x00'
+				self.boxtype = 'ET-8000'
 			elif getMachineMake() == 'et8500':
 				self.boxtype = 'ET-8500'
 			elif getMachineMake() == 'et9x00':
