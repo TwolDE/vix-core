@@ -1,5 +1,5 @@
 # for localized messages
-from boxbranding import getBoxType, getImageDistro, getImageVersion, getImageBuild, getMachineBrand, getMachineName
+from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getMachineBrand, getMachineName
 from os import path, stat, mkdir, listdir, remove, statvfs, chmod, walk
 from time import localtime, time, strftime, mktime
 from datetime import date, datetime
@@ -38,7 +38,7 @@ for p in harddiskmanager.getMountedPartitions():
 		if p.mountpoint != '/':
 			hddchoises.append((p.mountpoint, d))
 config.backupmanager = ConfigSubsection()
-config.backupmanager.folderprefix = ConfigText(default=getImageDistro()+'-'+getBoxType(), fixed_size=False)
+config.backupmanager.folderprefix = ConfigText(default=getImageDistro()+'-'+getBoxType()+'-'+getImageType(), fixed_size=False)
 config.backupmanager.backuplocation = ConfigSelection(choices=hddchoises)
 config.backupmanager.schedule = ConfigYesNo(default=False)
 config.backupmanager.scheduletime = ConfigClock(default=0)  # 1:00
@@ -310,7 +310,7 @@ class VIXBackupManager(Screen):
 			imageversion = file('/tmp/backupimageversion').read()
 			print 'Backup Image:', imageversion
 			print 'Current Image:', about.getVersionString()
-			if imageversion in (about.getVersionString(), 'Zeus', 'Helios', 'Apollo', 'Hades'):
+			if imageversion in (about.getVersionString(), 'Zeus', 'Helios', 'Apollo', 'Hades', '3.2'):
 				print '[RestoreWizard] Stage 1: Image ver OK'
 				self.keyResstore1()
 			else:
@@ -470,7 +470,7 @@ class VIXBackupManager(Screen):
 			if path.exists('/tmp/backupkernelversion') and path.exists('/tmp/backupimageversion'):
 				kernelversion = file('/tmp/backupkernelversion').read()
 				imageversion = file('/tmp/backupimageversion').read()
-				if kernelversion == about.getKernelVersionString() and imageversion in (about.getVersionString(), 'Zeus', 'Helios', 'Apollo', 'Hades'):
+				if kernelversion == about.getKernelVersionString() and imageversion in (about.getVersionString(), 'Zeus', 'Helios', 'Apollo', 'Hades', '3.2'):
 					# print '[BackupManager] Restoring Stage 3: Kernel Version is same as backup'
 					self.kernelcheck = True
 					self.Console.ePopen('opkg list-installed', self.Stage3Complete)
