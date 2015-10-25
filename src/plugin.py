@@ -10,7 +10,6 @@ from ImageManager import ImageManagerautostart
 from SwapManager import SwapAutostart
 from SoftcamManager import SoftcamAutostart
 from IPKInstaller import IpkgInstaller
-from boxbranding import getBoxType, getMachineBrand, getMachineName, getBrandOEM
 
 
 def checkConfigBackup():
@@ -176,8 +175,7 @@ def Plugins(**kwargs):
 	plist.append(PluginDescriptor(name=_("Ipkg"), where=PluginDescriptor.WHERE_FILESCAN, needsRestart=False, fnc=filescan))
 
 	plist.append(PluginDescriptor(name=_("ViX Backup Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=BackupManagerMenu))
-	if not brandoem.startswith('wetek'):
-		plist.append(PluginDescriptor(name=_("ViX Image Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ImageMangerMenu))
+	plist.append(PluginDescriptor(name=_("ViX Image Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ImageMangerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Mount Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=MountManagerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Script Runner"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ScriptRunnerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Swap Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=SwapManagerMenu))
