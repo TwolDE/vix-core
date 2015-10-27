@@ -176,11 +176,10 @@ def Plugins(**kwargs):
 	plist.append(PluginDescriptor(name=_("Ipkg"), where=PluginDescriptor.WHERE_FILESCAN, needsRestart=False, fnc=filescan))
 
 	plist.append(PluginDescriptor(name=_("ViX Backup Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=BackupManagerMenu))
+	plist.append(PluginDescriptor(name=_("ViX Image Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ImageMangerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Mount Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=MountManagerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Script Runner"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ScriptRunnerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Swap Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=SwapManagerMenu))
-	if SystemInfo["WetekImage"]:
-		return plist
-	plist.append(PluginDescriptor(name=_("ViX Image Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ImageMangerMenu))
+	
 	return plist
 

@@ -8,7 +8,7 @@ from Components.Sources.StaticText import StaticText
 from Components.Sources.List import List
 from Screens.ParentalControlSetup import ProtectedScreen
 from Components.config import config
-
+from Components.SystemInfo import SystemInfo
 
 class VIXMenu(Screen, ProtectedScreen):
 	def __init__(self, session, args=0):
@@ -17,7 +17,13 @@ class VIXMenu(Screen, ProtectedScreen):
 		Screen.setTitle(self, _("ViX"))
 		self.menu = args
 		self.list = []
-		if self.menu == 0:
+		if self.menu == 0 and SystemInfo["WetekImage"]:
+			self.list.append(("backup-manager", _("Backup Manager"), _("Manage the backups of your settings."), None))
+			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
+			self.list.append(("mount-manager", _("Mount Manager"), _("Manage your devices mount points."), None))
+			self.list.append(("script-runner", _("Script Runner"), _("Run your shell scripts."), None))
+			self.list.append(("swap-manager", _("Swap Manager"), _("Create and Manage your swap files."), None))
+		elif self.menu == 0:
 			self.list.append(("backup-manager", _("Backup Manager"), _("Manage the backups of your settings."), None))
 			self.list.append(("image-manager", _("Image Manager"), _("Create and Restore complete images of your system."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
