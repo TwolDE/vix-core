@@ -20,7 +20,7 @@ from Components.Sources.StaticText import StaticText
 from Components.Harddisk import Harddisk
 from Tools.LoadPixmap import LoadPixmap
 from Tools.Directories import SCOPE_ACTIVE_SKIN, resolveFilename
-from SystemInfo import SystemInfo
+from Components.SystemInfo import SystemInfo
 
 class VIXDevicesPanel(Screen):
 	def __init__(self, session):
