@@ -20,7 +20,7 @@ from Components.Sources.StaticText import StaticText
 from Components.Harddisk import Harddisk
 from Tools.LoadPixmap import LoadPixmap
 from Tools.Directories import SCOPE_ACTIVE_SKIN, resolveFilename
-
+from SystemInfo import SystemInfo
 
 class VIXDevicesPanel(Screen):
 	def __init__(self, session):
@@ -87,7 +87,7 @@ class VIXDevicesPanel(Screen):
 			if not parts:
 				continue
 			device = parts[3]
-			if not re.search('sd[a-z][1-9]', device):
+			if not search('sd[a-z][1-9]',device) and not search('mmcblk[0-9]p[1-9]',device):
 				continue
 			if device in list2:
 				continue
@@ -99,15 +99,24 @@ class VIXDevicesPanel(Screen):
 		self['lab1'].hide()
 
 	def buildMy_rec(self, device):
-		device2 = re.sub('[0-9]', '', device)
-		devicetype = path.realpath('/sys/block/' + device2 + '/device')
+
+		if device.startswith('mmcblk'):
+			device2 = re.sub('p[0-9]', '', device)
+		else:
+			device2 = re.sub('[0-9]', '', device)
 		d2 = device
 		name = _("HARD DISK: ")
 		if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")):
 			mypixmap = resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")
 		else:
 			mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_hdd.png'
-		model = file('/sys/block/' + device2 + '/device/model').read()
+		devicetype = path.realpath('/sys/block/' + device2 + '/device')
+		if device2.startswith('mmcblk'):
+			model = file('/sys/block/' + device2 + '/device/name').read()
+			mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_sd.png'
+			name = 'MMC: '
+		else:
+			model = file('/sys/block/' + device2 + '/device/model').read()
 		model = str(model).replace('\n', '')
 		des = ''
 		if devicetype.find('usb') != -1:
@@ -117,7 +126,7 @@ class VIXDevicesPanel(Screen):
 			else:
 				mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_usb.png'
 		name += model
-		self.Console.ePopen("sfdisk -l /dev/sd? | grep swap | awk '{print $(NF-9)}' >/tmp/devices.tmp")
+		self.Console.ePopen("sfdisk -l | grep swap | awk '{print $(NF-9)}' >/tmp/devices.tmp")
 		sleep(0.5)
 		f = open('/tmp/devices.tmp', 'r')
 		swapdevices = f.read()
@@ -266,7 +275,8 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 	def updateList(self):
 		self.list = []
 		list2 = []
-		self.Console.ePopen("sfdisk -l /dev/sd? | grep swap | awk '{print $(NF-9)}' >/tmp/devices.tmp")
+		self.Console = Console()
+		self.Console.ePopen("sfdisk -l | grep swap | awk '{print $(NF-9)}' >/tmp/devices.tmp")
 		sleep(0.5)
 		f = open('/tmp/devices.tmp', 'r')
 		swapdevices = f.read()
@@ -295,15 +305,23 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		self['Linconn'].hide()
 
 	def buildMy_rec(self, device):
-		device2 = re.sub('[0-9]', '', device)
-		devicetype = path.realpath('/sys/block/' + device2 + '/device')
+		if device.startswith('mmcblk'):
+			device2 = re.sub('p[0-9]', '', device)
+		else:
+			device2 = re.sub('[0-9]', '', device)
 		d2 = device
 		name = _("HARD DISK: ")
 		if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")):
 			mypixmap = resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")
 		else:
 			mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_hdd.png'
-		model = file('/sys/block/' + device2 + '/device/model').read()
+		devicetype = path.realpath('/sys/block/' + device2 + '/device')
+		if device2.startswith('mmcblk'):
+			model = file('/sys/block/' + device2 + '/device/name').read()
+			mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_sd.png'
+			name = 'MMC: '
+		else:
+			model = file('/sys/block/' + device2 + '/device/model').read()
 		model = str(model).replace('\n', '')
 		des = ''
 		if devicetype.find('usb') != -1:
