@@ -45,6 +45,20 @@ config.imagemanager.backupretrycount = NoSave(ConfigNumber(default=0))
 config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default=0))
 config.imagemanager.restoreimage = NoSave(ConfigText(default=getBoxType(), fixed_size=False))
 
+#GML - querying is enabled by default - that is what used to happen always
+#
+config.imagemanager.query = ConfigYesNo(default=True)
+
+#GML -  If we do not yet have a record of an image backup, assume it has
+#       never happened.
+#
+config.imagemanager.lastbackup = ConfigNumber(default=0)
+
+# GML - max no. of images to keep.  0 == keep them all
+#
+config.imagemanager.number_to_keep = ConfigNumber(default=0)
+
+
 autoImageManagerTimer = None
 
 if path.exists(config.imagemanager.backuplocation.value + 'imagebackups/imagerestore'):
@@ -160,7 +174,12 @@ class VIXImageManager(Screen):
 		from Screens.TaskView import JobView
 
 		Components.Task.job_manager.in_background = False
-		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable=False, backgroundable=False, afterEventChangeable=False, afterEvent="close")
+#GML - Iff we don't query on image backup starts, then allow manual ones
+#      to be backgrounded as well.
+#
+#		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable=False, backgroundable=False, afterEventChangeable=False, afterEvent="close")
+		can_bg = not config.imagemanager.query.value
+		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable=False, backgroundable=can_bg, afterEventChangeable=False, afterEvent="close")
 
 	def JobViewCB(self, in_background):
 		Components.Task.job_manager.in_background = in_background
@@ -384,9 +403,25 @@ class AutoImageManagerTimer:
 
 	def getBackupTime(self):
 		backupclock = config.imagemanager.scheduletime.value
-		nowt = time()
-		now = localtime(nowt)
-		return int(mktime((now.tm_year, now.tm_mon, now.tm_mday, backupclock[0], backupclock[1], 0, now.tm_wday, now.tm_yday, now.tm_isdst)))
+#
+#		nowt = time()
+#		now = localtime(nowt)
+#		return int(mktime((now.tm_year, now.tm_mon, now.tm_mday, backupclock[0], backupclock[1], 0, now.tm_wday, now.tm_yday, now.tm_isdst)))
+#GML
+# Work out the time of the *NEXT* backup - which is the configured clock
+# time on the nth relevant day after the last recorded backup day.
+# The last backup time will have been set as 12:00 on the day it
+# happened. All we use is the actual day from that value.
+#
+		lastbkup_t = int(config.imagemanager.lastbackup.value)
+		if config.imagemanager.repeattype.value == "daily":
+			nextbkup_t = lastbkup_t + 24*3600
+		elif config.imagemanager.repeattype.value == "weekly":
+			nextbkup_t = lastbkup_t + 7*24*3600
+		elif config.imagemanager.repeattype.value == "monthly":
+			nextbkup_t = lastbkup_t + 30*24*3600		
+		nextbkup = localtime(nextbkup_t)
+		return int(mktime((nextbkup.tm_year, nextbkup.tm_mon, nextbkup.tm_mday, backupclock[0], backupclock[1], 0, nextbkup.tm_wday, nextbkup.tm_yday, nextbkup.tm_isdst)))
 
 	def backupupdate(self, atLeast=0):
 		self.backuptimer.stop()
@@ -395,20 +430,27 @@ class AutoImageManagerTimer:
 		now = int(time())
 		if BackupTime > 0:
 			if BackupTime < now + atLeast:
-				if config.imagemanager.repeattype.value == "daily":
-					BackupTime += 24 * 3600
-					while (int(BackupTime) - 30) < now:
-						BackupTime += 24 * 3600
-				elif config.imagemanager.repeattype.value == "weekly":
-					BackupTime += 7 * 24 * 3600
-					while (int(BackupTime) - 30) < now:
-						BackupTime += 7 * 24 * 3600
-				elif config.imagemanager.repeattype.value == "monthly":
-					BackupTime += 30 * 24 * 3600
-					while (int(BackupTime) - 30) < now:
-						BackupTime += 30 * 24 * 3600
-			next = BackupTime - now
-			self.backuptimer.startLongTimer(next)
+#				if config.imagemanager.repeattype.value == "daily":
+#					BackupTime += 24 * 3600
+#					while (int(BackupTime) - 30) < now:
+#						BackupTime += 24 * 3600
+#				elif config.imagemanager.repeattype.value == "weekly":
+#					BackupTime += 7 * 24 * 3600
+#					while (int(BackupTime) - 30) < now:
+#						BackupTime += 7 * 24 * 3600
+#				elif config.imagemanager.repeattype.value == "monthly":
+#					BackupTime += 30 * 24 * 3600
+#					while (int(BackupTime) - 30) < now:
+#						BackupTime += 30 * 24 * 3600
+#			next = BackupTime - now
+#			self.backuptimer.startLongTimer(next)
+# Backup missed - run it 60s from now
+				self.backuptimer.startLongTimer(60)
+				print "[ImageManager] Backup Time overdue - running in 60s"
+			else:
+# Backup in future - set the timer...
+				delay = BackupTime - now
+				self.backuptimer.startLongTimer(delay)
 		else:
 			BackupTime = -1
 		print "[ImageManager] Backup Time set to", strftime("%c", localtime(BackupTime)), strftime("(now=%c)", localtime(now))
@@ -427,12 +469,15 @@ class AutoImageManagerTimer:
 			print "[ImageManager] Backup onTimer occured at", strftime("%c", localtime(now))
 			from Screens.Standby import inStandby
 
-			if not inStandby:
+#			if not inStandby:
+#GML - add check for querying
+			if not inStandby and config.backupmanager.query.value:
 				message = _("Your %s %s is about to run a full image backup, this can take about 6 minutes to complete,\ndo you want to allow this?") % (getMachineBrand(), getMachineName())
 				ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO, timeout=30)
 				ybox.setTitle('Scheduled Backup.')
 			else:
-				print "[ImageManager] in Standby, so just running backup", strftime("%c", localtime(now))
+#				print "[ImageManager] in Standby, so just running backup", strftime("%c", localtime(now))
+				print "[ImageManager] in Standby or no querying, so just running backup", strftime("%c", localtime(now))
 				self.doBackup(True)
 		else:
 			print '[ImageManager] Where are not close enough', strftime("%c", localtime(now))
@@ -460,6 +505,18 @@ class AutoImageManagerTimer:
 			print "[ImageManager] Running Backup", strftime("%c", localtime(now))
 			self.ImageBackup = ImageBackup(self.session)
 			Components.Task.job_manager.AddJob(self.ImageBackup.createBackupJob())
+
+#GML - Note that fact that the job has been *scheduled*.
+#      We do *not* just note successful completion, as that would
+#      result in a loop on issues such as disk-full.
+#      Also all that we actually want to know is the day, not the time, so
+#      we actually remember midday, which avoids problems around DLST changes
+#      for backups scheduled within an hour of midnight.
+#
+			sched = localtime(time())
+			sched_t = int(mktime((sched.tm_year, sched.tm_mon, sched.tm_mday, 12, 0, 0, sched.tm_wday, sched.tm_yday, sched.tm_isdst)))
+			config.imagemanager.lastbackup.value = sched_t
+			config.imagemanager.lastbackup.save()
 		#self.close()
 
 
@@ -785,6 +842,41 @@ class ImageBackup(Screen):
 		print '[ImageManager] Stage5: Complete.'
 
 	def BackupComplete(self, anwser=None):
+
+# GML - trim the number of backups kept...
+#    [Also NOTE that this and the preceding def define an unused arg
+#     with what looks like a typo - that should surely be "answer"]
+#
+		print "GML: self.BackupDirectory", self.BackupDirectory
+		import fnmatch
+		try:
+			if config.imagemanager.number_to_keep.value > 0 \
+			 and path.exists(self.BackupDirectory): # !?!
+				images = listdir(self.BackupDirectory)
+				print "GML: images", images
+				patt = config.imagemanager.folderprefix.value + '-*.zip'
+				print "GML: patt", patt
+				emlist = []
+				for fil in images:
+					print "GML: checking", fil
+					if fnmatch.fnmatchcase(fil, patt):
+						print "GML: adding", fil
+						emlist.append(fil)
+				print "GML: matched", len(emlist)
+# sort by oldest first...
+				emlist.sort(key=lambda fil: path.getmtime(self.BackupDirectory + fil))
+# ...then, if we have too many, remove the <n> newest from the end
+# and delete what is left 
+				if len(emlist) > config.imagemanager.number_to_keep.value:
+					print "GML: trim needed"
+					emlist = emlist[0:len(emlist)-config.imagemanager.number_to_keep.value]
+					for fil in emlist:
+						print "GML: deleting", fil
+						remove(self.BackupDirectory + fil)
+	    	except:
+	    		pass
+# GML - end
+
 		if config.imagemanager.schedule.value:
 			atLeast = 60
 			autoImageManagerTimer.backupupdate(atLeast)
