@@ -47,7 +47,7 @@ config.backupmanager.repeattype = ConfigSelection(default="daily", choices=[("da
 
 # Querying is enabled by default - asthat is what used to happen always
 #
-config.backupmanager.query = ConfigYesNo(default=True)
+config.backupmanager.query = ConfigYesNo(default=False)
 
 # If we do not yet have a record of a backup, assume it has never happened.
 #

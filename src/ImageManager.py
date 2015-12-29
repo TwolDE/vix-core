@@ -47,7 +47,7 @@ config.imagemanager.restoreimage = NoSave(ConfigText(default=getBoxType(), fixed
 
 #GML - querying is enabled by default - that is what used to happen always
 #
-config.imagemanager.query = ConfigYesNo(default=True)
+config.imagemanager.query = ConfigYesNo(default=False)
 
 #GML -  If we do not yet have a record of an image backup, assume it has
 #       never happened.
