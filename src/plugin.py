@@ -10,8 +10,7 @@ from ImageManager import ImageManagerautostart
 from SwapManager import SwapAutostart
 from SoftcamManager import SoftcamAutostart
 from IPKInstaller import IpkgInstaller
-from boxbranding import getBoxType, getBrandOEM, getMachineBrand, getMachineName
-from Components.SystemInfo import SystemInfo
+
 
 def checkConfigBackup():
 	try:
@@ -180,6 +179,6 @@ def Plugins(**kwargs):
 	plist.append(PluginDescriptor(name=_("ViX Mount Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=MountManagerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Script Runner"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ScriptRunnerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Swap Manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=SwapManagerMenu))
-	
+
 	return plist
 

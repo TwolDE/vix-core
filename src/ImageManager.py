@@ -381,14 +381,15 @@ class VIXImageManager(Screen):
 			kernelMTD = getMachineMtdKernel()
 			rootMTD = getMachineMtdRoot()
 			if getMachineMake() != 'et8500':
-			self.keyResstore6()
-			message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ")
-			ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("ET8500 Image Restore"))
-			self.session.open(MessageBox, _("ET8500 OS2 Image restore A"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)
-			kernelMTD = 'mtd3'
-			rootMTD = 'mtd4'
-			self.keyResstore6()
+				self.keyResstore6()
+			else:
+				message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ")
+				ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
+				ybox.setTitle(_("ET8500 Image Restore"))
+				self.session.open(MessageBox, _("ET8500 OS2 Image restore A"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)
+				kernelMTD = 'mtd3'
+				rootMTD = 'mtd4'
+				self.keyResstore6()
 
 	def keyResstore5(self, answer):
 		if answer:
