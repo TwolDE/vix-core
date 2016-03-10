@@ -378,18 +378,24 @@ class VIXImageManager(Screen):
 
 	def keyResstore4(self, result, retval, extra_args=None):
 		if retval == 0:
-			kernelMTD = getMachineMtdKernel()
-			rootMTD = getMachineMtdRoot()
-			if getMachineMake() != 'et8500':
-				self.keyResstore6()
+			if getMachineMake() == 'et8500':
+				self.keyResstore4a()
 			else:
-				message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ")
-				ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
-				ybox.setTitle(_("ET8500 Image Restore"))
-				self.session.open(MessageBox, _("ET8500 OS2 Image restore A"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)
-				kernelMTD = 'mtd3'
-				rootMTD = 'mtd4'
 				self.keyResstore6()
+
+	def keyResstore4a(self):
+		message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ")
+		ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
+		ybox.setTitle(_("ET8500 Image Restore"))
+		self.session.open(MessageBox, _("ET8500 OS2 Image restore A"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)
+		kernelMTD = 'mtd3'
+		rootMTD = 'mtd4'
+		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+		CMD = '/usr/bin/ofgwrite -r%s -k%s %s' % (rootMTD, kernelMTD, MAINDEST)
+		config.imagemanager.restoreimage.setValue(self.sel)
+		print '[ImageManager] running commnd 1:',CMD
+		self.Console.ePopen(CMD)
+
 
 	def keyResstore5(self, answer):
 		if answer:
@@ -398,13 +404,19 @@ class VIXImageManager(Screen):
 			self.session.open(MessageBox, _("ET8500 OS2 Image restore B"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)
 			kernelMTD = 'mtd3'
 			rootMTD = 'mtd4'
-			self.keyResstore6()
-
-	def keyResstore6(self):
 			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 			CMD = '/usr/bin/ofgwrite -r%s -k%s %s' % (rootMTD, kernelMTD, MAINDEST)
 			config.imagemanager.restoreimage.setValue(self.sel)
-			print '[ImageManager] running commnd:',CMD
+			print '[ImageManager] running commnd 2:',CMD
+			self.Console.ePopen(CMD)
+
+	def keyResstore6(self):
+			kernelMTD = getMachineMtdKernel()
+			rootMTD = getMachineMtdRoot()
+			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+			CMD = '/usr/bin/ofgwrite -r%s -k%s %s' % (rootMTD, kernelMTD, MAINDEST)
+			config.imagemanager.restoreimage.setValue(self.sel)
+			print '[ImageManager] running commnd 3:',CMD
 			self.Console.ePopen(CMD)
 
 class AutoImageManagerTimer:
