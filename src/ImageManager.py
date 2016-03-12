@@ -384,18 +384,9 @@ class VIXImageManager(Screen):
 				self.keyResstore6()
 
 	def keyResstore4a(self):
-		message = _("ET8500 Yes to restore OS1 No to restore OS2")
+		message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ") + self.sel
 		ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
 		ybox.setTitle(_("ET8500 Image Restore"))
-		self.session.open(MessageBox, _("ET8500 OS2 Image restore A"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)
-		kernelMTD = 'mtd3'
-		rootMTD = 'mtd4'
-		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		CMD = '/usr/bin/ofgwrite -r%s -k%s %s' % (rootMTD, kernelMTD, MAINDEST)
-		config.imagemanager.restoreimage.setValue(self.sel)
-		print '[ImageManager] running commnd 1:',CMD
-		self.Console.ePopen(CMD)
-
 
 	def keyResstore5(self, answer):
 		if answer:
