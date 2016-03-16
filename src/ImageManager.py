@@ -392,7 +392,6 @@ class VIXImageManager(Screen):
 		if answer:
 			self.keyResstore6()
 		else:
-			self.session.open(MessageBox, _("ET8500 OS2 Image restore B"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)
 			kernelMTD = 'mtd3'
 			rootMTD = 'mtd4'
 			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
