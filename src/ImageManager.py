@@ -387,25 +387,21 @@ class VIXImageManager(Screen):
 		ybox.setTitle(_("ET8500 Image Restore"))
 
 	def keyResstore5(self, answer):
+		kernelMTD = getMachineMtdKernel()
+		rootMTD = getMachineMtdRoot()
 		if answer:
 			self.keyResstore6()
 		else:
 			kernelMTD = 'mtd3'
 			rootMTD = 'mtd4'
-			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-			CMD = '/usr/bin/ofgwrite -r%s -k%s %s' % (rootMTD, kernelMTD, MAINDEST)
-			config.imagemanager.restoreimage.setValue(self.sel)
-			print '[ImageManager] running commnd 2:',CMD
-			self.Console.ePopen(CMD)
+			self.keyResstore6()
 
 	def keyResstore6(self):
-			kernelMTD = getMachineMtdKernel()
-			rootMTD = getMachineMtdRoot()
-			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-			CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
-			config.imagemanager.restoreimage.setValue(self.sel)
-			print '[ImageManager] running commnd 3:',CMD
-			self.Console.ePopen(CMD)
+		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+		CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
+		config.imagemanager.restoreimage.setValue(self.sel)
+		print '[ImageManager] running commnd 3:',CMD
+		self.Console.ePopen(CMD)
 
 class AutoImageManagerTimer:
 	def __init__(self, session):
