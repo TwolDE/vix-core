@@ -387,16 +387,20 @@ class VIXImageManager(Screen):
 		ybox.setTitle(_("ET8500 Image Restore"))
 
 	def keyResstore5(self, answer):
-		kernelMTD = getMachineMtdKernel()
-		rootMTD = getMachineMtdRoot()
 		if answer:
 			self.keyResstore6()
 		else:
 			kernelMTD = 'mtd3'
 			rootMTD = 'mtd4'
-			self.keyResstore6()
+			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+			CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
+			config.imagemanager.restoreimage.setValue(self.sel)
+			print '[ImageManager] running commnd 2:',CMD
+			self.Console.ePopen(CMD)
 
 	def keyResstore6(self):
+		kernelMTD = getMachineMtdKernel()
+		rootMTD = getMachineMtdRoot()
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
 		config.imagemanager.restoreimage.setValue(self.sel)
