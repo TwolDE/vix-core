@@ -91,37 +91,21 @@ class VIXMenu(Screen, ProtectedScreen):
 			if self.menu == 0:
 				if currentEntry == "backup-manager":
 					from BackupManager import VIXBackupManager
-
 					self.session.open(VIXBackupManager)
 				elif currentEntry == "image-manager":
 					from ImageManager import VIXImageManager
-
 					self.session.open(VIXImageManager)
 				elif currentEntry == "ipkg-install":
 					from IPKInstaller import VIXIPKInstaller
-
 					self.session.open(VIXIPKInstaller)
 				elif currentEntry == "mount-manager":
 					from MountManager import VIXDevicesPanel
-
 					self.session.open(VIXDevicesPanel)
 				elif currentEntry == "script-runner":
-					list = []
-					if not path.exists('/usr/script'):
-						mkdir('/usr/script', 0755)
-					f = listdir('/usr/script')
-					for line in f:
-						parts = line.split()
-						pkg = parts[0]
-						if pkg.find('.sh') >= 0:
-							list.append(pkg)
-
 					from ScriptRunner import VIXScriptRunner
-
-					self.session.open(VIXScriptRunner, list)
+					self.session.open(VIXScriptRunner)
 				elif currentEntry == "swap-manager":
 					from SwapManager import VIXSwap
-
 					self.session.open(VIXSwap)
 
 	def closeRecursive(self):
