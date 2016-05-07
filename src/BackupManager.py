@@ -1,5 +1,5 @@
 # for localized messages
-from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getMachineBrand, getMachineName
+from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getMachineBrand, getMachineName
 from os import path, stat, mkdir, listdir, remove, statvfs, chmod, walk
 from time import localtime, time, strftime, mktime
 from datetime import date, datetime
@@ -1096,7 +1096,7 @@ class BackupFiles(Screen):
 				mkdir(self.BackupDirectory, 0755)
 		except Exception, e:
 			print str(e)
-			print "Device: " + config.backupmanager.backuplocation.value + ", i don't seem to have write access to this device."
+			print "[BackupManager] Device: " + config.backupmanager.backuplocation.value + ", i don't seem to have write access to this device."
 
 		s = statvfs(self.BackupDevice)
 		free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
@@ -1180,12 +1180,15 @@ class BackupFiles(Screen):
 		self.backupdirs = ' '.join(tmplist)
 		print '[BackupManager] Backup running'
 		backupdate = datetime.now()
+		backupType = "-"
 		if self.updatebackup:
-			self.Backupfile = self.BackupDirectory + config.backupmanager.folderprefix.value + '-' + getImageType() + '-SoftwareUpdate-' + getImageVersion() + '.' + getImageBuild() + '-' + backupdate.strftime("%Y-%m-%d_%H-%M") + '.tar.gz'
+			backupType = "-SoftwareUpdate-"
 		elif self.imagebackup:
-			self.Backupfile = self.BackupDirectory + config.backupmanager.folderprefix.value + '-' + getImageType() + '-ImageManager-' + getImageVersion() + '.' + getImageBuild() + '-' + backupdate.strftime("%Y-%m-%d_%H-%M") + '.tar.gz'
-		else:
-			self.Backupfile = self.BackupDirectory + config.backupmanager.folderprefix.value + '-' + getImageType() + '-' + getImageVersion() + '.' + getImageBuild() + '-' + backupdate.strftime("%Y-%m-%d_%H-%M") + '.tar.gz'
+			backupType = "-ImageManager-"
+		imageSubBuild = ""
+		if getImageType() != 'release':
+			imageSubBuild = ".%s" % getImageDevBuild()
+		self.Backupfile = self.BackupDirectory + config.backupmanager.folderprefix.value + '-' + getImageType() + backupType + getImageVersion() + '.' + getImageBuild() + imageSubBuild + '-' + backupdate.strftime("%Y-%m-%d_%H-%M") + '.tar.gz'
 		self.Console.ePopen('tar -czvf ' + self.Backupfile + ' ' + self.backupdirs, self.Stage4Complete)
 
 	def Stage4Complete(self, result, retval, extra_args):

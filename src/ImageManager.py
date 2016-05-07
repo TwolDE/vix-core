@@ -1,5 +1,5 @@
 # for localized messages
-from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
+from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
 from os import path, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
 from shutil import rmtree, move, copy
 from time import localtime, time, strftime, mktime
@@ -563,18 +563,21 @@ class ImageBackup(Screen):
 		self.BackupDate = strftime('%Y%m%d_%H%M%S', localtime())
 		self.WORKDIR = self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-temp'
 		self.TMPDIR = self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-mount'
+		backupType = "-"
 		if updatebackup:
-			self.MAINDESTROOT = self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-SoftwareUpdate-' + getImageVersion() + '.' + getImageBuild() + '-' + self.BackupDate
-		else:
-			self.MAINDESTROOT = self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-' + getImageVersion() + '.' + getImageBuild() + '-' + self.BackupDate
+			backupType = "-SoftwareUpdate-"
+		imageSubBuild = ""
+		if getImageType() != 'release':
+			imageSubBuild = ".%s" % getImageDevBuild()
+		self.MAINDESTROOT = self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + backupType + getImageVersion() + '.' + getImageBuild() + imageSubBuild + '-' + self.BackupDate
 		self.kernelMTD = getMachineMtdKernel()
 		self.kernelFILE = getMachineKernelFile()
 		self.rootMTD = getMachineMtdRoot()
 		self.rootFILE = getMachineRootFile()
 		self.MAINDEST = self.MAINDESTROOT + '/' + getImageFolder() + '/'
-		print 'MTD: Kernel:',self.kernelMTD
-		print 'MTD: Root:',self.rootMTD
-		print 'Type:',getImageFileSystem()
+		print '[ImageManager] MTD: Kernel:',self.kernelMTD
+		print '[ImageManager] MTD: Root:',self.rootMTD
+		print '[ImageManager] Type:',getImageFileSystem()
 		if 'ubi' in getImageFileSystem():
 			self.ROOTFSTYPE = 'ubifs'
 		elif 'tar.bz2' in getImageFileSystem():
@@ -660,7 +663,7 @@ class ImageBackup(Screen):
 				remove(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + "-swapfile_backup")
 		except Exception, e:
 			print str(e)
-			print "Device: " + config.imagemanager.backuplocation.value + ", i don't seem to have write access to this device."
+			print "[ImageManager] Device: " + config.imagemanager.backuplocation.value + ", i don't seem to have write access to this device."
 
 		s = statvfs(self.BackupDevice)
 		free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
