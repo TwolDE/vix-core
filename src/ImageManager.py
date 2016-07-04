@@ -46,6 +46,7 @@ config.imagemanager.backupretrycount = NoSave(ConfigNumber(default=0))
 config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default=0))
 config.imagemanager.restoreimage = NoSave(ConfigText(default=getBoxType(), fixed_size=False))
 config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
+config.imagemanager.multiboot = ConfigYesNo(default = False)
 
 #GML - querying is enabled by default - that is what used to happen always
 #
@@ -376,7 +377,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore4(self, result, retval, extra_args=None):
 		if retval == 0:
-			if getMachineMake() == 'et8500':
+			if getMachineMake() == 'et8500' and config.imagemanager.multibackup:
 				self.keyResstore4a()
 			else:
 				self.keyResstore6()
