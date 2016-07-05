@@ -377,7 +377,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore4(self, result, retval, extra_args=None):
 		if retval == 0:
-			if getMachineMake() == 'et8500' and config.imagemanager.multibackup:
+			if getMachineMake() == 'et8500' and config.imagemanager.multiboot:
 				self.keyResstore4a()
 			else:
 				self.keyResstore6()
