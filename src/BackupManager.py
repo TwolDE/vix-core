@@ -47,7 +47,7 @@ config.backupmanager.repeattype = ConfigSelection(default="daily", choices=[("da
 
 # Querying is enabled by default - asthat is what used to happen always
 #
-config.backupmanager.query = ConfigYesNo(default=False)
+config.backupmanager.query = ConfigYesNo(default=True)
 
 # If we do not yet have a record of a backup, assume it has never happened.
 #
@@ -67,13 +67,13 @@ config.backupmanager.xtraplugindir = ConfigDirectory(default='')
 config.backupmanager.lastlog = ConfigText(default=' ', fixed_size=False)
 
 def isRestorableSettings(imageversion):
-	restorableSettings = ('Zeus', 'Helios', 'Apollo', 'HadesA', '3.2', '3.3', '4.0', '4.1')
+	restorableSettings = ('Zeus', 'Helios', 'Apollo', 'Hades', '3.2', '3.3', '4.0', '4.1')
 	if imageversion in restorableSettings:
 		return True
 	return False
 
 def isRestorablePlugins(imageversion):
-	restorablePlugins = ('HadesA', '4.0', '4.1')
+	restorablePlugins = ('4.0', '4.1')
 	if imageversion in restorablePlugins:
 		return True
 	return False
