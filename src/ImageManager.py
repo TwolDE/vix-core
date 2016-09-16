@@ -6,7 +6,7 @@ from time import localtime, time, strftime, mktime
 
 from enigma import eTimer
 
-from . import _
+from . import _, PluginLanguageDomain
 import Components.Task
 from Components.ActionMap import ActionMap
 from Components.Label import Label
@@ -262,7 +262,7 @@ class VIXImageManager(Screen):
 			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("there is a problem with this device, please reformat and try again."))
 
 	def createSetup(self):
-		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path)
+		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
 
 	def doDownload(self):
 		self.session.openWithCallback(self.populate_List, ImageManagerDownload, self.menu_path, self.BackupDirectory)
@@ -353,7 +353,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore(self):
 		self.sel = self['list'].getCurrent()
-		if getMachineMake() == 'vusolo4k':
+		if getMachineBuild() in ('vusolo4k','hd51','hd52'):
 			self.session.open(MessageBox, _("Sorry, But this machine is not supported yet."), MessageBox.TYPE_INFO, timeout=10)
 		elif self.sel:
 			message = _("Are you sure you want to restore this image:\n ") + self.sel
@@ -1009,6 +1009,8 @@ class ImageManagerDownload(Screen):
 				self.boxtype = 'Mutant-HD500C'
 			elif getMachineMake() == 'mutant1200':
 				self.boxtype = 'Mutant-HD1200'
+			elif getMachineMake() == 'mutant1500':
+				self.boxtype = 'Mutant-HD1500'				
 			elif getMachineMake() == 'mutant51':
 				self.boxtype = 'Mutant-HD51'				
 			elif getMachineMake() == 'xp1000max':
