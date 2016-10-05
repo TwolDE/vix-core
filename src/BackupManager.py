@@ -68,13 +68,13 @@ config.backupmanager.xtraplugindir = ConfigDirectory(default='')
 config.backupmanager.lastlog = ConfigText(default=' ', fixed_size=False)
 
 def isRestorableSettings(imageversion):
-	restorableSettings = ('4.1', '4.2')
+	restorableSettings = ('4.1', '4.2', '5.0')
 	if imageversion in restorableSettings:
 		return True
 	return False
 
 def isRestorablePlugins(imageversion):
-	restorablePlugins = ('4.1', '4.2')
+	restorablePlugins = ('4.1', '4.2', '5.0')
 	if imageversion in restorablePlugins:
 		return True
 	return False
