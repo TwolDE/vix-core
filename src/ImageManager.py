@@ -341,9 +341,12 @@ class VIXImageManager(Screen):
 			self.keyBackup()
 
 	def keyBackup(self):
-		message = _("Are you ready to create a backup image ?")
-		ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO)
-		ybox.setTitle(_("Backup Confirmation"))
+		if getMachineBuild() in ('vusolo4k','hd51','hd52'):
+			self.session.open(MessageBox, _("Sorry, But this machine is not supported yet."), MessageBox.TYPE_INFO, timeout=10)
+		else:
+			message = _("Are you ready to create a backup image ?")
+			ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO)
+			ybox.setTitle(_("Backup Confirmation"))
 
 	def doBackup(self, answer):
 		if answer is True:
