@@ -27,6 +27,8 @@ from Tools.Notifications import AddPopupWithCallback
 from Tools.Directories import fileExists, fileCheck
 
 import urllib
+import os
+from Components.SystemInfo import SystemInfo
 
 RAMCHEKFAILEDID = 'RamCheckFailedNotification'
 
@@ -120,7 +122,10 @@ class VIXImageManager(Screen):
 
 		self['lab1'] = Label()
 		self["backupstatus"] = Label()
+		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP") or fileCheck("/boot/STARTUP_1")
 		if getImageFileSystem().replace(' ','') not in ('tar.bz2', 'hd-emmc'):
+			self["key_blue"] = Button(_("Restore"))
+		elif getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 			self["key_blue"] = Button(_("Restore"))
 		else:
 			self["key_blue"] = Button("")
@@ -137,6 +142,8 @@ class VIXImageManager(Screen):
 		self.activityTimer = eTimer()
 		self.activityTimer.timeout.get().append(self.backupRunning)
 		self.activityTimer.start(10)
+		self.session = session
+		self.selection = 0
 
 		self.Console = Console()
 
@@ -241,7 +248,11 @@ class VIXImageManager(Screen):
 												  {
 												  'blue': self.keyResstore,
 												  }, -1)
-
+				if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
+					self['restoreaction'] = ActionMap(['ColorActions'],
+												  {
+												  'blue': self.keyResstore,
+												  }, -1)
 				self.BackupDirectory = '/media/hdd/imagebackups/'
 				config.imagemanager.backuplocation.value = '/media/hdd/'
 				config.imagemanager.backuplocation.save()
@@ -272,7 +283,11 @@ class VIXImageManager(Screen):
 											  {
 											  'blue': self.keyResstore,
 											  }, -1)
-
+			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
+				self['restoreaction'] = ActionMap(['ColorActions'],
+												  {
+												  'blue': self.keyResstore,
+												  }, -1)
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
@@ -380,12 +395,16 @@ class VIXImageManager(Screen):
 
 	def keyResstore(self):
 		self.sel = self['list'].getCurrent()
-		if self.sel:
+		if self.sel and getMachineMake() != 'mutant51':
+			message = _("Are you sure you want to restore this image:\n ") + self.sel
+			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
+			ybox.setTitle(_("Restore Confirmation"))
+		elif self.sel.endswith('.zip') and getMachineMake() == 'mutant51':  
 			message = _("Are you sure you want to restore this image:\n ") + self.sel
 			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
 			ybox.setTitle(_("Restore Confirmation"))
 		else:
-			self.session.open(MessageBox, _("You have no image to restore."), MessageBox.TYPE_INFO, timeout=10)
+			self.session.open(MessageBox, _("You have no image to restore or invalid format for flash restore."), MessageBox.TYPE_INFO, timeout=10)
 
 	def keyResstore2(self, answer):
 		if answer:
@@ -395,7 +414,10 @@ class VIXImageManager(Screen):
 				self.keyResstore3()
 
 	def keyResstore3(self, val = None):
-		self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
+		if SystemInfo["HaveMultiBoot"]:
+			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins at the end press OK"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
+		else:					
+			self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
@@ -407,6 +429,8 @@ class VIXImageManager(Screen):
 
 	def keyResstore4(self, result, retval, extra_args=None):
 		if retval == 0:
+			if self.sel.endswith('.zip') and getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
+				self.Restorehd5x()
 			kernelMTD = getMachineMtdKernel()
 			rootMTD = getMachineMtdRoot()
 			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
@@ -414,6 +438,46 @@ class VIXImageManager(Screen):
 			config.imagemanager.restoreimage.setValue(self.sel)
 			print '[ImageManager] running commnd:',CMD
 			self.Console.ePopen(CMD)
+
+	def Restorehd5x(self):
+		self.multiold = self.read_startup0("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
+		self.multiold = self.multiold[-1:]
+		self.multinew = 1
+		if self.multiold == "1":
+			self.multinew = 2
+		if self.multiold == "2":
+			self.multinew = 1
+		cmdlist = []
+		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+		CMD = '/usr/bin/ofgwrite -r -k -m%s %s/' % (self.multinew, MAINDEST)
+		print "HD51 Flash",CMD, MAINDEST
+		config.imagemanager.restoreimage.setValue(self.sel)
+		self.Console.ePopen(CMD, self.HD5X1)
+
+	def HD5X1(self, result, retval, extra_args=None):
+		print "HD51-1 Flash retval", retval
+		print "HD51-2 Flash result", result
+		if retval == 0:
+			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
+			message = _("HD51 Image Flashed - Yes to reboot now, No to continue\n ")
+			ybox = self.session.openWithCallback(self.HD5X2, MessageBox, message, MessageBox.TYPE_YESNO)
+			ybox.setTitle(_("HD51 Image Restore"))
+		else:
+			self.session.open(MessageBox, _("HD51 Flash failed "), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
+			self.close()
+
+	def HD5X2(self, answer):
+		if answer:
+			self.session.open(TryQuitMainloop, 2)
+		else:
+			self.close()
+
+	def read_startup0(self, FILE):
+		file = FILE
+		with open(file, 'r') as myfile:
+			data=myfile.read().replace('\n', '')
+		myfile.close()
+		return data	
 
 class AutoImageManagerTimer:
 	def __init__(self, session):
