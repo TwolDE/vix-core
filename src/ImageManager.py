@@ -40,6 +40,7 @@ for p in harddiskmanager.getMountedPartitions():
 			hddchoises.append((p.mountpoint, d))
 config.imagemanager = ConfigSubsection()
 defaultprefix = getImageDistro() + '-' + getBoxType()
+config.imagemanager.multiboot = ConfigYesNo(default = False)
 config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
 config.imagemanager.backuplocation = ConfigSelection(choices=hddchoises)
 config.imagemanager.schedule = ConfigYesNo(default=False)
@@ -431,13 +432,38 @@ class VIXImageManager(Screen):
 		if retval == 0:
 			if self.sel.endswith('.zip') and getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 				self.Restorehd5x()
-			kernelMTD = getMachineMtdKernel()
-			rootMTD = getMachineMtdRoot()
+			elif getMachineMake() == 'et8500' and config.imagemanager.multiboot:
+				self.keyResstore4a()
+			else:
+				self.keyResstore6()
+
+	def keyResstore4a(self):
+		message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ") + self.sel
+		ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
+		ybox.setTitle(_("ET8500 Image Restore"))
+
+	def keyResstore5(self, answer):
+		if answer:
+			self.keyResstore6()
+		else:
+			kernelMTD = 'mtd3'
+			rootMTD = 'mtd4'
 			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 			CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
 			config.imagemanager.restoreimage.setValue(self.sel)
 			print '[ImageManager] running commnd:',CMD
 			self.Console.ePopen(CMD)
+
+	def keyResstore6(self):
+		kernelMTD = getMachineMtdKernel()
+		rootMTD = getMachineMtdRoot()
+		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+		CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
+		config.imagemanager.restoreimage.setValue(self.sel)
+		print '[ImageManager] running commnd OS1:',CMD
+		self.Console.ePopen(CMD)
+
+
 
 	def Restorehd5x(self):
 		self.multiold = self.read_startup0("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
