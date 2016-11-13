@@ -1188,7 +1188,7 @@ class ImageManagerDownload(Screen):
 			elif getMachineMake() == 'mbtwinplus':
 				self.boxtype = 'Miraclebox-Twinplus'				
 
-			url = 'http://www.openvix.co.uk/openvix-builds/'+self.boxtype+'/'
+			url = 'http://192.168.0.26/openvix-builds/'+self.boxtype+'/'
 			conn = urllib2.urlopen(url)
 			html = conn.read()
 
@@ -1228,7 +1228,7 @@ class ImageManagerDownload(Screen):
 			file = self.BackupDirectory + self.selectedimage
 
 			mycmd1 = _("echo 'Downloading Image.'")
-			mycmd2 = "wget -q http://www.openvix.co.uk/openvix-builds/" + self.boxtype + "/" + self.selectedimage + " -O " + self.BackupDirectory + "image.zip"
+			mycmd2 = "wget -q http://192.168.0.26/openvix-builds/" + self.boxtype + "/" + self.selectedimage + " -O " + self.BackupDirectory + "image.zip"
 			mycmd3 = "mv " + self.BackupDirectory + "image.zip " + file
 			self.session.open(ScreenConsole, title=_('Downloading Image...'), cmdlist=[mycmd1, mycmd2, mycmd3], closeOnSuccess=True)
 
