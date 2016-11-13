@@ -24,6 +24,7 @@ from Screens.TaskView import JobView
 from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
+from Tools.Directories import fileExists, fileCheck
 
 import urllib
 
@@ -37,7 +38,6 @@ for p in harddiskmanager.getMountedPartitions():
 			hddchoises.append((p.mountpoint, d))
 config.imagemanager = ConfigSubsection()
 defaultprefix = getImageDistro() + '-' + getBoxType()
-config.imagemanager.multiboot = ConfigYesNo(default = False)
 config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
 config.imagemanager.backuplocation = ConfigSelection(choices=hddchoises)
 config.imagemanager.schedule = ConfigYesNo(default=False)
@@ -407,36 +407,13 @@ class VIXImageManager(Screen):
 
 	def keyResstore4(self, result, retval, extra_args=None):
 		if retval == 0:
-			if getMachineMake() == 'et8500' and config.imagemanager.multiboot:
-				self.keyResstore4a()
-			else:
-				self.keyResstore6()
-
-	def keyResstore4a(self):
-		message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ") + self.sel
-		ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
-		ybox.setTitle(_("ET8500 Image Restore"))
-
-	def keyResstore5(self, answer):
-		if answer:
-			self.keyResstore6()
-		else:
-			kernelMTD = 'mtd3'
-			rootMTD = 'mtd4'
+			kernelMTD = getMachineMtdKernel()
+			rootMTD = getMachineMtdRoot()
 			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 			CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
 			config.imagemanager.restoreimage.setValue(self.sel)
-			print '[ImageManager] running commnd OS2:',CMD
+			print '[ImageManager] running commnd:',CMD
 			self.Console.ePopen(CMD)
-
-	def keyResstore6(self):
-		kernelMTD = getMachineMtdKernel()
-		rootMTD = getMachineMtdRoot()
-		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
-		config.imagemanager.restoreimage.setValue(self.sel)
-		print '[ImageManager] running commnd OS1:',CMD
-		self.Console.ePopen(CMD)
 
 class AutoImageManagerTimer:
 	def __init__(self, session):
@@ -1211,7 +1188,7 @@ class ImageManagerDownload(Screen):
 			elif getMachineMake() == 'mbtwinplus':
 				self.boxtype = 'Miraclebox-Twinplus'				
 
-			url = 'http://192.168.0.26/openvix-builds/'+self.boxtype+'/'
+			url = 'http://www.openvix.co.uk/openvix-builds/'+self.boxtype+'/'
 			conn = urllib2.urlopen(url)
 			html = conn.read()
 
@@ -1251,7 +1228,7 @@ class ImageManagerDownload(Screen):
 			file = self.BackupDirectory + self.selectedimage
 
 			mycmd1 = _("echo 'Downloading Image.'")
-			mycmd2 = "wget -q http://192.168.0.26/openvix-builds/" + self.boxtype + "/" + self.selectedimage + " -O " + self.BackupDirectory + "image.zip"
+			mycmd2 = "wget -q http://www.openvix.co.uk/openvix-builds/" + self.boxtype + "/" + self.selectedimage + " -O " + self.BackupDirectory + "image.zip"
 			mycmd3 = "mv " + self.BackupDirectory + "image.zip " + file
 			self.session.open(ScreenConsole, title=_('Downloading Image...'), cmdlist=[mycmd1, mycmd2, mycmd3], closeOnSuccess=True)
 
