@@ -396,11 +396,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore(self):
 		self.sel = self['list'].getCurrent()
-		if self.sel and getMachineMake() != 'mutant51':
-			message = _("Are you sure you want to restore this image:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("Restore Confirmation"))
-		elif self.sel.endswith('.zip') and getMachineMake() == 'mutant51':  
+		if self.sel:
 			message = _("Are you sure you want to restore this image:\n ") + self.sel
 			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
 			ybox.setTitle(_("Restore Confirmation"))
@@ -430,7 +426,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore4(self, result, retval, extra_args=None):
 		if retval == 0:
-			if self.sel.endswith('.zip') and getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
+			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 				self.Restorehd5x()
 			elif getMachineMake() == 'et8500' and config.imagemanager.multiboot:
 				self.keyResstore4a()
@@ -489,7 +485,7 @@ class VIXImageManager(Screen):
 			ybox = self.session.openWithCallback(self.HD5X2, MessageBox, message, MessageBox.TYPE_YESNO)
 			ybox.setTitle(_("HD51 Image Restore"))
 		else:
-			self.session.open(MessageBox, _("HD51 Flash failed "), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
+			self.session.open(MessageBox, _("HD51 Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
 			self.close()
 
 	def HD5X2(self, answer):
