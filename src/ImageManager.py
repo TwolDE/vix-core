@@ -412,7 +412,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore3(self, val = None):
 		if SystemInfo["HaveMultiBoot"]:
-			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins at the end press OK"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
+ 			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins at the end press OK"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
 		else:					
 			self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
@@ -481,17 +481,9 @@ class VIXImageManager(Screen):
 		print "HD51-2 Flash result", result
 		if retval == 0:
 			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
-			message = _("HD51 Image Flashed - Yes to reboot now, No to continue\n ")
-			ybox = self.session.openWithCallback(self.HD5X2, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("HD51 Image Restore"))
-		else:
-			self.session.open(MessageBox, _("HD51 Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
-			self.close()
-
-	def HD5X2(self, answer):
-		if answer:
 			self.session.open(TryQuitMainloop, 2)
 		else:
+			self.session.open(MessageBox, _("HD51 Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
 			self.close()
 
 	def read_startup0(self, FILE):
