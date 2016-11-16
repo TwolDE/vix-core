@@ -412,7 +412,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore3(self, val = None):
 		if SystemInfo["HaveMultiBoot"]:
- 			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins at the end press OK"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
+ 			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
 		else:					
 			self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
