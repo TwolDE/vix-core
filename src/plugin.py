@@ -90,8 +90,22 @@ def ImageManager(session):
 	from ImageManager import VIXImageManager
 	return VIXImageManager(session)
 
-def ImageMangerMenu(session, **kwargs):
+def ImageManagerMenu(session, **kwargs):
 	session.open(ImageManager)
+
+def HD51Flash(session):
+	from HD51Flash import HD51Flash
+	return HD51Flash(session)
+
+def HD51FlashMenu(session, **kwargs):
+	session.open(HD51Flash)
+
+def HD51MultiBoot(session):
+	from HD51MultiBoot import HD51MultiBoot
+	return HD51MultiBoot(session)
+
+def HD51MultiBootMenu(session, **kwargs):
+	session.open(HD51MultiBoot)
 
 def MountManager(session):
 	from MountManager import VIXDevicesPanel

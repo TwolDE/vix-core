@@ -69,13 +69,16 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("mount-manager", _("Mount Manager"), _("Manage your devices mount points."), None))
 			self.list.append(("script-runner", _("Script Runner"), _("Run your shell scripts."), None))
 			self.list.append(("swap-manager", _("Swap Manager"), _("Create and Manage your swap files."), None))
-		else:
+		elif self.menu == 0:
 			self.list.append(("backup-manager", _("Backup Manager"), _("Manage the backups of your settings."), None))
 			self.list.append(("image-manager", _("Image Manager"), _("Create and Restore complete images of your system."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount Manager"), _("Manage your devices mount points."), None))
 			self.list.append(("script-runner", _("Script Runner"), _("Run your shell scripts."), None))
 			self.list.append(("swap-manager", _("Swap Manager"), _("Create and Manage your swap files."), None))
+		if SystemInfo["HaveMultiBoot"]:
+			self.list.append(("HD51Flash", _("HD51 couch flash"), _("HD51 couch flash any partition"), None))
+			self.list.append(("HD51MultiBoot", _("HD51 Boot Selector"), _("Boot any STARTUP Partition."), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
 
@@ -150,6 +153,12 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "swap-manager":
 					from SwapManager import VIXSwap
 					self.session.open(VIXSwap, self.menu_path)
+				elif (currentEntry == "HD51Flash"):
+					from HD51Flash import HD51Flash
+					self.session.open(HD51Flash, self.menu_path)
+				elif (currentEntry == "HD51MultiBoot"):
+					from HD51MultiBoot import HD51MultiBoot
+					self.session.open(HD51MultiBoot, self.menu_path)
 
 	def closeRecursive(self):
 		self.close(True)

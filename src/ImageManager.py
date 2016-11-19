@@ -145,7 +145,7 @@ class VIXImageManager(Screen):
 		self.activityTimer.start(10)
 		self.session = session
 		self.selection = 0
-
+		self.devrootfs = "/dev/mmcblk0p5"
 		self.Console = Console()
 
 		if BackupTime > 0:
@@ -467,6 +467,7 @@ class VIXImageManager(Screen):
 		self.multinew = 1
 		if self.multiold == "1":
 			self.multinew = 2
+			os.system('mkfs.ext4 -F ' + self.devrootfs)
 		if self.multiold == "2":
 			self.multinew = 1
 		cmdlist = []
