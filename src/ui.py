@@ -76,7 +76,7 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("mount-manager", _("Mount Manager"), _("Manage your devices mount points."), None))
 			self.list.append(("script-runner", _("Script Runner"), _("Run your shell scripts."), None))
 			self.list.append(("swap-manager", _("Swap Manager"), _("Create and Manage your swap files."), None))
-		if SystemInfo["HaveMultiBoot"]:
+		if self.menu == 0 and SystemInfo["HaveMultiBoot"]:
 			self.list.append(("HD51Flash", _("HD51 couch flash"), _("HD51 couch flash any partition"), None))
 			self.list.append(("HD51MultiBoot", _("HD51 Boot Selector"), _("Boot any STARTUP Partition."), None))
 		self["menu"] = List(self.list)

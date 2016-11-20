@@ -90,7 +90,7 @@ def ImageManager(session):
 	from ImageManager import VIXImageManager
 	return VIXImageManager(session)
 
-def ImageManagerMenu(session, **kwargs):
+def ImageMangerMenu(session, **kwargs):
 	session.open(ImageManager)
 
 def HD51Flash(session):

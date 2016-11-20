@@ -29,6 +29,7 @@ from Tools.Directories import fileExists, fileCheck
 import urllib
 import os
 from Components.SystemInfo import SystemInfo
+from enigma import fbClass
 
 RAMCHEKFAILEDID = 'RamCheckFailedNotification'
 
@@ -412,7 +413,7 @@ class VIXImageManager(Screen):
 
 	def keyResstore3(self, val = None):
 		if SystemInfo["HaveMultiBoot"]:
- 			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
+			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
 		else:					
 			self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
@@ -460,6 +461,16 @@ class VIXImageManager(Screen):
 		self.Console.ePopen(CMD)
 
 
+#		#default layout for Mut@nt HD51
+#		Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'
+#		Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'
+#		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
+#		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
+#		#options
+#		Standard:     hd51_4.boxmode=1 (or no option)
+#		Experimental: hd51_4.boxmode=12
+#		#example
+#		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=12'
 
 	def Restorehd5x(self):
 		self.multiold = self.read_startup0("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
@@ -476,10 +487,12 @@ class VIXImageManager(Screen):
 		print "HD51 Flash",CMD, MAINDEST
 		config.imagemanager.restoreimage.setValue(self.sel)
 		self.Console.ePopen(CMD, self.HD5X1)
+		fbClass.getInstance().lock()
 
 	def HD5X1(self, result, retval, extra_args=None):
 		print "HD51-1 Flash retval", retval
 		print "HD51-2 Flash result", result
+		fbClass.getInstance().unlock()
 		if retval == 0:
 			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
 			self.session.open(TryQuitMainloop, 2)
