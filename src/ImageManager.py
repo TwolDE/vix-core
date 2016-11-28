@@ -1219,7 +1219,9 @@ class ImageManagerDownload(Screen):
 				'vusolo4k'        : 'Vu+Solo4K',
 				'vusolose'        : 'Vu+Solo-SE',
 				'vuultimo'        : 'Vu+Ultimo',
+				'vuultimo4k'      : 'Vu+Ultimo4K',
 				'vuuno'           : 'Vu+Uno',
+				'vuuno4k'         : 'Vu+Uno4K',
 				'vuzero'          : 'Vu+Zero',
 				'xp1000max'       : 'MaxDigital-XP1000',
 				'xp1000plus'      : 'OCTAGON-XP1000PLUS',
@@ -1227,9 +1229,11 @@ class ImageManagerDownload(Screen):
 				'xpeedlx3'        : 'GI-Xpeed-LX3'
 			}
 
-			self.boxtype = 'Unknown'
-			if getMachineMake() in supportedMachines:
+			try:
 				self.boxtype = supportedMachines[getMachineMake()]
+			except:
+				print "[ImageManager][populate_List] the %s is not currently supported by OpenViX." % getMachineMake()
+				self.boxtype = 'UNKNOWN'
 
 			url = 'http://192.168.0.26/openvix-builds/'+self.boxtype+'/'
 			conn = urllib2.urlopen(url)
