@@ -427,7 +427,7 @@ class VIXImageManager(Screen):
 	def keyResstore4(self, result, retval, extra_args=None):
 		if retval == 0:
 			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
-				self.Restorehd5x()
+				self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
 			elif getMachineMake() == 'et8500' and config.imagemanager.multiboot:
 				self.keyResstore4a()
 			else:
@@ -1278,3 +1278,123 @@ class ImageManagerDownload(Screen):
 	def myclose(self, result, retval, extra_args):
 		remove(self.BackupDirectory + self.selectedimage)
 		self.close()
+
+
+class FlashImage(Screen):
+	skin = """
+	<screen name="VIXImageManager" position="center,center" size="560,400" title="Image Manager" flags="wfBorder" >
+		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
+		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
+		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on" />
+		<ePixmap pixmap="skin_default/buttons/blue.png" position="420,0" size="140,40" alphatest="on" />
+		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
+		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
+		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
+		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
+		<widget name="lab1" position="0,50" size="560,50" font="Regular; 18" zPosition="2" transparent="0" halign="center"/>
+		<widget name="list" position="10,105" size="540,260" font="Regular; 18" zPosition="2" transparent="0" halign="center"/>
+		<applet type="onLayoutFinish">
+		</applet>
+	</screen>"""
+
+	def __init__(self, session, menu_path, BackupDirectory):
+		Screen.__init__(self, session)
+		self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
+		screentitle = _("Flash Options - current : ") + self.multiold
+		if config.usage.show_menupath.value == 'large':
+			menu_path += screentitle
+			title = menu_path
+			self["menu_path_compressed"] = StaticText("")
+		elif config.usage.show_menupath.value == 'small':
+			title = screentitle
+			self["menu_path_compressed"] = StaticText(menu_path + " >" if not menu_path.endswith(' / ') else menu_path[:-3] + " >" or "")
+		else:
+			title = screentitle
+			self["menu_path_compressed"] = StaticText("")
+		Screen.setTitle(self, title)
+
+		self.BackupDirectory = BackupDirectory
+		self['lab1'] = Label(_("Select OS to Flash:"))
+		self["key_red"] = Button(_("Close"))
+		self["key_green"] = Button(_("Couch"))
+		self["key_yellow"] = Button(_("FlashOS3"))
+		self["key_blue"] = Button(_("FlashOS4"))
+
+		self.devrootfs = 3
+		self.flashnew = 4	
+		self.FlashRunning = False
+		self.populateF()
+		self.session = session
+		self.Console = Console()
+
+	def populateF(self):
+		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
+									  {
+									  'cancel': self.close,
+									  'red': self.close,
+									  'green': self.Couch,
+									  'yellow': self.FlashOS3,
+									  'blue': self.FlashOS4,
+									  'ok': self.close,
+									  }, -1)
+
+
+#		#default layout for Mut@nt HD51
+#		Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'
+#		Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'
+#		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
+#		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
+#		#options
+#		Standard:     hd51_4.boxmode=1 (or no option)
+#		Experimental: hd51_4.boxmode=12
+#		#example
+#		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=12'
+
+
+	def FlashOS3(self):
+		self.FlashRunning = True
+		self.flashnew = 3
+		self.Couch()
+
+	def FlashOS4(self):
+		self.FlashRunning = True
+		self.flashnew = 4
+		self.Couch()
+
+	def Couch(self):
+		self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
+		self.multiold = self.multiold[-1:]
+		self.multinew = 1
+		if self.multiold == "1":
+			self.multinew = 2
+		if self.multiold == "2":
+			self.multinew = 1
+		if self.FlashRunning:
+			self.multinew = self.flashnew
+		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
+		self.devrootfs = (2 * self.multinew) + 1
+		os.system('mkfs.ext4 -F /dev/mmcblk0p%s' %self.devrootfs)
+		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+		CMD = '/usr/bin/ofgwrite -r -k -m%s %s/' % (self.multinew, MAINDEST)
+		self.Console.ePopen(CMD, self.CopyStartup)
+		fbClass.getInstance().lock()
+
+	def CopyStartup(self, result, retval, extra_args=None):
+		print "HD51-2 Flash retval", retval
+		print "HD51-3 Flash result", result
+		print "HD51-4 Flash result", self.multinew
+		fbClass.getInstance().unlock()
+		if retval == 0:
+			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
+			self.session.open(TryQuitMainloop, 2)
+		else:
+			self.session.open(MessageBox, _("HD51 Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
+			self.close()
+
+	def read_startupS(self, FILE):
+		file = FILE
+		with open(file, 'r') as myfile:
+			data=myfile.read().replace('\n', '')
+		myfile.close()
+		return data	
+
