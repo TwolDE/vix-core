@@ -129,12 +129,15 @@ class VIXImageManager(Screen):
 			self["key_blue"] = Button(_("Restore"))
 		elif getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 			self["key_blue"] = Button(_("Restore"))
+			self["key_green"] = Button("Flash HD51")
 		else:
 			self["key_blue"] = Button("")
-		self["key_green"] = Button()
+			self["key_green"] = Button()
 		self["key_yellow"] = Button(_("Downloads"))
 		self["key_red"] = Button(_("Delete"))
-
+		self.devrootfs = 3
+		self.flashnew = 4	
+		self.FlashRunning = False
 		self.BackupRunning = False
 		self.onChangedEntry = []
 		self.oldlist = None
@@ -146,7 +149,6 @@ class VIXImageManager(Screen):
 		self.activityTimer.start(10)
 		self.session = session
 		self.selection = 0
-		self.devrootfs = "/dev/mmcblk0p5"
 		self.Console = Console()
 
 		if BackupTime > 0:
@@ -235,7 +237,7 @@ class VIXImageManager(Screen):
 			if hdd in config.imagemanager.backuplocation.choices.choices:
 				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 											  {
-											  "ok": self.keyResstore,
+											  "ok": self.FlashHD51,
 											  'cancel': self.close,
 											  'red': self.keyDelete,
 											  'green': self.GreenPressed,
@@ -278,7 +280,7 @@ class VIXImageManager(Screen):
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
 										  "displayHelp": self.doDownload,
-										  "ok": self.keyResstore,
+										  "ok": self.FlashHD51,
 										  }, -1)
 			if getImageFileSystem().replace(' ','') not in ('tar.bz2', 'hd-emmc'):
 				self['restoreaction'] = ActionMap(['ColorActions'],
@@ -287,9 +289,9 @@ class VIXImageManager(Screen):
 											  }, -1)
 			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 				self['restoreaction'] = ActionMap(['ColorActions'],
-												  {
-												  'blue': self.keyResstore,
-												  }, -1)
+											  {
+											  'blue': self.keyResstore,
+											  }, -1)
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
@@ -412,10 +414,7 @@ class VIXImageManager(Screen):
 				self.keyResstore3()
 
 	def keyResstore3(self, val = None):
-		if SystemInfo["HaveMultiBoot"]:
-			self.session.open(MessageBox, _("Please wait while the HD51 restore prepares this can take over 4 mins"), MessageBox.TYPE_INFO, timeout=210, enable_input=False)
-		else:					
-			self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
+		self.session.open(MessageBox, _("Please wait while the restore prepares this can take over 3 mins"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
@@ -472,26 +471,44 @@ class VIXImageManager(Screen):
 #		#example
 #		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=12'
 
+
+	def FlashHD51(self):
+		self.FlashRunning = True
+		self.flashnew = 4
+		message = _("HD51 Flash Yes to restore OS3 No to restore OS4:\n ")
+		ybox = self.session.openWithCallback(self.FlashPart1, MessageBox, message, MessageBox.TYPE_YESNO)
+		ybox.setTitle(_("HD51 Flash"))
+
+	def FlashPart1(self, answer):
+		if answer:
+			self.flashnew = 3
+		self.keyResstore()
+
 	def Restorehd5x(self):
 		self.multiold = self.read_startup0("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
 		self.multiold = self.multiold[-1:]
 		self.multinew = 1
 		if self.multiold == "1":
 			self.multinew = 2
-			os.system('mkfs.ext4 -F ' + self.devrootfs)
 		if self.multiold == "2":
 			self.multinew = 1
-		cmdlist = []
+		if self.FlashRunning:
+			self.multinew = self.flashnew
+		self.HD5X2()
+
+	def HD5X2(self):
+		self.devrootfs = (2 * self.multinew) + 1
+		os.system('mkfs.ext4 -F /dev/mmcblk0p%s' %self.devrootfs)
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		CMD = '/usr/bin/ofgwrite -r -k -m%s %s/' % (self.multinew, MAINDEST)
-		print "HD51 Flash",CMD, MAINDEST
 		config.imagemanager.restoreimage.setValue(self.sel)
-		self.Console.ePopen(CMD, self.HD5X1)
+		self.Console.ePopen(CMD, self.HD5X3)
 		fbClass.getInstance().lock()
 
-	def HD5X1(self, result, retval, extra_args=None):
-		print "HD51-1 Flash retval", retval
-		print "HD51-2 Flash result", result
+	def HD5X3(self, result, retval, extra_args=None):
+		print "HD51-2 Flash retval", retval
+		print "HD51-3 Flash result", result
+		print "HD51-4 Flash result", self.multinew
 		fbClass.getInstance().unlock()
 		if retval == 0:
 			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
