@@ -11,7 +11,7 @@ from Components.Sources.StaticText import StaticText
 from Components import Harddisk
 from os import path, listdir, system
 #
-#        Thanks to OpenATV Team for supplyng most of this code
+#        Thanks to OpenATV Team for supplying most of this code
 #
 class HD51MultiBoot(Screen):
 

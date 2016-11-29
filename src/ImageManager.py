@@ -1227,7 +1227,7 @@ class FlashImage(Screen):
 		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
 		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
-		<widget name="lab1" position="0,50" size="560,50" font="Regular; 18" zPosition="2" transparent="0" halign="center"/>
+		<widget name="lab1" position="0,50" size="560,50" font="Regular; 20" zPosition="2" transparent="0" halign="center"/>
 		<applet type="onLayoutFinish">
 		</applet>
 	</screen>"""
@@ -1250,7 +1250,7 @@ class FlashImage(Screen):
 		Screen.setTitle(self, title)
 
 		self.BackupDirectory = BackupDirectory
-		self['lab1'] = Label(_("Select OS to Flash:"))
+		self['lab1'] = Label(_("Select STARTUP to Flash: Selected = Current -> Couch Flash"))
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Couch"))
 		self["key_yellow"] = Button(_("STARTUP_3"))
@@ -1276,10 +1276,10 @@ class FlashImage(Screen):
 
 
 #		#default layout for Mut@nt HD51
-#		Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'
-#		Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'
-#		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
-#		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
+# STARTUP_1 (Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'
+# STARTUP_2 (Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'
+# STARTUP_3		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
+# STARTUP_4		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
 #		#options
 #		Standard:     hd51_4.boxmode=1 (or no option)
 #		Experimental: hd51_4.boxmode=12
