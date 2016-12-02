@@ -7,6 +7,7 @@ from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Components.ActionMap import ActionMap
 from Components.ConfigList import ConfigListScreen
 from Components.Label import Label
+from Components.Button import Button
 from Components.Sources.StaticText import StaticText
 from Components import Harddisk
 from os import path, listdir, system
@@ -16,28 +17,27 @@ from os import path, listdir, system
 class HD51MultiBoot(Screen):
 
 	skin = """
-	<screen name="MultiBootStartupOPT" position="center,center" size="600,250"  flags="wfNoBorder" title="MultiBoot STARTUP Selector" backgroundColor="transparent">
-		<eLabel name="b" position="0,0" size="600,250" backgroundColor="#00ffffff" zPosition="-2" />
-		<eLabel name="a" position="1,1" size="598,248" backgroundColor="#00000000" zPosition="-1" />
-		<widget source="Title" render="Label" position="10,10" foregroundColor="#00ffffff" size="580,50" halign="center" font="Regular; 35" backgroundColor="#00000000" />
-		<eLabel name="line" position="1,69" size="598,1" backgroundColor="#00ffffff" zPosition="1" />
-		<widget source="config" render="Label" position="10,90" size="580,50" halign="center" font="Regular; 30" backgroundColor="#00000000" foregroundColor="#00ffffff" />
-		<widget source="options" render="Label" position="10,132" size="580,35" halign="center" font="Regular; 24" backgroundColor="#00000000" foregroundColor="#00ffffff" />
-		<widget name="description" position="10,170" size="580,26" font="Regular; 19" foregroundColor="#00ffffff" halign="center" backgroundColor="#00000000" valign="center" />
+	<screen name="HD51MultiBoot" position="center,center" size="560,400" title="MultiBoot STARTUP Selector">
+		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
+		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
+		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on" />
+		<ePixmap pixmap="skin_default/buttons/blue.png" position="420,0" size="140,40" alphatest="on" />
+		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
+		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
+		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
+		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
+		<widget source="config" render="Label" position="150,150" size="580,150" halign="center" valign="center" font="Regular; 30" />
+		<widget source="options" render="Label" position="150,400" size="580,100" halign="center" valign="center" font="Regular; 24" />
+		<widget name="description" position="150,650" size="580,100" halign="center" valign="center" font="Regular; 24" />
 		<ePixmap position="555,217" size="35,25" zPosition="2" pixmap="/usr/share/enigma2/skin_default/buttons/key_info.png" alphatest="blend" />
-		<widget source="key_red" render="Label" position="35,212" size="170,30" noWrap="1" zPosition="1" valign="center" font="Regular; 20" halign="left" backgroundColor="#00000000" foregroundColor="#00ffffff" />
-		<widget source="key_green" render="Label" position="228,212" size="170,30" noWrap="1" zPosition="1" valign="center" font="Regular; 20" halign="left" backgroundColor="#00000000" foregroundColor="#00ffffff" />
-		<widget source="key_yellow" render="Label" position="421,212" size="170,30" noWrap="1" zPosition="1" valign="center" font="Regular; 20" halign="left" backgroundColor="#00000000" foregroundColor="#00ffffff" />
-		<eLabel position="25,209" size="6,40" backgroundColor="#00e61700" />
-		<eLabel position="216,209" size="6,40" backgroundColor="#0061e500" />
-		<eLabel position="407,209" size="6,40" backgroundColor="#00e5b243" />
-	</screen>
-	"""
+		<applet type="onLayoutFinish">
+		</applet>
+	</screen>"""
 
 	def __init__(self, session, menu_path=""):
 		Screen.__init__(self, session)
-		screentitle =  _("HD51 MultiBoot STARTUP_XX Selector")
-		self.skinName = ["MultiBootStartupOPT"]
+		screentitle =  _("HD51 MultiBoot STARTUP Selector")
+		self.skinName = ["HD51MultiBoot"]
 
 		self.menu_path = menu_path
 		if config.usage.show_menupath.value == 'large':
@@ -59,9 +59,9 @@ class HD51MultiBoot(Screen):
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
 
-		self["key_red"] = StaticText(_("Cancel"))
-		self["key_green"] = StaticText(_("Save"))
-		self["key_yellow"] = StaticText(_("Rename"))
+		self["key_red"] = Button(_("Cancel"))
+		self["key_green"] = Button(_("Save"))
+		self["key_yellow"] = Button(_("Rename"))
 		self["config"] = StaticText()
 		self["options"] = StaticText()
 		self["description"] = Label()
@@ -271,14 +271,14 @@ class HD51MultiBoot(Screen):
 
 		self.startup()
 		self.startup_option()
-		self["description"].setText(_("Current Bootsettings: %s (%s)%s") %(bootname,image,bootoption))
+		self["description"].setText(_("Current Bootsettings:\n %s (%s) %s") %(bootname,image,bootoption))
 
 	def layoutFinished(self):
 		self.setTitle(self.title)
 
 	def startup_option(self):
 		if self.option_enabled:
-			self["options"].setText(_("Select Bootoption: %s") %self.optionsList[self.option][1])
+			self["options"].setText(_("Select Boot option using up/down cursors:\n %s") %self.optionsList[self.option][1])
 		elif 'up' in self["actions"].actions:
 			self["options"].setText(_("Select Bootoption: not supported - see info"))
 			del self["actions"].actions['up']
@@ -286,7 +286,7 @@ class HD51MultiBoot(Screen):
 
 	def startup(self):
 		if len(self.list):
-			self["config"].setText(_("Select Image: %s") %self.list[self.selection])
+			self["config"].setText(_("Select Image using < > cursors:\n %s") %self.list[self.selection])
 		elif 'left' in self["actions"].actions:
 			self["config"].setText(_("Select Image: %s") %_("no image found"))
 			del self["actions"].actions['left']
