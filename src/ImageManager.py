@@ -1227,7 +1227,7 @@ class FlashImage(Screen):
 		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
 		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
-		<widget name="lab1" position="0,50" size="560,50" font="Regular; 20" zPosition="2" transparent="0" halign="center"/>
+		widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
 		<applet type="onLayoutFinish">
 		</applet>
 	</screen>"""
@@ -1250,7 +1250,7 @@ class FlashImage(Screen):
 		Screen.setTitle(self, title)
 
 		self.BackupDirectory = BackupDirectory
-		self['lab1'] = Label(_("Select STARTUP to Flash: Selected = Current -> Couch Flash"))
+		self['lab1'] = Label(_("Select coloured STARTUP button to Flash:\n (Selection of current STARTUP invokes Couch Flash)"))
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Couch"))
 		self["key_yellow"] = Button(_("STARTUP_3"))
