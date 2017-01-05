@@ -25,10 +25,7 @@ from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
-<<<<<<< HEAD
 from Tools.Directories import fileExists, fileCheck
-=======
->>>>>>> upstream/master
 
 import urllib
 import os
