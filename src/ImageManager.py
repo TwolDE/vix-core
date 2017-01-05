@@ -24,6 +24,7 @@ from Screens.TaskView import JobView
 from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
+import Tools.CopyFiles
 from Tools.Directories import fileExists, fileCheck
 
 import urllib
@@ -1130,6 +1131,10 @@ class ImageManagerDownload(Screen):
 				'osminiplus'      : 'OS-miniplus',
 				'qb800solo'       : 'GiGaBlue-HD800Solo',
 				'sf8'             : 'OCTAGON-SF8-HD',
+				'sf128'           : 'OCTAGON-SF128',
+				'sf138'           : 'OCTAGON-SF138',
+				'sf228'           : 'OCTAGON-SF228',
+				'sf4008'          : 'OCTAGON-SF4008',				
 				'spycat'          : 'Spycat',
 				'tm2t'            : 'TM-2T',
 				'tmnano'          : 'TM-Nano-OE',
@@ -1204,18 +1209,25 @@ class ImageManagerDownload(Screen):
 
 	def doDownload(self, answer):
 		if answer is True:
-			self.selectedimage = self['list'].getCurrent()
-			file = self.BackupDirectory + self.selectedimage
+			selectedimage = self['list'].getCurrent()
+			fileurl = 'http://192.168.0.26/openvix-builds/%s/%s' % (self.boxtype, selectedimage)
+			fileloc = self.BackupDirectory + selectedimage
+			Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
+			for job in Components.Task.job_manager.getPendingJobs():
+				if job.name.startswith(_("Downloading")):
+					break
+			self.showJobView(job)
 
-			mycmd1 = _("echo 'Downloading Image.'")
-			mycmd2 = "wget -q http://192.168.0.26/openvix-builds/" + self.boxtype + "/" + self.selectedimage + " -O " + self.BackupDirectory + "image.zip"
-			mycmd3 = "mv " + self.BackupDirectory + "image.zip " + file
-			self.session.open(ScreenConsole, title=_('Downloading Image...'), cmdlist=[mycmd1, mycmd2, mycmd3], closeOnSuccess=True)
+	def showJobView(self, job):
+		Components.Task.job_manager.in_background = False
+		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable=False, backgroundable=True, afterEventChangeable=False, afterEvent="close")
+
+	def JobViewCB(self, in_background):
+		Components.Task.job_manager.in_background = in_background
 
 	def myclose(self, result, retval, extra_args):
 		remove(self.BackupDirectory + self.selectedimage)
 		self.close()
-
 
 class FlashImage(Screen):
 	skin = """
