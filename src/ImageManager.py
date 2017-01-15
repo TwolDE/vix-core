@@ -42,7 +42,6 @@ for p in harddiskmanager.getMountedPartitions():
 			hddchoises.append((p.mountpoint, d))
 config.imagemanager = ConfigSubsection()
 defaultprefix = getImageDistro() + '-' + getBoxType()
-config.imagemanager.multiboot = ConfigYesNo(default = False)
 config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
 config.imagemanager.backuplocation = ConfigSelection(choices=hddchoises)
 config.imagemanager.schedule = ConfigYesNo(default=False)
@@ -235,7 +234,7 @@ class VIXImageManager(Screen):
 			if hdd in config.imagemanager.backuplocation.choices.choices:
 				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 											  {
-											  "ok": self.keyResstore,
+											  "ok": self.keyRestore,
 											  'cancel': self.close,
 											  'red': self.keyDelete,
 											  'green': self.GreenPressed,
@@ -248,12 +247,12 @@ class VIXImageManager(Screen):
 				if getImageFileSystem().replace(' ','') not in ('tar.bz2', 'hd-emmc'):
 					self['restoreaction'] = ActionMap(['ColorActions'],
 												  {
-												  'blue': self.keyResstore,
+												  'blue': self.keyRestore,
 												  }, -1)
 				if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 					self['restoreaction'] = ActionMap(['ColorActions'],
 												  {
-												  'blue': self.keyResstore,
+												  'blue': self.keyRestore,
 												  }, -1)
 				self.BackupDirectory = '/media/hdd/imagebackups/'
 				config.imagemanager.backuplocation.value = '/media/hdd/'
@@ -278,17 +277,17 @@ class VIXImageManager(Screen):
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
 										  "displayHelp": self.doDownload,
-										  "ok": self.keyResstore,
+										  "ok": self.keyRestore,
 										  }, -1)
 			if getImageFileSystem().replace(' ','') not in ('tar.bz2', 'hd-emmc'):
 				self['restoreaction'] = ActionMap(['ColorActions'],
 											  {
-											  'blue': self.keyResstore,
+											  'blue': self.keyRestore,
 											  }, -1)
 			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 				self['restoreaction'] = ActionMap(['ColorActions'],
 											  {
-											  'blue': self.keyResstore,
+											  'blue': self.keyRestore,
 											  }, -1)
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
@@ -393,69 +392,102 @@ class VIXImageManager(Screen):
 		for job in Components.Task.job_manager.getPendingJobs():
 			if job.name.startswith(_('Backup Manager')):
 				break
-		self.session.openWithCallback(self.keyResstore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
+		self.session.openWithCallback(self.keyRestore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
 
-	def keyResstore(self):
+	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
+		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
+			self.dualboot = self.dualBoot()
 		if self.sel:
 			message = _("Are you sure you want to restore this image:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
+			ybox = self.session.openWithCallback(self.keyRestore2, MessageBox, message, MessageBox.TYPE_YESNO)
 			ybox.setTitle(_("Restore Confirmation"))
 		else:
 			self.session.open(MessageBox, _("You have no image to restore or invalid format for flash restore."), MessageBox.TYPE_INFO, timeout=10)
 
-	def keyResstore2(self, answer):
+	def keyRestore2(self, answer):
 		if answer:
 			if config.imagemanager.autosettingsbackup.value:
 				self.doSettingsBackup()
 			else:
-				self.keyResstore3()
+				self.keyRestore3()
 
-	def keyResstore3(self, val = None):
+	def keyRestore3(self, val = None):
 		self.session.open(MessageBox, _("Please wait while the restore prepares this can take over 3 mins"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
 				mkdir(self.TEMPDESTROOT, 0755)
-			self.Console.ePopen('unzip -o %s%s -d %s' % (self.BackupDirectory, self.sel, self.TEMPDESTROOT), self.keyResstore4)
+			self.Console.ePopen('unzip -o %s%s -d %s' % (self.BackupDirectory, self.sel, self.TEMPDESTROOT), self.keyRestore4)
 		else:
 			self.TEMPDESTROOT = self.BackupDirectory + self.sel
-			self.keyResstore4(0, 0)
+			self.keyRestore4(0, 0)
 
-	def keyResstore4(self, result, retval, extra_args=None):
+	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
 			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 				self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
-			elif getMachineMake() == 'et8500' and config.imagemanager.multiboot:
-				self.keyResstore4a()
+			elif getMachineMake() == 'et8500' and self.dualboot:
+				message = _("ET8500 Multiboot: Yes to restore OS1 No to restore OS2:\n ") + self.sel
+				ybox = self.session.openWithCallback(self.keyRestore5, MessageBox, message, MessageBox.TYPE_YESNO)
+				ybox.setTitle(_("ET8500 Image Restore"))
 			else:
-				self.keyResstore6()
+				self.keyRestore6(0)
 
-	def keyResstore4a(self):
-		message = _("ET8500 Yes to restore OS1 No to restore OS2:\n ") + self.sel
-		ybox = self.session.openWithCallback(self.keyResstore5, MessageBox, message, MessageBox.TYPE_YESNO)
-		ybox.setTitle(_("ET8500 Image Restore"))
-
-	def keyResstore5(self, answer):
+	def keyRestore5(self, answer):
 		if answer:
-			self.keyResstore6()
+			self.keyRestore6(0)
 		else:
-			kernelMTD = 'mtd3'
-			rootMTD = 'mtd4'
-			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-			CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
-			config.imagemanager.restoreimage.setValue(self.sel)
-			print '[ImageManager] running commnd:',CMD
-			self.Console.ePopen(CMD)
+			self.keyRestore6(1)
+#			kernelMTD = 'mtd3'
+#			rootMTD = 'mtd4'
+#			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+#			CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
+#			config.imagemanager.restoreimage.setValue(self.sel)
+#			print '[ImageManager] running commnd:',CMD
+#			self.Console.ePopen(CMD, self.keyRestoreClose)
+#			fbClass.getInstance().lock()
 
-	def keyResstore6(self):
-		kernelMTD = getMachineMtdKernel()
-		rootMTD = getMachineMtdRoot()
+
+	def keyRestore6(self,ret):
+#		kernelMTD = getMachineMtdKernel()
+#		rootMTD = getMachineMtdRoot()
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
+		if ret == 0:
+			CMD = '/usr/bin/ofgwrite -r -k %s/' % (MAINDEST)
+		else:
+			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)			
 		config.imagemanager.restoreimage.setValue(self.sel)
 		print '[ImageManager] running commnd OS1:',CMD
-		self.Console.ePopen(CMD)
+		self.Console.ePopen(CMD, self.keyRestoreClose)
+		fbClass.getInstance().lock()
+
+
+	def keyRestoreClose(self, result, retval, extra_args=None):
+		print "Image-2 Flash retval", retval
+		print "Image-3 Flash result", result
+		fbClass.getInstance().unlock()
+		if retval == 0:
+			self.session.open(TryQuitMainloop, 2)
+		else:
+			self.session.open(MessageBox, _("ImageManager Flash failed: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
+			self.close()
+
+	def dualBoot(self):
+		rootfs2 = False
+		kernel2 = False
+		f = open("/proc/mtd")
+		L = f.readlines()
+		for x in L:
+			if 'rootfs2' in x:
+				rootfs2 = True
+			if 'kernel2' in x:
+				kernel2 = True
+		f.close()
+		if rootfs2 and kernel2:
+			return True
+		else:
+			return False
 
 class AutoImageManagerTimer:
 	def __init__(self, session):

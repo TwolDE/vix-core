@@ -16,7 +16,6 @@
         <item level="2" text="Max backups to keep (0==all)" requires="config.backupmanager.schedule" summary="Backups to keep">config.backupmanager.number_to_keep</item>
     </setup>
     <setup key="viximagemanager" title="Setup">
-        <item level="1" text="ET8500 Multiboot" description="Allow OS1/OS2 ET8500 flashing">config.imagemanager.multiboot</item>
         <item level="1" text="Automatic settings backup" description="Perform a settings backup before updating.">config.imagemanager.autosettingsbackup</item>
         <item level="2" text="Backup Location" summary="Location of where image backup should be saved.">config.imagemanager.backuplocation</item>
         <item level="2" text="Backup prefix" summary="Allows you to tag your image backup to a box. (default is box name/type)">config.imagemanager.folderprefix</item>
