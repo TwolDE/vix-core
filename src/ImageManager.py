@@ -439,19 +439,8 @@ class VIXImageManager(Screen):
 			self.keyRestore6(0)
 		else:
 			self.keyRestore6(1)
-#			kernelMTD = 'mtd3'
-#			rootMTD = 'mtd4'
-#			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-#			CMD = '/usr/bin/ofgwrite -r%s -k%s %s/' % (rootMTD, kernelMTD, MAINDEST)
-#			config.imagemanager.restoreimage.setValue(self.sel)
-#			print '[ImageManager] running commnd:',CMD
-#			self.Console.ePopen(CMD, self.keyRestoreClose)
-#			fbClass.getInstance().lock()
-
 
 	def keyRestore6(self,ret):
-#		kernelMTD = getMachineMtdKernel()
-#		rootMTD = getMachineMtdRoot()
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		if ret == 0:
 			CMD = '/usr/bin/ofgwrite -r -k %s/' % (MAINDEST)
