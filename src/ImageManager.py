@@ -52,9 +52,9 @@ config.imagemanager.backupretrycount = NoSave(ConfigNumber(default=0))
 config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default=0))
 config.imagemanager.restoreimage = NoSave(ConfigText(default=getBoxType(), fixed_size=False))
 config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
-config.imagemanager.query = ConfigYesNo(default=True) #GML - querying is enabled by default - that is what used to happen always
-config.imagemanager.lastbackup = ConfigNumber(default=0) #GML -  If we do not yet have a record of an image backup, assume it has never happened.
-config.imagemanager.number_to_keep = ConfigNumber(default=0) #GML - max no. of images to keep.  0 == keep them all
+config.imagemanager.query = ConfigYesNo(default=True)
+config.imagemanager.lastbackup = ConfigNumber(default=0)
+config.imagemanager.number_to_keep = ConfigNumber(default=0)
 
 autoImageManagerTimer = None
 
@@ -124,13 +124,7 @@ class VIXImageManager(Screen):
 
 		self['lab1'] = Label()
 		self["backupstatus"] = Label()
-		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP") or fileCheck("/boot/STARTUP_1")
-		if getImageFileSystem().replace(' ','') not in ('tar.bz2', 'hd-emmc'):
-			self["key_blue"] = Button(_("Restore"))
-		elif getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
-			self["key_blue"] = Button(_("Restore"))
-		else:
-			self["key_blue"] = Button("")
+		self["key_blue"] = Button(_("Restore"))
 		self["key_green"] = Button()
 		self["key_yellow"] = Button(_("Downloads"))
 		self["key_red"] = Button(_("Delete"))
@@ -145,7 +139,7 @@ class VIXImageManager(Screen):
 		self.activityTimer.timeout.get().append(self.backupRunning)
 		self.activityTimer.start(10)
 		self.session = session
-		self.selection = 0
+		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP") or fileCheck("/boot/STARTUP_1")
 		self.Console = Console()
 
 		if BackupTime > 0:
@@ -238,22 +232,14 @@ class VIXImageManager(Screen):
 											  'cancel': self.close,
 											  'red': self.keyDelete,
 											  'green': self.GreenPressed,
+											  'blue': self.keyRestore,
 											  'yellow': self.doDownload,
 											  "menu": self.createSetup,
 											  "up": self.refreshUp,
 											  "down": self.refreshDown,
 											  "displayHelp": self.doDownload,
 											  }, -1)
-				if getImageFileSystem().replace(' ','') not in ('tar.bz2', 'hd-emmc'):
-					self['restoreaction'] = ActionMap(['ColorActions'],
-												  {
-												  'blue': self.keyRestore,
-												  }, -1)
-				if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
-					self['restoreaction'] = ActionMap(['ColorActions'],
-												  {
-												  'blue': self.keyRestore,
-												  }, -1)
+
 				self.BackupDirectory = '/media/hdd/imagebackups/'
 				config.imagemanager.backuplocation.value = '/media/hdd/'
 				config.imagemanager.backuplocation.save()
@@ -272,6 +258,7 @@ class VIXImageManager(Screen):
 										  'cancel': self.close,
 										  'red': self.keyDelete,
 										  'green': self.GreenPressed,
+										  'blue': self.keyRestore,
 										  'yellow': self.doDownload,
 										  "menu": self.createSetup,
 										  "up": self.refreshUp,
@@ -279,16 +266,7 @@ class VIXImageManager(Screen):
 										  "displayHelp": self.doDownload,
 										  "ok": self.keyRestore,
 										  }, -1)
-			if getImageFileSystem().replace(' ','') not in ('tar.bz2', 'hd-emmc'):
-				self['restoreaction'] = ActionMap(['ColorActions'],
-											  {
-											  'blue': self.keyRestore,
-											  }, -1)
-			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
-				self['restoreaction'] = ActionMap(['ColorActions'],
-											  {
-											  'blue': self.keyRestore,
-											  }, -1)
+
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
@@ -433,6 +411,10 @@ class VIXImageManager(Screen):
 				ybox.setTitle(_("ET8500 Image Restore"))
 			else:
 				self.keyRestore6(0)
+		else:
+			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("unzip error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
+			print "[ImageManager] unzip failed:\n", result
+			self.close()
 
 	def keyRestore5(self, answer):
 		if answer:
@@ -447,20 +429,20 @@ class VIXImageManager(Screen):
 		else:
 			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)			
 		config.imagemanager.restoreimage.setValue(self.sel)
-		print '[ImageManager] running commnd OS1:',CMD
-		self.Console.ePopen(CMD, self.keyRestoreClose)
-		fbClass.getInstance().lock()
+		print '[ImageManager] running commnd:',CMD
+		self.Console.ePopen(CMD, self.ofgwriteResult)
 
-
-	def keyRestoreClose(self, result, retval, extra_args=None):
-		print "Image-2 Flash retval", retval
-		print "Image-3 Flash result", result
-		fbClass.getInstance().unlock()
-		if retval == 0:
-			self.session.open(TryQuitMainloop, 2)
+# We'll only arrive at this function if the ofgwrite failed.
+# If it succeeded it will have rebooted the system.
+# This displays the errors to the user, and puts them into any debug
+# log, for reporting.
+#
+	def ofgwriteResult(self, result, retval, extra_args=None):
+		if retval != 0:
+			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
+			print "[ImageManager] OFGWriteResult failed:\n", result
 		else:
-			self.session.open(MessageBox, _("ImageManager Flash failed: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
-			self.close()
+			self.session.open(TryQuitMainloop, 2)
 
 	def dualBoot(self):
 		rootfs2 = False
@@ -506,7 +488,7 @@ class AutoImageManagerTimer:
 
 	def getBackupTime(self):
 		backupclock = config.imagemanager.scheduletime.value
-		#GML
+		#
 		# Work out the time of the *NEXT* backup - which is the configured clock
 		# time on the nth relevant day after the last recorded backup day.
 		# The last backup time will have been set as 12:00 on the day it
@@ -552,7 +534,7 @@ class AutoImageManagerTimer:
 			print "[ImageManager] Backup onTimer occured at", strftime("%c", localtime(now))
 			from Screens.Standby import inStandby
 
-			if not inStandby and config.imagemanager.query.value: # GML add check for querying
+			if not inStandby and config.imagemanager.query.value:
 				message = _("Your %s %s is about to run a full image backup, this can take about 6 minutes to complete,\ndo you want to allow this?") % (getMachineBrand(), getMachineName())
 				ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO, timeout=30)
 				ybox.setTitle('Scheduled Backup.')
@@ -585,7 +567,7 @@ class AutoImageManagerTimer:
 			print "[ImageManager] Running Backup", strftime("%c", localtime(now))
 			self.ImageBackup = ImageBackup(self.session)
 			Components.Task.job_manager.AddJob(self.ImageBackup.createBackupJob())
-			#GML - Note that fact that the job has been *scheduled*.
+			#      Note that fact that the job has been *scheduled*.
 			#      We do *not* just note successful completion, as that would
 			#      result in a loop on issues such as disk-full.
 			#      Also all that we actually want to know is the day, not the time, so
