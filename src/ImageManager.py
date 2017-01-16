@@ -996,7 +996,7 @@ class ImageBackup(Screen):
 		print '[ImageManager] Stage5: Complete.'
 
 	def BackupComplete(self, anwser=None):
-		#GML - trim the number of backups kept...
+		#    trim the number of backups kept...
 		#    [Also NOTE that this and the preceding def define an unused arg
 		#     with what looks like a typo - that should surely be "answer"]
 		#
