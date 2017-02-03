@@ -11,6 +11,7 @@ from Components.Button import Button
 from Components.Sources.StaticText import StaticText
 from Components import Harddisk
 from os import path, listdir, system
+from boxbranding import getMachineBuild
 #
 #        Thanks to OpenATV Team for supplying most of this code
 #
@@ -176,8 +177,8 @@ class HD51MultiBoot(Screen):
 		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
 		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
 		#options
-		Standard:     hd51_4.boxmode=1 (or no option)
-		Experimental: hd51_4.boxmode=12
+		Standard:     hd51_4.boxmode=12 (or no option)
+		Experimental: hd51_4.boxmode=1
 		#example
 		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=12'
 		
@@ -271,7 +272,7 @@ class HD51MultiBoot(Screen):
 
 		self.startup()
 		self.startup_option()
-		self["description"].setText(_("Current Bootsettings:\n %s (%s) %s") %(bootname,image,bootoption))
+		self["description"].setText(_("Current Boot settings: %s (%s)%s") %(bootname,image,bootoption))
 
 	def layoutFinished(self):
 		self.setTitle(self.title)
@@ -306,11 +307,11 @@ class HD51MultiBoot(Screen):
 			#read boxmode and new boxmode settings
 			cmdx = 5
 			cmd4 = "rootwait'"
-			bootmode = '1'
+			bootmode = '12'
 			if 'boxmode' in ENTRY:
 				cmdx = 6
 				cmd4 = "rootwait"
-				bootmode = temp[5].split("hd51_4.boxmode=")[1].replace("'",'')
+				bootmode = temp[5].split("%s_4.boxmode=" %getMachineBuild())[1].replace("'",'')
 			setmode = self.optionsList[self.option][0].split('=')[1]
 			#verify entries
 			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[3] or cmd4 != temp[4] or kernel != root-kernel-1 or "'" != ENTRY[-1:]:
@@ -359,14 +360,14 @@ class HD51MultiBoot(Screen):
 				if "boxmode" in boot:
 					failboot = True
 				elif self.option:
-					newboot = boot.replace("rootwait", "rootwait hd51_4.%s" %(self.optionsList[self.option][0]))
+					newboot = boot.replace("rootwait", "rootwait %s_4.%s" %(getMachineBuild(), self.optionsList[self.option][0]))
 					writeoption = True
 
 		if self.enable_bootnamefile:
 			if failboot:
 				self.writeFile('/boot/bootname', 'STARTUP_1=STARTUP_1')
 			else:
-				self.writeFile('/boot/bootname', '%s=%s' %('STARTUP_%s' %boot[22:23], self.list[self.selection]))
+				self.writeFile('/boot/bootname', '%s=%s' %('STARTUP_%s' %getMachineBuild() ,boot[22:23], self.list[self.selection]))
 
 		message = _("Do you want to reboot now with selected image?")
 		if failboot:
