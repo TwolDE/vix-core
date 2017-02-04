@@ -93,6 +93,13 @@ def ImageManager(session):
 def ImageMangerMenu(session, **kwargs):
 	session.open(ImageManager)
 
+def HD51Imager(session):
+	from ImageManager import HD51Imager
+	return HD51Imager(session)
+
+def HD51ImagerMenu(session, **kwargs):
+	session.open(HD51Imager)
+
 def HD51Flash(session):
 	from HD51Flash import HD51Flash
 	return HD51Flash(session)

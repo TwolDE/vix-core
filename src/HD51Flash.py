@@ -1,5 +1,6 @@
 from Plugins.SystemPlugins.Hotplug.plugin import hotplugNotifier
 from Components.Label import Label
+from Components.Button import Button
 from Components.ActionMap import ActionMap
 from Components.MenuList import MenuList
 from Components.FileList import FileList
@@ -20,6 +21,7 @@ import urllib2
 import os
 import shutil
 import math
+from Tools.Directories import fileExists, fileCheck
 from boxbranding import getBoxType,  getImageDistro, getMachineName, getMachineBrand, getImageVersion, getMachineKernelFile, getMachineRootFile, getMachineMake
 distro =  getImageDistro()
 ImageVersion = getImageVersion()
@@ -57,10 +59,10 @@ class HD51Flash(Screen):
 		<ePixmap position="140,360" zPosition="1" size="140,40" pixmap="skin_default/buttons/green.png" transparent="1" alphatest="on" />
 		<ePixmap position="280,360" zPosition="1" size="140,40" pixmap="skin_default/buttons/yellow.png" transparent="1" alphatest="on" />
 		<ePixmap position="420,360" zPosition="1" size="140,40" pixmap="skin_default/buttons/blue.png" transparent="1" alphatest="on" />
-		<widget source="key_red" render="Label" position="0,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
-		<widget source="key_green" render="Label" position="140,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
-		<widget source="key_yellow" render="Label" position="280,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
-		<widget source="key_blue" render="Label" position="420,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_red" position="0,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_green" position="140,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_yellow" position="280,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_blue" position="420,360" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
 		<widget name="info-online" position="10,30" zPosition="1" size="450,100" font="Regular;20" halign="left" valign="top" transparent="1" />
 		<widget name="info-local" position="10,150" zPosition="1" size="450,200" font="Regular;20" halign="left" valign="top" transparent="1" />
 	</screen>"""
@@ -91,17 +93,18 @@ class HD51Flash(Screen):
 
 		self.session = session
 		self.selection = 0
+		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP") or fileCheck("/boot/STARTUP_1")
 		self.devrootfs = "/dev/mmcblk0p3"
 		self.multi = 1
 		self.list = self.list_files("/boot")
 
 		if SystemInfo["HaveMultiBoot"]:
-			self["key_yellow"] = StaticText(_("STARTUP"))
+			self["key_yellow"] = Button(_("STARTUP"))
 		else:
-			self["key_yellow"] = StaticText("")
-		self["key_green"] = StaticText("Online")
-		self["key_red"] = StaticText(_("Exit"))
-		self["key_blue"] = StaticText(_("Local"))
+			self["key_yellow"] = Button("")
+		self["key_green"] = Button("Online")
+		self["key_red"] = Button(_("Exit"))
+		self["key_blue"] = Button(_("Local"))
 		self["info-local"] = Label(_("Local = Flash a image from local path /hdd/images"))
 		self["info-online"] = Label(_("Online = Download a image and flash it"))
 		
@@ -206,10 +209,10 @@ class doFlashImage(Screen):
 		<ePixmap position="140,460" zPosition="1" size="140,40" pixmap="skin_default/buttons/green.png" transparent="1" alphatest="on" />
 		<ePixmap position="280,460" zPosition="1" size="140,40" pixmap="skin_default/buttons/yellow.png" transparent="1" alphatest="on" />
 		<ePixmap position="420,460" zPosition="1" size="140,40" pixmap="skin_default/buttons/blue.png" transparent="1" alphatest="on" />
-		<widget source="key_red" render="Label" position="0,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
-		<widget source="key_green" render="Label" position="140,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
-		<widget source="key_yellow" render="Label" position="280,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
-		<widget source="key_blue" render="Label" position="420,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_red" position="0,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_green" position="140,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_yellow" position="280,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
+		<widget source="key_blue" position="420,460" zPosition="2" size="140,40" valign="center" halign="center" font="Regular;21" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
 		<widget name="imageList" position="10,10" zPosition="1" size="450,450" font="Regular;20" scrollbarMode="showOnDemand" transparent="1" />
 	</screen>"""
 		
@@ -218,10 +221,10 @@ class doFlashImage(Screen):
 		self.session = session
 
 		Screen.setTitle(self, _("Flash On the fly (select a image)"))
-		self["key_green"] = StaticText(_("Flash"))
-		self["key_red"] = StaticText(_("Exit"))
-		self["key_blue"] = StaticText("")
-		self["key_yellow"] = StaticText("")
+		self["key_green"] = Button(_("Flash"))
+		self["key_red"] = Button(_("Exit"))
+		self["key_blue"] = Button("")
+		self["key_yellow"] = Button("")
 		self.filename = None
 		self.imagelist = []
 		self.simulate = False
@@ -648,9 +651,9 @@ class DeviceBrowser(Screen, HelpableScreen):
 		<screen name="DeviceBrowser" position="center,center" size="520,430" >
 			<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
 			<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
-			<widget source="key_red" render="Label" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
-			<widget source="key_green" render="Label" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
-			<widget source="message" render="Label" position="5,50" size="510,150" font="Regular;16" />
+			<widget source="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
+			<widget source="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
+			<widget source="message" position="5,50" size="510,150" font="Regular;16" />
 			<widget name="filelist" position="5,210" size="510,220" scrollbarMode="showOnDemand" />
 		</screen>"""
 
@@ -660,8 +663,8 @@ class DeviceBrowser(Screen, HelpableScreen):
 		HelpableScreen.__init__(self)
 		Screen.setTitle(self, _("Please select medium"))
 
-		self["key_red"] = StaticText(_("Cancel"))
-		self["key_green"] = StaticText()
+		self["key_red"] = Button(_("Cancel"))
+		self["key_green"] = Button()
 		self["message"] = StaticText(message)
 
 		self.filelist = FileList(startdir, showDirectories = showDirectories, showFiles = showFiles, showMountpoints = showMountpoints, matchingPattern = matchingPattern, useServiceRef = useServiceRef, inhibitDirs = inhibitDirs, inhibitMounts = inhibitMounts, isTop = isTop, enableWrapAround = enableWrapAround, additionalExtensions = additionalExtensions)
