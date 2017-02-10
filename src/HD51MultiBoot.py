@@ -87,7 +87,7 @@ class HD51MultiBoot(Screen):
 	def info(self):
 		message = (
 			#message 0
-			_("*** boxmode=1 (Standard) ***\n\n" +
+			_("*** boxmode=1 (Experimental) ***\n\n" +
 			"+++ Features +++\n" +
 			"3840x2160p60 10-bit HEVC, 3840x2160p60 8-bit VP9, 1920x1080p60 8-bit AVC,\nMAIN only (no PIP), Limited display usages, UHD only (no SD),\nNo multi-PIP, No transcoding\n\n" +
 			"--- Restrictions ---\n" +
@@ -96,7 +96,7 @@ class HD51MultiBoot(Screen):
 			"Display 0 Encode Restrictions: 3840x2160p60 12-bit 4:2:0 (HDMI),\n3840x2160p60 12-bit 4:2:2 (HDMI), 3840x2160p60 8-bit 4:4:4 (HDMI),\n1920x1080p60 (component), Only one display format at a time\n\n" +
 			"If you want 1080p60 component, HDMI also needs to be 1080p60."),
 			#message 1
-			_("*** boxmode=12 (Experimental) ***\n\n" +
+			_("*** boxmode=12 (Standard) ***\n\n" +
 			"+++ Features +++\n" +
  			"3840x2160p50 10-bit decode for MAIN, 1080p25/50i PIP support, HDMI input (if available),\n UHD display only, No SD display, No transcoding\n\n" +
 			"--- Restrictions ---\n" +
@@ -184,7 +184,7 @@ class HD51MultiBoot(Screen):
 		
 		'''
 
-		self.optionsList = (('boxmode=1', _('2160p60 without PiP (Standard)')), ('boxmode=12', _('2160p50 with PiP (Experimental)')))
+		self.optionsList = (('boxmode=1', _('2160p60 without PiP (Experimental)')), ('boxmode=12', _('2160p50 with PiP (Standard)')))
 		self.bootloaderList = ('v1.07-r19',)
 
 		#for compatibility to old or other images set 'self.enable_bootnamefile = False'
