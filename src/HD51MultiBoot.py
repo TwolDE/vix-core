@@ -177,8 +177,8 @@ class HD51MultiBoot(Screen):
 		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
 		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
 		#options
-		Standard:     hd51_4.boxmode=12 (or no option)
-		Experimental: hd51_4.boxmode=1
+		Experimental:     hd51_4.boxmode=12 (or no option)
+		Default: hd51_4.boxmode=1
 		#example
 		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=12'
 		
@@ -305,18 +305,20 @@ class HD51MultiBoot(Screen):
 			root = int(temp[2].split("'root=/dev/mmcblk0p")[1])
 			device = temp[2].split("=")[1]
 			#read boxmode and new boxmode settings
+			cmdt = 0
 			cmdx = 5
 			cmd4 = "rootwait'"
-			bootmode = '12'
+			bootmode = '1'
 			if 'boxmode' in ENTRY:
 				cmdx = 6
 				cmd4 = "rootwait"
 				bootmode = temp[5].split("%s_4.boxmode=" %getMachineBuild())[1].replace("'",'')
 			setmode = self.optionsList[self.option][0].split('=')[1]
+			print "ENTRY %s cmdx %s cmd4 %s bootmode %s setmode %s" %(ENTRY, cmdx, cmd4, bootmode, setmode)
+			if self.option_enabled: 
+				print "self.option_enabled TRUE"
 			#verify entries
-			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[3] or cmd4 != temp[4] or kernel != root-kernel-1 or "'" != ENTRY[-1:]:
-				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with not matching entries!"
-				ret = True
+			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[3] or cmd4 != temp[4] or kernel != root-kernel-1:	 
 			#verify length
 			elif ('boxmode' not in ENTRY and len(ENTRY) > 58) or ('boxmode' in ENTRY and len(ENTRY) > 76):
 				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with line length!"
