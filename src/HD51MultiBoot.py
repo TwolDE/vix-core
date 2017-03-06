@@ -314,11 +314,13 @@ class HD51MultiBoot(Screen):
 				cmd4 = "rootwait"
 				bootmode = temp[5].split("%s_4.boxmode=" %getMachineBuild())[1].replace("'",'')
 			setmode = self.optionsList[self.option][0].split('=')[1]
-			print "ENTRY %s cmdx %s cmd4 %s bootmode %s setmode %s" %(ENTRY, cmdx, cmd4, bootmode, setmode)
+			print "[MultiBootStartup] ENTRY %s cmdx %s cmd4 %s bootmode %s setmode %s" %(ENTRY, cmdx, cmd4, bootmode, setmode)
 			if self.option_enabled: 
 				print "self.option_enabled TRUE"
 			#verify entries
-			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[3] or cmd4 != temp[4] or kernel != root-kernel-1:	 
+			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[3] or cmd4 != temp[4] or kernel != root-kernel-1:
+				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with not matching entries!"
+				ret = True	 
 			#verify length
 			elif ('boxmode' not in ENTRY and len(ENTRY) > 58) or ('boxmode' in ENTRY and len(ENTRY) > 76):
 				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with line length!"
