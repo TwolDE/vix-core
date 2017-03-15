@@ -132,7 +132,8 @@ class VIXDevicesPanel(Screen):
 			if not parts:
 				continue
 			device = parts[3]
-			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[1-9]',device):
+			print "device type %s " % device
+			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[0-9]',device):
 				continue
 			if device in list2:
 				continue
@@ -145,7 +146,9 @@ class VIXDevicesPanel(Screen):
 
 	def buildMy_rec(self, device):
 
-		if device.startswith('mmcblk'):
+		if device.startswith('mmcblk0p1'):
+			device2 = 'mmcblk0'
+		elif	device.startswith('mmcblk'):
 			device2 = re.sub('p[0-9]', '', device)
 		else:
 			device2 = re.sub('[0-9]', '', device)
@@ -371,7 +374,9 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		self['Linconn'].hide()
 
 	def buildMy_rec(self, device):
-		if device.startswith('mmcblk'):
+		if device.startswith('mmcblk0p1'):
+			device2 = 'mmcblk0'
+		elif	device.startswith('mmcblk'):
 			device2 = re.sub('p[0-9]', '', device)
 		else:
 			device2 = re.sub('[0-9]', '', device)
