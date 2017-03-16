@@ -331,14 +331,15 @@ class HD51Imager(Screen):
 			KERNEL_PARTITION_OFFSET = int(BOOT_PARTITION_OFFSET) + int(BOOT_PARTITION_SIZE)
 			KERNEL_PARTITION_SIZE=8192
 			ROOTFS_PARTITION_OFFSET = int(KERNEL_PARTITION_OFFSET) + int(KERNEL_PARTITION_SIZE)
-			ROOTFS_PARTITION_SIZE=1048576
+			ROOTFS_PARTITION_SIZE=819200
 			SECOND_KERNEL_PARTITION_OFFSET = int(ROOTFS_PARTITION_OFFSET) + int(ROOTFS_PARTITION_SIZE)
 			SECOND_ROOTFS_PARTITION_OFFSET = int(SECOND_KERNEL_PARTITION_OFFSET) + int(KERNEL_PARTITION_SIZE)
 			THIRD_KERNEL_PARTITION_OFFSET = int(SECOND_ROOTFS_PARTITION_OFFSET) + int(ROOTFS_PARTITION_SIZE)
 			THIRD_ROOTFS_PARTITION_OFFSET = int(THIRD_KERNEL_PARTITION_OFFSET) + int(KERNEL_PARTITION_SIZE)
 			FOURTH_KERNEL_PARTITION_OFFSET = int(THIRD_ROOTFS_PARTITION_OFFSET) + int(ROOTFS_PARTITION_SIZE)
 			FOURTH_ROOTFS_PARTITION_OFFSET = int(FOURTH_KERNEL_PARTITION_OFFSET) + int(KERNEL_PARTITION_SIZE)
-			EMMC_IMAGE = "%s/disk.img"%self.WORKDIR
+			SWAP_PARTITION_OFFSET = int(FOURTH_ROOTFS_PARTITION_OFFSET) + int(ROOTFS_PARTITION_SIZE)
+			EMMC_IMAGE = "%s/disk.img" % self.WORKDIR
 			EMMC_IMAGE_SIZE=3817472
 			IMAGE_ROOTFS_SIZE=196608
 			cmdlist.append('echo " "')
@@ -362,8 +363,10 @@ class HD51Imager(Screen):
 			cmdlist.append('parted -s %s unit KiB mkpart rootfs3 ext2 %s %s' % (EMMC_IMAGE, THIRD_ROOTFS_PARTITION_OFFSET, PARTED_END_ROOTFS3 ))
 			PARTED_END_KERNEL4 = int(FOURTH_KERNEL_PARTITION_OFFSET) + int(KERNEL_PARTITION_SIZE)
 			cmdlist.append('parted -s %s unit KiB mkpart kernel4 %s %s' % (EMMC_IMAGE, FOURTH_KERNEL_PARTITION_OFFSET, PARTED_END_KERNEL4 ))
-			PARTED_END_ROOTFS4 = int(EMMC_IMAGE_SIZE) - 1024
+			PARTED_END_ROOTFS4 = int(FOURTH_ROOTFS_PARTITION_OFFSET) + int(ROOTFS_PARTITION_SIZE)
 			cmdlist.append('parted -s %s unit KiB mkpart rootfs4 ext2 %s %s' % (EMMC_IMAGE, FOURTH_ROOTFS_PARTITION_OFFSET, PARTED_END_ROOTFS4 ))
+			PARTED_END_SWAP = int(EMMC_IMAGE_SIZE) - 1024
+			cmdlist.append('parted -s %s unit KiB mkpart swap linux-swap %s %s' % (EMMC_IMAGE, SWAP_PARTITION_OFFSET, PARTED_END_SWAP ))
 			cmdlist.append('dd if=/dev/zero of=%s/boot.img bs=1024 count=%s' % (self.WORKDIR, BOOT_PARTITION_SIZE ))
 			cmdlist.append('mkfs.msdos -S 512 %s/boot.img' %self.WORKDIR)
 			cmdlist.append("echo \"boot emmcflash0.kernel1 \'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=1\'\" > %s/STARTUP" %self.WORKDIR)
@@ -498,28 +501,28 @@ class HD51Imager(Screen):
 			cmdlist.append('echo "     no writing permission on back-up device"')
 			cmdlist.append('echo " "')
 
-		if self.DIRECTORY == "/hdd":
-			self.TARGET = self.SearchUSBcandidate()
-			print "TARGET = %s" % self.TARGET
-			if self.TARGET == 'XX':
-				cmdlist.append('echo " "')
-			else:
-				cmdlist.append('echo "_________________________________________________\n"')
-				cmdlist.append('echo " "')
-				cmdlist.append('echo "There is a valid USB-flash drive detected in one "')
-				cmdlist.append('echo "of the USB-ports, therefor an extra copy of the "')
-				cmdlist.append('echo "back-up image will now be copied to that USB- "')
-				cmdlist.append('echo "flash drive. "')
-				cmdlist.append('echo "This only takes about 1 or 2 minutes"')
-				cmdlist.append('echo " "')
-
-				cmdlist.append('mkdir -p %s/%s' % (self.TARGET, self.IMAGEFOLDER))
-				cmdlist.append('cp -r %s %s/' % (self.MAINDEST, self.TARGET))
-
-
-				cmdlist.append("sync")
-				cmdlist.append('echo "Backup finished and copied to your USB-flash drive"')
-			
+#		if self.DIRECTORY == "/hdd":
+#			self.TARGET = self.SearchUSBcandidate()
+#			print "TARGET = %s" % self.TARGET
+#			if self.TARGET == 'XX':
+#				cmdlist.append('echo " "')
+#			else:
+#				cmdlist.append('echo "_________________________________________________\n"')
+#				cmdlist.append('echo " "')
+#				cmdlist.append('echo "There is a valid USB-flash drive detected in one "')
+#				cmdlist.append('echo "of the USB-ports, therefor an extra copy of the "')
+#				cmdlist.append('echo "back-up image will now be copied to that USB- "')
+#				cmdlist.append('echo "flash drive. "')
+#				cmdlist.append('echo "This only takes about 1 or 2 minutes"')
+#				cmdlist.append('echo " "')
+#
+#				cmdlist.append('mkdir -p %s/%s' % (self.TARGET, self.IMAGEFOLDER))
+#				cmdlist.append('cp -r %s %s/' % (self.MAINDEST, self.TARGET))
+#
+#
+#				cmdlist.append("sync")
+#				cmdlist.append('echo "Backup finished and copied to your USB-flash drive"')
+#			
 		cmdlist.append("umount /tmp/bi/root")
 		cmdlist.append("rmdir /tmp/bi/root")
 		cmdlist.append("rmdir /tmp/bi")
