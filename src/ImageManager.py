@@ -228,7 +228,7 @@ class VIXImageManager(Screen):
 			if hdd in config.imagemanager.backuplocation.choices.choices:
 				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 											  {
-											  "ok": self.keyRestore,
+											  "ok": self.close,
 											  'cancel': self.close,
 											  'red': self.keyDelete,
 											  'green': self.GreenPressed,
@@ -264,7 +264,7 @@ class VIXImageManager(Screen):
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
 										  "displayHelp": self.doDownload,
-										  "ok": self.keyRestore,
+										  "ok": self.close,
 										  }, -1)
 
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
