@@ -392,7 +392,10 @@ class VIXImageManager(Screen):
 				self.keyRestore3()
 
 	def keyRestore3(self, val = None):
-		self.session.open(MessageBox, _("Please wait while the restore prepares this can take over 3 mins"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)
+		if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
+			self.session.open(MessageBox, _("Please wait while the restore prepares this can take over 3 mins"), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
+		else:
+			self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)			
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
