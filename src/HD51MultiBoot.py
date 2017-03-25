@@ -87,7 +87,7 @@ class HD51MultiBoot(Screen):
 	def info(self):
 		message = (
 			#message 0
-			_("*** boxmode=1 (Experimental) ***\n\n" +
+			_("*** boxmode=1 (Standard) ***\n\n" +
 			"+++ Features +++\n" +
 			"3840x2160p60 10-bit HEVC, 3840x2160p60 8-bit VP9, 1920x1080p60 8-bit AVC,\nMAIN only (no PIP), Limited display usages, UHD only (no SD),\nNo multi-PIP, No transcoding\n\n" +
 			"--- Restrictions ---\n" +
@@ -96,7 +96,7 @@ class HD51MultiBoot(Screen):
 			"Display 0 Encode Restrictions: 3840x2160p60 12-bit 4:2:0 (HDMI),\n3840x2160p60 12-bit 4:2:2 (HDMI), 3840x2160p60 8-bit 4:4:4 (HDMI),\n1920x1080p60 (component), Only one display format at a time\n\n" +
 			"If you want 1080p60 component, HDMI also needs to be 1080p60."),
 			#message 1
-			_("*** boxmode=12 (Standard) ***\n\n" +
+			_("*** boxmode=12 (Experimental) ***\n\n" +
 			"+++ Features +++\n" +
  			"3840x2160p50 10-bit decode for MAIN, 1080p25/50i PIP support, HDMI input (if available),\n UHD display only, No SD display, No transcoding\n\n" +
 			"--- Restrictions ---\n" +
@@ -177,14 +177,14 @@ class HD51MultiBoot(Screen):
 		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
 		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
 		#options
-		Experimental:     hd51_4.boxmode=12 (or no option)
-		Default: hd51_4.boxmode=1
+		Standard:     hd51_4.boxmode=1 (or no option)
+		Experimental: hd51_4.boxmode=12
 		#example
-		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=12'
+		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=1'
 		
 		'''
 
-		self.optionsList = (('boxmode=1', _('2160p60 without PiP (Experimental)')), ('boxmode=12', _('2160p50 with PiP (Standard)')))
+		self.optionsList = (('boxmode=1', _('2160p60 without PiP (Standard)')), ('boxmode=12', _('2160p50 with PiP (Experimental)')))
 		self.bootloaderList = ('v1.07-r19',)
 
 		#for compatibility to old or other images set 'self.enable_bootnamefile = False'
@@ -272,7 +272,7 @@ class HD51MultiBoot(Screen):
 
 		self.startup()
 		self.startup_option()
-		self["description"].setText(_("Current Boot settings: %s (%s)%s") %(bootname,image,bootoption))
+		self["description"].setText(_("Current Bootsettings: %s (%s)%s") %(bootname,image,bootoption))
 
 	def layoutFinished(self):
 		self.setTitle(self.title)
@@ -302,27 +302,26 @@ class HD51MultiBoot(Screen):
 			temp = ENTRY.split(' ')
 			#read kernel, root as number and device name
 			kernel = int(temp[1].split("emmcflash0.kernel")[1])
-			root = int(temp[2].split("'root=/dev/mmcblk0p")[1])
-			device = temp[2].split("=")[1]
+			root = int(temp[4].split("root=/dev/mmcblk0p")[1])
+			device = temp[4].split("=")[1]
 			#read boxmode and new boxmode settings
-			cmdt = 0
-			cmdx = 5
+			cmdx = 7
 			cmd4 = "rootwait'"
 			bootmode = '1'
 			if 'boxmode' in ENTRY:
-				cmdx = 6
+				cmdx = 8
 				cmd4 = "rootwait"
-				bootmode = temp[5].split("%s_4.boxmode=" %getMachineBuild())[1].replace("'",'')
+				bootmode = temp[7].split("%s_4.boxmode=" %getMachineBuild())[1].replace("'",'')
 			setmode = self.optionsList[self.option][0].split('=')[1]
 			print "[MultiBootStartup] ENTRY %s cmdx %s cmd4 %s bootmode %s setmode %s" %(ENTRY, cmdx, cmd4, bootmode, setmode)
 			if self.option_enabled: 
-				print "self.option_enabled TRUE"
+				print "[MultiBootStartup] self.option_enabled TRUE"
 			#verify entries
-			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[3] or cmd4 != temp[4] or kernel != root-kernel-1:
+			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[5] or cmd4 != temp[6] or kernel != root-kernel-1:
 				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with not matching entries!"
-				ret = True	 
+				ret = True
 			#verify length
-			elif ('boxmode' not in ENTRY and len(ENTRY) > 58) or ('boxmode' in ENTRY and len(ENTRY) > 76):
+			elif ('boxmode' not in ENTRY and len(ENTRY) > 96) or ('boxmode' in ENTRY and len(ENTRY) > 114):
 				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with line length!"
 				ret = True
 			#verify boxmode
@@ -355,6 +354,12 @@ class HD51MultiBoot(Screen):
 			for x in self.optionsList:
 				if (x[0] + "'" in boot or x[0] + " " in boot) and x[0] != self.optionsList[self.option][0]:
 					newboot = boot.replace(x[0],self.optionsList[self.option][0])
+					if self.optionsList[self.option][0] == "boxmode=1":
+						newboot = newboot.replace("520M@248M", "440M@328M")
+						newboot = newboot.replace("200M@768M", "192M@768M")
+					elif self.optionsList[self.option][0] == "boxmode=12":
+						newboot = newboot.replace("440M@328M", "520M@248M")
+						newboot = newboot.replace("192M@768M", "200M@768M")
 					writeoption = True
 					break
 				elif (x[0] + "'" in boot or x[0] + " " in boot) and x[0] == self.optionsList[self.option][0]:
@@ -365,6 +370,12 @@ class HD51MultiBoot(Screen):
 					failboot = True
 				elif self.option:
 					newboot = boot.replace("rootwait", "rootwait %s_4.%s" %(getMachineBuild(), self.optionsList[self.option][0]))
+					if self.optionsList[self.option][0] == "boxmode=1":
+						newboot = newboot.replace("520M@248M", "440M@328M")
+						newboot = newboot.replace("200M@768M", "192M@768M")
+					elif self.optionsList[self.option][0] == "boxmode=12":
+						newboot = newboot.replace("440M@328M", "520M@248M")
+						newboot = newboot.replace("192M@768M", "200M@768M")
 					writeoption = True
 
 		if self.enable_bootnamefile:
@@ -377,7 +388,7 @@ class HD51MultiBoot(Screen):
 		if failboot:
 			print "[MultiBootStartup] wrong bootsettings: " + boot
 			if '/dev/mmcblk0p3' in Harddisk.getextdevices("ext4"):
-				if self.writeFile('/boot/STARTUP', "boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'"):
+				if self.writeFile('/boot/STARTUP', "boot emmcflash0.kernel1 'brcm_cma=440M@328M brcm_cma=192M@768M root=/dev/mmcblk0p3 rw rootwait'"):
 					txt = _("Next boot will start from Image 1.")
 				else:
 					txt =_("Can not repair file %s") %("'/boot/STARTUP'") + "\n" + _("Caution, next boot is starts with these settings!") + "\n"
@@ -437,7 +448,7 @@ class HD51MultiBoot(Screen):
 		for name in listdir(PATH):
 			if path.isfile(path.join(PATH, name)):
 				try:
-					cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
+					cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
 				except IndexError:
 					continue
 				if cmdline in Harddisk.getextdevices("ext4") and not name == "STARTUP":
