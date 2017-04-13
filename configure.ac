@@ -24,7 +24,7 @@ Makefile
 etc/Makefile
 etc/cron/Makefile
 etc/cron/crontabs/Makefile
-po/Makefile
+# po/Makefile
 src/Makefile
 src/images/Makefile
 ])
