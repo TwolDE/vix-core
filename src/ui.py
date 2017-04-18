@@ -78,7 +78,7 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("swap-manager", _("Swap Manager"), _("Create and Manage your swap files."), None))
 		if self.menu == 0 and SystemInfo["HaveMultiBoot"]:
 			self.list.append(("HD51Flash", _("HD51 couch flash"), _("HD51 couch flash any partition"), None))
-			self.list.append(("HD51Imager", _("HD51 Image backup"), _("HD51 backup image or EMMC disk"), None))
+			self.list.append(("ImageBackup", _("4K Image backup"), _("4K backup image or EMMC disk"), None))
 			self.list.append(("HD51MultiBoot", _("HD51 Boot Selector"), _("Boot any STARTUP Partition."), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
@@ -157,9 +157,9 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif (currentEntry == "HD51Flash"):
 					from HD51Flash import HD51Flash
 					self.session.open(HD51Flash, self.menu_path)
-				elif (currentEntry == "HD51Imager"):
-					from HD51Imager import HD51Imager
-					self.session.open(HD51Imager, self.menu_path)
+				elif (currentEntry == "ImageBackup"):
+					from ImageBackup import ImageBackup
+					self.session.open(ImageBackup, self.menu_path)
 				elif (currentEntry == "HD51MultiBoot"):
 					from HD51MultiBoot import HD51MultiBoot
 					self.session.open(HD51MultiBoot, self.menu_path)

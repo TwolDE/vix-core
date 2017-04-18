@@ -1,9 +1,9 @@
 #################################################################################
-# FULL BACKUP UYILITY FOR ENIGMA2, SUPPORTS THE MODELS OE-A 3.4     			#
+# FULL BACKUP UTILITY FOR ENIGMA2, SUPPORTS THE MODELS OE-A 4.X    			#
 #	                         						                            #
 #		MAKES A FULLBACK-UP READY FOR FLASHING.						#
 #
-#        Thanks to OpenATV Team for supplyng most of this code
+#        Thanks to OpenATV Team for supplying most of this code
 #												#
 #################################################################################
 from enigma import getEnigmaVersionString
@@ -28,7 +28,7 @@ from Tools.Directories import fileExists, fileCheck
 VERSION = "Version 5.0 openViX"
 
 HaveGZkernel = True
-if getMachineBuild() in ("vuuno4k", "vuultimo4k", "vusolo4k", "spark", "spark7162", "hd51", "hd52", "sf4008", "dags7252", "gb7252", "vs1500"):
+if getMachineBuild() in ("vuuno4k", "vuultimo4k", "vusolo4k", "hd51", "hd52", "sf4008", "gbquad4k", "vs1500"):
 	HaveGZkernel = False
 
 def Freespace(dev):
@@ -37,7 +37,7 @@ def Freespace(dev):
 	print "[FULL BACKUP] Free space on %s = %i kilobytes" %(dev, space)
 	return space
 
-class HD51Imager(Screen):
+class ImageBackup(Screen):
 	skin = """
 	<screen position="center,center" size="560,400" title="Image Backup">
 		<ePixmap position="0,360"   zPosition="1" size="140,40" pixmap="skin_default/buttons/red.png" transparent="1" alphatest="on" />
@@ -55,7 +55,7 @@ class HD51Imager(Screen):
 		
 	def __init__(self, session, menu_path=""):
 		Screen.__init__(self, session)
-		screentitle =  _("HD51 USB or EMMC Image Manager")
+		screentitle =  _("HD51/GBQUAD4K USB or EMMC Image Manager")
 
 		self.menu_path = menu_path
 		if config.usage.show_menupath.value == 'large':
@@ -79,7 +79,7 @@ class HD51Imager(Screen):
 
 		self.session = session
 		self.selection = 0
-		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP") or fileCheck("/boot/STARTUP_1")
+		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP_1")
 		self.list = self.list_files("/boot")
 		self.MODEL = getBoxType()
 		self.OEM = getBrandOEM()
@@ -307,6 +307,17 @@ class HD51Imager(Screen):
 		if cmd3:
 			cmdlist.append(cmd3)
 		cmdlist.append("chmod 644 %s/%s" %(self.WORKDIR, self.ROOTFSBIN))
+
+		if self.MODEL in ("gbquad4k"):
+			cmdlist.append('echo " "')
+			cmdlist.append('echo "Create: boot dump"')
+			cmdlist.append('echo " "')
+			cmdlist.append("dd if=/dev/mmcblk0p1 of=%s/boot.bin" % self.WORKDIR)
+			cmdlist.append('echo " "')
+			cmdlist.append('echo "Create: rescue dump"')
+			cmdlist.append('echo " "')
+			cmdlist.append("dd if=/dev/mmcblk0p5 of=%s/rescue.bin" % self.WORKDIR)
+
 		cmdlist.append('echo " "')
 		cmdlist.append('echo "Create: kerneldump"')
 		cmdlist.append('echo " "')
@@ -314,7 +325,6 @@ class HD51Imager(Screen):
 			cmdlist.append("dd if=/dev/%s of=%s/kernel.bin" % (self.MTDKERNEL ,self.WORKDIR))
 		elif self.MTDKERNEL == "mmcblk0p1" or self.MTDKERNEL == "mmcblk0p3":
 			cmdlist.append("dd if=/dev/%s of=%s/%s" % (self.MTDKERNEL ,self.WORKDIR, self.KERNELBIN))
-
 		else:
 			cmdlist.append("nanddump -a -f %s/vmlinux.gz /dev/%s" % (self.WORKDIR, self.MTDKERNEL))
 		cmdlist.append('echo " "')
@@ -435,7 +445,11 @@ class HD51Imager(Screen):
 		else:
 			cmdlist.append('echo "rename this file to "force" to force an update without confirmation" > %s/noforce' %self.MAINDEST)
 
-		if self.MODEL in ("gbquad4k", "gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "gbultraueh", "twinboxlcd", "twinboxlcdci", "singleboxlcd", "sf208", "sf228"):
+		if self.MODEL in ("gbquad4k"):
+			system('mv %s/boot.bin %s/boot.bin' %(self.WORKDIR, self.MAINDEST))
+			system('mv %s/rescue.bin %s/rescue.bin' %(self.WORKDIR, self.MAINDEST))
+
+		if self.MODEL in ("gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "gbultraueh", "twinboxlcd", "twinboxlcdci", "singleboxlcd", "sf208", "sf228"):
 			lcdwaitkey = '/usr/share/lcdwaitkey.bin'
 			lcdwarning = '/usr/share/lcdwarning.bin'
 			if path.exists(lcdwaitkey):
