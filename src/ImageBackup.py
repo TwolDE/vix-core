@@ -28,7 +28,7 @@ from Tools.Directories import fileExists, fileCheck
 VERSION = "Version 5.0 openViX"
 
 HaveGZkernel = True
-if getMachineBuild() in ("vuuno4k", "vuultimo4k", "vusolo4k", "hd51", "hd52", "sf4008", "gbquad4k", "vs1500"):
+if getMachineBuild() in ("vuuno4k", "vuultimo4k", "vusolo4k", "hd51", "hd52", "sf4008", "gbquad4k", "gb7252", "vs1500"):
 	HaveGZkernel = False
 
 def Freespace(dev):
@@ -94,17 +94,17 @@ class ImageBackup(Screen):
 		self.ROOTFSBIN = getMachineRootFile()
 		self.KERNELBIN = getMachineKernelFile()
 		self.ROOTFSTYPE = getImageFileSystem()
-		print "[FULL BACKUP] BOX MACHINEBUILD = >%s<" %self.MACHINEBUILD
-		print "[FULL BACKUP] BOX MACHINENAME = >%s<" %self.MACHINENAME
-		print "[FULL BACKUP] BOX MACHINEBRAND = >%s<" %self.MACHINEBRAND
-		print "[FULL BACKUP] BOX MODEL = >%s<" %self.MODEL
-		print "[FULL BACKUP] OEM MODEL = >%s<" %self.OEM
-		print "[FULL BACKUP] IMAGEFOLDER = >%s<" %self.IMAGEFOLDER
-		print "[FULL BACKUP] UBINIZE = >%s<" %self.UBINIZE_ARGS
-		print "[FULL BACKUP] MKUBIFS = >%s<" %self.MKUBIFS_ARGS
-		print "[FULL BACKUP] MTDKERNEL = >%s<" %self.MTDKERNEL
-		print "[FULL BACKUP] MTDROOTFS = >%s<" %self.MTDROOTFS
-		print "[FULL BACKUP] ROOTFSTYPE = >%s<" %self.ROOTFSTYPE
+		print "[ImageBackup] BOX MACHINEBUILD = >%s<" %self.MACHINEBUILD
+		print "[ImageBackup] BOX MACHINENAME = >%s<" %self.MACHINENAME
+		print "[ImageBackup] BOX MACHINEBRAND = >%s<" %self.MACHINEBRAND
+		print "[ImageBackup] BOX MODEL = >%s<" %self.MODEL
+		print "[ImageBackup] OEM MODEL = >%s<" %self.OEM
+		print "[ImageBackup] IMAGEFOLDER = >%s<" %self.IMAGEFOLDER
+		print "[ImageBackup] UBINIZE = >%s<" %self.UBINIZE_ARGS
+		print "[ImageBackup] MKUBIFS = >%s<" %self.MKUBIFS_ARGS
+		print "[ImageBackup] MTDKERNEL = >%s<" %self.MTDKERNEL
+		print "[ImageBackup] MTDROOTFS = >%s<" %self.MTDROOTFS
+		print "[ImageBackup] ROOTFSTYPE = >%s<" %self.ROOTFSTYPE
 
 		self["key_green"] = Button("USB")
 		self["key_red"] = Button("HDD")
@@ -167,15 +167,15 @@ class ImageBackup(Screen):
 				self.selection = 0
 			self["key_yellow"].setText(_(self.list[self.selection]))
 			if self.list[self.selection] == "Recovery":
-				print "[FULL BACKUP] Recovery EMMC Image"
+				print "[ImageBackup] Recovery EMMC Image"
 				cmdline = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
 			else:
 				cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",3)[3].split(" ",1)[0]
 			cmdline = cmdline.lstrip("/dev/")
 			self.MTDROOTFS = cmdline
 			self.MTDKERNEL = cmdline[:-1] + str(int(cmdline[-1:]) -1)
-			print "[FULL BACKUP] Multiboot rootfs ", self.MTDROOTFS
-			print "[FULL BACKUP] Multiboot kernel ", self.MTDKERNEL
+			print "[ImageBackup] Multiboot rootfs ", self.MTDROOTFS
+			print "[ImageBackup] Multiboot kernel ", self.MTDKERNEL
 
 	def read_startup(self, FILE):
 		self.file = FILE
@@ -197,19 +197,20 @@ class ImageBackup(Screen):
 		return files
 
 	def SearchUSBcandidate(self):
+		return "XX"
 		for paths, subdirs, files in walk("/media"):
 			for dir in subdirs:
 				if not dir == 'hdd' and not dir == 'net':
 					for file in listdir("/media/" + dir):
 						if file.find("backupstick") > -1:
-							print "USB-DEVICE found on: /media/%s" % dir
+							print "[ImageBackup] USB-DEVICE found on: /media/%s" % dir
 							return "/media/" + dir
 			break
 		return "XX"
 
 	def doFullBackup(self, DIRECTORY):
 		self.DIRECTORY = DIRECTORY
-		self.TITLE = _("Full back-up on %s") % (self.DIRECTORY)
+		self.TITLE = _("Fullbackup on %s") % (self.DIRECTORY)
 		self.START = time()
 		self.DATE = strftime("%Y%m%d_%H%M", localtime(self.START))
 		self.IMAGEVERSION = self.imageInfo() #strftime("%Y%m%d", localtime(self.START))
@@ -220,7 +221,6 @@ class ImageBackup(Screen):
 			self.BZIP2 = "/usr/bin/bzip2"
 		else:
 			self.MKFS = "/usr/sbin/mkfs.jffs2"
-
 		self.UBINIZE = "/usr/sbin/ubinize"
 		self.NANDDUMP = "/usr/sbin/nanddump"
 		self.WORKDIR= "%s/bi" %self.DIRECTORY
@@ -241,24 +241,27 @@ class ImageBackup(Screen):
 		self.MAINDEST = "%s/%s" %(self.DIRECTORY,self.IMAGEFOLDER)
 		self.EXTRA = "%s/fullbackup_%s/%s/%s" % (self.DIRECTORY, self.MODEL, self.DATE, self.IMAGEFOLDER)
 		self.EXTRAOLD = "%s/fullbackup_%s/%s/%s" % (self.DIRECTORY, self.MODEL, self.DATE, self.MODEL)
-
+		print "[ImageBackup] SHOWNAME: ", self.SHOWNAME
+		print "[ImageBackup] MAINDESTOLD: ", self.MAINDESTOLD
+		print "[ImageBackup] EXTRA: ", self.EXTRA
+		print "[ImageBackup] EXTRAOLD: ", self.EXTRAOLD
 
 		self.message = "echo -e '\n"
-		self.message += (_("Back-up Tool for a %s\n" %self.SHOWNAME)).upper()
+		self.message += (_("Fullback for %s\n" %self.SHOWNAME)).upper()
 		self.message += VERSION + '\n'
-		self.message += "_________________________________________________\n\n"
-		self.message += _("Please be patient, a backup will now be made,\n")
+		self.message += "____________________________________________________\n"
+		self.message += _("Please be patient, a fullbackup will now be created.\n")
 		if self.ROOTFSTYPE == "ubi":
-			self.message += _("because of the used filesystem the back-up\n")
-			self.message += _("will take about 3-12 minutes for this system\n")
-		elif SystemInfo["HaveMultiBoot"] and self.list[self.selection] == "Recovery":
-			self.message += _("because of the used filesystem the back-up\n")
-			self.message += _("will take about 30 minutes for this system\n")
-		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HaveMultiBoot"]:
-			self.message += _("because of the used filesystem the back-up\n")
-			self.message += _("will take about 1-4 minutes for this system\n")
+			self.message += _("Due to the used filesystem, the fullbackup\n")
+			self.message += _("will take about 3-12 minutes for this system.\n")
+		elif SystemInfo["HasMultiBoot"] and self.list[self.selection] == "Recovery":
+			self.message += _("because of the used filesystem the backup\n")
+			self.message += _("will take about 30 minutes for this system.\n")
+		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HasMultiBoot"]:
+			self.message += _("because of the used filesystem the backup\n")
+			self.message += _("will take about 1-4 minutes for this system.\n")
 		else:
-			self.message += _("this will take between 2 and 9 minutes\n")
+			self.message += _("This will take between 2 and 9 minutes\n")
 		self.message += "\n_________________________________________________\n\n"
 		self.message += "'"
 
@@ -278,10 +281,16 @@ class ImageBackup(Screen):
 			cmd1 = "%s --root=/tmp/bi/root --faketime --output=%s/root.jffs2 %s" % (self.MKFS, self.WORKDIR, self.MKUBIFS_ARGS)
 			cmd2 = None
 			cmd3 = None
-		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HaveMultiBoot"]:
+			print "[ImageBackup] jffs2 cmd1: ", cmd1
+			print "[ImageBackup] jffs2 cmd2: ", cmd2
+			print "[ImageBackup] jffs2 cmd3: ", cmd3
+		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HasMultiBoot"]:
 			cmd1 = "%s -cf %s/rootfs.tar -C /tmp/bi/root --exclude=/var/nmbd/* ." % (self.MKFS, self.WORKDIR)
 			cmd2 = "%s %s/rootfs.tar" % (self.BZIP2, self.WORKDIR)
 			cmd3 = None
+			print "[ImageBackup] tar.bz2 cmd1: ", cmd1
+			print "[ImageBackup] tar.bz2 cmd2: ", cmd2
+			print "[ImageBackup] tar.bz2 cmd3: ", cmd3
 		else:
 			f = open("%s/ubinize.cfg" %self.WORKDIR, "w")
 			f.write("[ubifs]\n")
@@ -297,29 +306,36 @@ class ImageBackup(Screen):
 			cmd1 = "%s -r /tmp/bi/root -o %s/root.ubi %s" % (self.MKFS, self.WORKDIR, self.MKUBIFS_ARGS)
 			cmd2 = "%s -o %s/root.ubifs %s %s/ubinize.cfg" % (self.UBINIZE, self.WORKDIR, self.UBINIZE_ARGS, self.WORKDIR)
 			cmd3 = "mv %s/root.ubifs %s/root.%s" %(self.WORKDIR, self.WORKDIR, self.ROOTFSTYPE)
+			print "[ImageBackup] ubifs cmd1: ", cmd1
+			print "[ImageBackup] ubifs cmd2: ", cmd2
+			print "[ImageBackup] ubifs cmd3: ", cmd3
 
 		cmdlist = []
 		cmdlist.append(self.message)
-		cmdlist.append('echo "Create: %s\n"' %self.ROOTFSBIN)
+		cmdlist.append('echo "Create: rootfs dump %s\n"' %self.ROOTFSTYPE)
 		cmdlist.append(cmd1)
 		if cmd2:
 			cmdlist.append(cmd2)
 		if cmd3:
 			cmdlist.append(cmd3)
-		cmdlist.append("chmod 644 %s/%s" %(self.WORKDIR, self.ROOTFSBIN))
+
+		if self.ROOTFSBIN == "rootfs.tar.bz2":
+			cmdlist.append("chmod 644 %s/rootfs.%s" %(self.WORKDIR, self.ROOTFSTYPE))
+		else:
+			cmdlist.append("chmod 644 %s/root.%s" %(self.WORKDIR, self.ROOTFSTYPE))
 
 		if self.MODEL in ("gbquad4k"):
 			cmdlist.append('echo " "')
-			cmdlist.append('echo "Create: boot dump"')
+			cmdlist.append('echo "Create: boot dump boot.bin"')
 			cmdlist.append('echo " "')
 			cmdlist.append("dd if=/dev/mmcblk0p1 of=%s/boot.bin" % self.WORKDIR)
 			cmdlist.append('echo " "')
-			cmdlist.append('echo "Create: rescue dump"')
+			cmdlist.append('echo "Create: rescue dump rescue.bin"')
 			cmdlist.append('echo " "')
 			cmdlist.append("dd if=/dev/mmcblk0p5 of=%s/rescue.bin" % self.WORKDIR)
 
 		cmdlist.append('echo " "')
-		cmdlist.append('echo "Create: kerneldump"')
+		cmdlist.append('echo "Create: kernel dump"')
 		cmdlist.append('echo " "')
 		if SystemInfo["HaveMultiBoot"]:
 			cmdlist.append("dd if=/dev/%s of=%s/kernel.bin" % (self.MTDKERNEL ,self.WORKDIR))
@@ -409,9 +425,8 @@ class ImageBackup(Screen):
 		if HaveGZkernel:
 			cmdlist.append('echo "Kernel dump OK"')
 			cmdlist.append("rm -rf /tmp/vmlinux.bin")
-		cmdlist.append('echo "_________________________________________________"')
-		cmdlist.append('echo "Almost there... "')
-		cmdlist.append('echo "Now building the USB-Image"')
+		cmdlist.append('echo "____________________________________________________\n"')
+		cmdlist.append('echo "Creating the Fullbackup..."')
 
 		system('rm -rf %s' %self.MAINDEST)
 		if not path.exists(self.MAINDEST):
@@ -427,6 +442,7 @@ class ImageBackup(Screen):
 			system('mv %s/rootfs.tar.bz2 %s/rootfs.tar.bz2' %(self.WORKDIR, self.MAINDEST))
 		else:
 			system('mv %s/root.%s %s/%s' %(self.WORKDIR, self.ROOTFSTYPE, self.MAINDEST, self.ROOTFSBIN))
+
 		if SystemInfo["HaveMultiBoot"]:
 			system('mv %s/kernel.bin %s/kernel.bin' %(self.WORKDIR, self.MAINDEST))
 		elif self.MTDKERNEL == "mmcblk0p1" or self.MTDKERNEL == "mmcblk0p3":
@@ -436,12 +452,6 @@ class ImageBackup(Screen):
 
 		if SystemInfo["HaveMultiBoot"] and self.list[self.selection] == "Recovery":
 			system('mv %s/disk.img %s/disk.img' %(self.WORKDIR, self.MAINDEST))
-		elif self.MODEL in ("vuultimo4k","vusolo4k", "vuduo2", "vusolo2", "vusolo", "vuduo", "vuultimo", "vuuno"):
-			cmdlist.append('echo "This file forces a reboot after the update." > %s/reboot.update' %self.MAINDEST)
-		elif self.MODEL in ("vuzero" , "vusolose", "vuuno4k"):
-			cmdlist.append('echo "This file forces the update." > %s/force.update' %self.MAINDEST)
-		elif self.MODEL in ("novaip" , "zgemmai55" , "sf98", "xpeedlxpro",'evoslim'):
-			cmdlist.append('echo "This file forces the update." > %s/force' %self.MAINDEST)
 		else:
 			cmdlist.append('echo "rename this file to "force" to force an update without confirmation" > %s/noforce' %self.MAINDEST)
 
@@ -449,7 +459,7 @@ class ImageBackup(Screen):
 			system('mv %s/boot.bin %s/boot.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/rescue.bin %s/rescue.bin' %(self.WORKDIR, self.MAINDEST))
 
-		if self.MODEL in ("gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "gbultraueh", "twinboxlcd", "twinboxlcdci", "singleboxlcd", "sf208", "sf228"):
+		if self.MODEL in ("gbquad4k", "gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "gbultraueh"):
 			lcdwaitkey = '/usr/share/lcdwaitkey.bin'
 			lcdwarning = '/usr/share/lcdwarning.bin'
 			if path.exists(lcdwaitkey):
@@ -472,15 +482,15 @@ class ImageBackup(Screen):
 		file_found = True
 
 		if not path.exists("%s/%s" % (self.MAINDEST, self.ROOTFSBIN)):
-			print 'ROOTFS bin file not found'
+			print '[ImageBackup] ROOTFS bin file not found'
 			file_found = False
 
 		if not path.exists("%s/%s" % (self.MAINDEST, self.KERNELBIN)):
-			print 'KERNEL bin file not found'
+			print '[ImageBackup] KERNEL bin file not found'
 			file_found = False
 
 		if path.exists("%s/noforce" % self.MAINDEST):
-			print 'NOFORCE bin file not found'
+			print '[ImageBackup] NOFORCE bin file not found'
 			file_found = False
 
 		if SystemInfo["HaveMultiBoot"] and not self.list[self.selection] == "Recovery":
@@ -495,57 +505,63 @@ class ImageBackup(Screen):
 			cmdlist.append('echo "To restore the image:"')
 			cmdlist.append('echo "Use OnlineFlash in SoftwareManager"')
 		elif file_found:
-			cmdlist.append('echo "_________________________________________________\n"')
-			cmdlist.append('echo "USB Image created on:" %s' %self.MAINDEST)
-			cmdlist.append('echo "and there is made an extra copy on:"')
+			cmdlist.append('echo "____________________________________________________\n"')
+			cmdlist.append('echo "Fullbackup created on:" %s' %self.MAINDEST)
+			cmdlist.append('echo "Extra copy of fullbackup created on:"')
 			cmdlist.append('echo %s' %self.EXTRA)
-			cmdlist.append('echo "_________________________________________________\n"')
-			cmdlist.append('echo " "')
-			cmdlist.append('echo "\nPlease wait...almost ready! "')
-			cmdlist.append('echo " "')
+			cmdlist.append('echo "____________________________________________________\n"')
+			cmdlist.append('echo "Please wait...almost ready...\n"')
 			cmdlist.append('echo "To restore the image:"')
-			cmdlist.append('echo "Please check the manual of the receiver"')
+			cmdlist.append('echo "Please check the manual of the receiver "')
 			cmdlist.append('echo "on how to restore the image"')
 		else:
-			cmdlist.append('echo "_________________________________________________\n"')
+			cmdlist.append('echo "____________________________________________________\n"')
 			cmdlist.append('echo "Image creation failed - "')
-			cmdlist.append('echo "Probable causes could be"')
+			cmdlist.append('echo "Possible causes could be"')
 			cmdlist.append('echo "     wrong back-up destination "')
 			cmdlist.append('echo "     no space left on back-up device"')
 			cmdlist.append('echo "     no writing permission on back-up device"')
 			cmdlist.append('echo " "')
 
-#		if self.DIRECTORY == "/hdd":
-#			self.TARGET = self.SearchUSBcandidate()
-#			print "TARGET = %s" % self.TARGET
-#			if self.TARGET == 'XX':
-#				cmdlist.append('echo " "')
-#			else:
-#				cmdlist.append('echo "_________________________________________________\n"')
-#				cmdlist.append('echo " "')
-#				cmdlist.append('echo "There is a valid USB-flash drive detected in one "')
-#				cmdlist.append('echo "of the USB-ports, therefor an extra copy of the "')
-#				cmdlist.append('echo "back-up image will now be copied to that USB- "')
-#				cmdlist.append('echo "flash drive. "')
-#				cmdlist.append('echo "This only takes about 1 or 2 minutes"')
-#				cmdlist.append('echo " "')
-#
-#				cmdlist.append('mkdir -p %s/%s' % (self.TARGET, self.IMAGEFOLDER))
-#				cmdlist.append('cp -r %s %s/' % (self.MAINDEST, self.TARGET))
-#
-#
-#				cmdlist.append("sync")
-#				cmdlist.append('echo "Backup finished and copied to your USB-flash drive"')
-#			
+		if self.DIRECTORY == "/hdd":
+			self.TARGET = self.SearchUSBcanidate()
+			print "[ImageBackup] TARGET = %s" % self.TARGET
+			if self.TARGET == 'XX':
+				cmdlist.append('echo "\n"')
+				cmdlist.append('echo "\n"')
+				cmdlist.append('echo "Please wait..."')
+			else:
+				cmdlist.append('echo "\n"')
+				cmdlist.append('echo "\n"')
+				cmdlist.append('echo "__________________________________________________\n"')
+				cmdlist.append('echo "There is a valid USB-flash drive detected in one "')
+				cmdlist.append('echo "of the USB-ports, therefor an extra copy of the "')
+				cmdlist.append('echo "back-up image will now be copied to that USB- "')
+				cmdlist.append('echo "flash drive. "')
+				cmdlist.append('echo "This only takes about 1 or 2 minutes"')
+				cmdlist.append('echo "\n"')
+
+				cmdlist.append('mkdir -p %s/%s' % (self.TARGET, self.IMAGEFOLDER))
+				cmdlist.append('cp -r %s %s/' % (self.MAINDEST, self.TARGET))
+
+
+				cmdlist.append("sync")
+				cmdlist.append('echo "Backup finished and copied to your USB-flash drive"')
+
+		cmdlist.append("sleep 2")
 		cmdlist.append("umount /tmp/bi/root")
+		cmdlist.append("sleep 2")
 		cmdlist.append("rmdir /tmp/bi/root")
 		cmdlist.append("rmdir /tmp/bi")
 		cmdlist.append("rm -rf %s" % self.WORKDIR)
 		cmdlist.append("sleep 5")
+		cmdlist.append('echo "\n"')
 		END = time()
 		DIFF = int(END - self.START)
 		TIMELAP = str(datetime.timedelta(seconds=DIFF))
+		cmdlist.append('echo "\n\n"')
 		cmdlist.append('echo "Time required for this process: %s"' %TIMELAP)
+		cmdlist.append('echo "\n"')
 
 		self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = False)
 
