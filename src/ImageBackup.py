@@ -197,7 +197,6 @@ class ImageBackup(Screen):
 		return files
 
 	def SearchUSBcandidate(self):
-		return "XX"
 		for paths, subdirs, files in walk("/media"):
 			for dir in subdirs:
 				if not dir == 'hdd' and not dir == 'net':
@@ -254,10 +253,10 @@ class ImageBackup(Screen):
 		if self.ROOTFSTYPE == "ubi":
 			self.message += _("Due to the used filesystem, the fullbackup\n")
 			self.message += _("will take about 3-12 minutes for this system.\n")
-		elif SystemInfo["HasMultiBoot"] and self.list[self.selection] == "Recovery":
+		elif SystemInfo["HaveMultiBoot"] and self.list[self.selection] == "Recovery":
 			self.message += _("because of the used filesystem the backup\n")
 			self.message += _("will take about 30 minutes for this system.\n")
-		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HasMultiBoot"]:
+		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HaveMultiBoot"]:
 			self.message += _("because of the used filesystem the backup\n")
 			self.message += _("will take about 1-4 minutes for this system.\n")
 		else:
@@ -284,7 +283,7 @@ class ImageBackup(Screen):
 			print "[ImageBackup] jffs2 cmd1: ", cmd1
 			print "[ImageBackup] jffs2 cmd2: ", cmd2
 			print "[ImageBackup] jffs2 cmd3: ", cmd3
-		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HasMultiBoot"]:
+		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HaveMultiBoot"]:
 			cmd1 = "%s -cf %s/rootfs.tar -C /tmp/bi/root --exclude=/var/nmbd/* ." % (self.MKFS, self.WORKDIR)
 			cmd2 = "%s %s/rootfs.tar" % (self.BZIP2, self.WORKDIR)
 			cmd3 = None
@@ -524,29 +523,32 @@ class ImageBackup(Screen):
 			cmdlist.append('echo " "')
 
 		if self.DIRECTORY == "/hdd":
-			self.TARGET = self.SearchUSBcanidate()
-			print "[ImageBackup] TARGET = %s" % self.TARGET
-			if self.TARGET == 'XX':
-				cmdlist.append('echo "\n"')
-				cmdlist.append('echo "\n"')
-				cmdlist.append('echo "Please wait..."')
-			else:
-				cmdlist.append('echo "\n"')
-				cmdlist.append('echo "\n"')
-				cmdlist.append('echo "__________________________________________________\n"')
-				cmdlist.append('echo "There is a valid USB-flash drive detected in one "')
-				cmdlist.append('echo "of the USB-ports, therefor an extra copy of the "')
-				cmdlist.append('echo "back-up image will now be copied to that USB- "')
-				cmdlist.append('echo "flash drive. "')
-				cmdlist.append('echo "This only takes about 1 or 2 minutes"')
-				cmdlist.append('echo "\n"')
-
-				cmdlist.append('mkdir -p %s/%s' % (self.TARGET, self.IMAGEFOLDER))
-				cmdlist.append('cp -r %s %s/' % (self.MAINDEST, self.TARGET))
-
-
-				cmdlist.append("sync")
-				cmdlist.append('echo "Backup finished and copied to your USB-flash drive"')
+			cmdlist.append('echo "\n"')
+			cmdlist.append('echo "\n"')
+			cmdlist.append('echo "Please wait..."')
+#			self.TARGET = self.SearchUSBcandidate()
+#			print "[ImageBackup] TARGET = %s" % self.TARGET
+#			if self.TARGET == 'XX':
+#				cmdlist.append('echo "\n"')
+#				cmdlist.append('echo "\n"')
+#				cmdlist.append('echo "Please wait..."')
+#			else:
+#				cmdlist.append('echo "\n"')
+#				cmdlist.append('echo "\n"')
+#				cmdlist.append('echo "__________________________________________________\n"')
+#				cmdlist.append('echo "There is a valid USB-flash drive detected in one "')
+#				cmdlist.append('echo "of the USB-ports, therefor an extra copy of the "')
+#				cmdlist.append('echo "back-up image will now be copied to that USB- "')
+#				cmdlist.append('echo "flash drive. "')
+#				cmdlist.append('echo "This only takes about 1 or 2 minutes"')
+#				cmdlist.append('echo "\n"')
+#
+#				cmdlist.append('mkdir -p %s/%s' % (self.TARGET, self.IMAGEFOLDER))
+#				cmdlist.append('cp -r %s %s/' % (self.MAINDEST, self.TARGET))
+#
+#
+#				cmdlist.append("sync")
+#				cmdlist.append('echo "Backup finished and copied to your USB-flash drive"')
 
 		cmdlist.append("sleep 2")
 		cmdlist.append("umount /tmp/bi/root")
