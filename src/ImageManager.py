@@ -268,7 +268,6 @@ class VIXImageManager(Screen):
 										  "ok": self.close,
 										  }, -1)
 
-
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
