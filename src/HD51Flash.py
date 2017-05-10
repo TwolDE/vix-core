@@ -22,7 +22,7 @@ import os
 import shutil
 import math
 from Tools.Directories import fileExists, fileCheck
-from boxbranding import getBoxType,  getImageDistro, getMachineName, getMachineBrand, getImageVersion, getMachineKernelFile, getMachineRootFile, getMachineMake
+from boxbranding import getBoxType,  getImageDistro, getMachineName, getMachineBrand, getImageVersion, getMachineKernelFile, getMachineRootFile, getMachineMake, getMachineBuild
 
 #############################################################################################################
 #
@@ -166,7 +166,10 @@ class HD51Flash(Screen):
 			self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(" ",1)[0]
 			self.multi = self.multi[-1:]
 			print "[Flash OnlineY1] MULTI:",self.multi
-			cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",3)[3].split(" ",1)[0]
+			if getMachineBuild() in ("hd51","vs1500"):
+				cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",3)[3].split(" ",1)[0]
+			else:
+				cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",1)[1].split(" ",1)[0]
 			self.devrootfs = cmdline
 			print "[Flash OnlineY2] MULTI rootfs ", self.devrootfs
 
@@ -181,16 +184,28 @@ class HD51Flash(Screen):
 		files = []
 		if SystemInfo["HaveMultiBoot"]:
 			path = PATH
-			for name in os.listdir(path):
-				if name != 'bootname' and os.path.isfile(os.path.join(path, name)):
-					try:
-						cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
-					except IndexError:
-						continue
-					cmdline_startup = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
-					if (cmdline != cmdline_startup) and (name != "STARTUP"):
-						files.append(name)
-			files.insert(0,"STARTUP")
+			if getMachineBuild() in ("hd51","vs1500"):
+				for name in os.listdir(path):
+					if name != 'bootname' and os.path.isfile(os.path.join(path, name)):
+						try:
+							cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
+						except IndexError:
+							continue
+						cmdline_startup = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
+						if (cmdline != cmdline_startup) and (name != "STARTUP"):
+							files.append(name)
+				files.insert(0,"STARTUP")
+			else:
+				for name in os.listdir(path):
+					if name != 'bootname' and os.path.isfile(os.path.join(path, name)):
+						try:
+							cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
+						except IndexError:
+							continue
+						cmdline_startup = self.read_startup("/boot/cmdline.txt").split("=",1)[1].split(" ",1)[0]
+						if (cmdline != cmdline_startup) and (name != "cmdline.txt"):
+							files.append(name)
+				files.insert(0,"cmdline.txt")
 		else:
 			files = "None"
 		return files
@@ -352,16 +367,16 @@ class doFlashImage(Screen):
 			else:
 				text += _("root and kernel")
 				if SystemInfo["HaveMultiBoot"]:
-					if not self.List == "STARTUP":
+					if self.List not in ("STARTUP","cmdline.txt"):
 						os.system('mkfs.ext4 -F ' + self.devrootfs)
 					cmdlist.append("%s -r -k -m%s %s > /dev/null 2>&1" % (ofgwritePath, self.multi, flashTmp))
-					if not self.List == "STARTUP":
+					if self.List not in ("STARTUP","cmdline.txt"):
 						cmdlist.append("umount -fl /oldroot_bind")
 						cmdlist.append("umount -fl /newroot")
 				else:
 					cmdlist.append("%s -r -k %s > /dev/null 2>&1" % (ofgwritePath, flashTmp))
 				message = "echo -e '\n"
-				if not self.List == "STARTUP" and SystemInfo["HaveMultiBoot"]:
+				if self.List not in ("STARTUP","cmdline.txt") and SystemInfo["HaveMultiBoot"]:
 					message += _('ofgwrite flashing ready.\n')
 					message += _('please press exit to go back to the menu.\n')
 				else:
@@ -375,7 +390,7 @@ class doFlashImage(Screen):
 			self.session.open(Console, title = text, cmdlist = cmdlist, finishedCallback = self.quit, closeOnSuccess = False)
 			if not self.simulate:
 				fbClass.getInstance().lock()
-			if not self.List == "STARTUP":
+			if self.List not in ("STARTUP","cmdline.txt"):
 				self.close()
 
 	def prepair_flashtmp(self, tmpPath):

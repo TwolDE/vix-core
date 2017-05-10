@@ -131,8 +131,11 @@ class VIXDevicesPanel(Screen):
 			if not parts:
 				continue
 			device = parts[3]
-			print "device type %s " % device
-			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[0-9]',device):
+			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[1-9]',device):
+				continue
+			if getMachineBuild() in ('et1x000','vuuno4k', 'vuultimo4k', 'vusolo4k', 'hd51', 'hd52', 'dm820', 'dm7080', 'sf4008', 'dm900', 'gb7252', 'dags7252', 'vs1500','h7') and re.search('mmcblk0p[1-9]',device):
+				continue
+			if getMachineBuild() in ('xc7439') and re.search('mmcblk1p[1-9]',device):
 				continue
 			if device in list2:
 				continue
@@ -359,7 +362,11 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			if not parts:
 				continue
 			device = parts[3]
-			if not re.search('sd[a-z][1-9]', device):
+			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[1-9]',device):
+				continue
+			if getMachineBuild() in ('et1x000','vuuno4k', 'vuultimo4k', 'vusolo4k', 'hd51', 'hd52', 'dm820', 'dm7080', 'sf4008', 'dm900', 'gb7252', 'dags7252', 'vs1500','h7') and re.search('mmcblk0p[1-9]',device):
+				continue
+			if getMachineBuild() in ('xc7439') and re.search('mmcblk1p[1-9]',device):
 				continue
 			if device in list2:
 				continue
