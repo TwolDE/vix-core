@@ -1,5 +1,5 @@
 # for localized messages
-from boxbranding import getMachineBrand, getMachineName
+from boxbranding import getMachineBrand, getMachineName, getMachineBuild
 from os import system, rename, path, mkdir, remove
 from time import sleep
 import re
