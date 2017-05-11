@@ -7,7 +7,7 @@ from Components.FileList import FileList
 from Components.Task import Task, Job, job_manager, Condition
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
-from Components.config import config, ConfigSubsection, ConfigYesNo, ConfigSelection, ConfigText, ConfigNumber, NoSave, ConfigClock
+from Components.config import config
 from Screens.Console import Console
 from Screens.MessageBox import MessageBox
 from Screens.ChoiceBox import ChoiceBox
@@ -16,13 +16,17 @@ from Screens.Console import Console
 from Screens.HelpMenu import HelpableScreen
 from Screens.TaskView import JobView
 from Tools.Downloader import downloadWithProgress
+from Tools.Directories import fileExists, fileCheck
 from enigma import fbClass
 import urllib2
 import os
 import shutil
 import math
-from Tools.Directories import fileExists, fileCheck
 from boxbranding import getBoxType,  getImageDistro, getMachineName, getMachineBrand, getImageVersion, getMachineKernelFile, getMachineRootFile, getMachineMake, getMachineBuild
+distro =  getImageDistro()
+ImageVersion = getImageVersion()
+ROOTFSBIN = getMachineRootFile()
+KERNELBIN = getMachineKernelFile()
 
 #############################################################################################################
 #
@@ -33,10 +37,6 @@ imagePath = '/media/hdd/images'
 flashPath = '/media/hdd/images/flash'
 flashTmp = '/media/hdd/images/tmp'
 ofgwritePath = '/usr/bin/ofgwrite'
-distro =  getImageDistro()
-ImageVersion = getImageVersion()
-ROOTFSBIN = getMachineRootFile()
-KERNELBIN = getMachineKernelFile()
 #############################################################################################################
 
 def Freespace(dev):
@@ -86,8 +86,10 @@ class HD51Flash(Screen):
 
 		self.session = session
 		self.selection = 0
-		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP") or fileCheck("/boot/STARTUP_1")
-		self.devrootfs = "/dev/mmcblk0p3"
+		if getMachineBuild() in ("hd51","vs1500"):
+			self.devrootfs = "/dev/mmcblk0p3"
+		else:
+			self.devrootfs = "/dev/mmcblk1p3"
 		self.multi = 1
 		self.list = self.list_files("/boot")
 
@@ -279,36 +281,33 @@ class doFlashImage(Screen):
 		
 	def box(self):
 		box = getBoxType()
-		machinename = getMachineMake()
+		if getMachineMake() == 'mutant51':
+			box = 'Mutant-HD51'
+		elif getMachineMake() == 'mutant52':
+			box = 'Mutant-HD52'
 		return box
 
 	def green(self, ret = None):
-		sel = self["imageList"].l.getCurrentSelection()
-		if sel == None:
+		self.sel = self["imageList"].l.getCurrentSelection()
+		if self.sel == None:
 			print"Nothing to select !!"
 			return
 
 		self.feedurl = feedurl_ViX
-		file_name = self.imagePath + "/" + sel
-		self.filename = file_name
-		self.sel = sel
-		box = self.box
+		self.filename = self.imagePath + "/" + self.sel
+		self.boxtype = self.box()
 		self.hide()
 		if self.Online:
-			if getMachineMake() == 'mutant51':
-				self.boxtype = 'Mutant-HD51'
-			elif getMachineMake() == 'mutant52':
-				self.boxtype = 'Mutant-HD52'
-			url = self.feedurl+'/'+self.boxtype+'/' + "/" + sel
+			url = self.feedurl+'/'+self.boxtype+'/' + "/" + self.sel
 			print "[Flash Online] Download image: >%s<" % url
 			try:
 				u = urllib2.urlopen(url)
-				f = open(file_name, 'wb')
+				f = open(self.filename, 'wb')
 				meta = u.info()
 				file_size = int(meta.getheaders("Content-Length")[0])
-				print "Downloading: %s Bytes: %s" % (sel, file_size)
+				print "Downloading: %s Bytes: %s" % (self.sel, file_size)
 				f.close()
-				job = ImageDownloadJob(url, file_name, sel)
+				job = ImageDownloadJob(url, self.filename, self.sel)
 				job.afterEvent = "close"
 				job_manager.AddJob(job)
 				job_manager.failed_jobs = []
@@ -454,20 +453,14 @@ class doFlashImage(Screen):
 			self.imagePath = imagePath
 
 	def layoutFinished(self):
-		box = self.box()
+		self.boxtype = self.box()
 		self.imagelist = []
 		if self.Online:
-			self["key_yellow"].setText("Backup&Flash")
+			self["key_yellow"].setText("Flash")
 			self["key_blue"] = StaticText("")
 			self.feedurl = feedurl_ViX
 
 			from bs4 import BeautifulSoup
-			if getMachineMake() == 'mutant51':
-				self.boxtype = 'Mutant-HD51'
-			elif getMachineMake() == 'mutant52':
-				self.boxtype = 'Mutant-HD52'
-			elif getMachineMake() == 'gbquad4k':
-				self.boxtype = 'GiGaBlue-QUAD-4K'
 			url = self.feedurl+'/'+self.boxtype+'/'
 			conn = urllib2.urlopen(url)
 			the_page = conn.read()
