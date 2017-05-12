@@ -140,7 +140,6 @@ class VIXImageManager(Screen):
 		self.activityTimer.start(10)
 		self.session = session
 		self.MODEL = getBoxType()
-		SystemInfo["HaveMultiBoot"] = fileCheck("/boot/STARTUP") or fileCheck("/boot/STARTUP_1")
 		self.Console = Console()
 
 		if BackupTime > 0:
