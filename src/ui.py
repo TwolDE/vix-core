@@ -63,19 +63,16 @@ class VIXMenu(Screen, ProtectedScreen):
 		Screen.setTitle(self, title)
 		self.menu = args
 		self.list = []
-		if self.menu == 0 and SystemInfo["HaveMultiBoot"]:
-			self.list.append(("backup-manager", _("Backup Settings"), _("Backup/Restore ViX settings."), None))
-			self.list.append(("image-manager", _("Image Manager"), _("Backup/Restore system image(s)"), None))
-			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from /tmp"), None))
-			self.list.append(("mount-manager", _("Mount Manager"), _("Manage device mount points."), None))
-			self.list.append(("HD51Flash", _("HD51 Image flash"), _("HD51 couch flash any partition"), None))
-			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup image/EMMC to HDD/USB"), None))
-			self.list.append(("HD51MultiBoot", _("Select Boot Image"), _("Boot from any HD51 Image Partition."), None))
-		elif self.menu == 0:
+		if self.menu == 0:
 			self.list.append(("backup-manager", _("Backup Settings"), _("Manage settings backup"), None))
 			self.list.append(("image-manager", _("Image Manager"), _("Backup/Restore system image(s)"), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from /tmp"), None))
 			self.list.append(("mount-manager", _("Mount Manager"), _("Manage device mount points"), None))
+		elif self.menu == 0 and SystemInfo["HasMMC"]:
+			self.list.append(("HD51Flash", _("Online Image flash"), _("couch flash available EMMC partition"), None))
+			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup image/EMMC to HDD/USB"), None))
+		elif self.menu == 0 and SystemInfo["HaveMultiBoot"]:
+			self.list.append(("HD51MultiBoot", _("Select Boot Image"), _("Boot from any HD51 Image Partition."), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
 
