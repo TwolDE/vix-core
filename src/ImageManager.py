@@ -139,7 +139,6 @@ class VIXImageManager(Screen):
 		self.activityTimer.timeout.get().append(self.backupRunning)
 		self.activityTimer.start(10)
 		self.session = session
-		self.MODEL = getBoxType()
 		self.Console = Console()
 
 		if BackupTime > 0:
@@ -623,6 +622,7 @@ class ImageBackup(Screen):
 		self.MTDROOTFS = getMachineMtdRoot()
 		self.ROOTFSFILE = getMachineRootFile()
 		self.MAINDEST = self.MAINDESTROOT + '/' + getImageFolder() + '/'
+		self.MODEL = getBoxType()
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
 		print '[ImageManager] Type:',getImageFileSystem()
