@@ -838,7 +838,7 @@ class ImageBackup(Screen):
 			self.commands.append('mount --bind / %s/root' % self.TMPDIR)
 			self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root --exclude=/var/nmbd/* ." % (self.WORKDIR, self.TMPDIR))
 			self.commands.append("/usr/bin/bzip2 %s/rootfs.tar" % self.WORKDIR)
-			if self.MODEL in ("gbquad4k"):
+			if self.MODEL in ("gbquad4k","gbue4k"):
 				self.commands.append("dd if=/dev/mmcblk0p1 of=%s/boot.bin" % self.WORKDIR)
 				self.commands.append("dd if=/dev/mmcblk0p5 of=%s/rescue.bin" % self.WORKDIR)
 		elif self.ROOTDEVTYPE == 'hd-emmc':
@@ -947,6 +947,9 @@ class ImageBackup(Screen):
 				move('%s/vmlinux.bin' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
 			else:
 				move('%s/vmlinux.gz' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
+		if self.MODEL in ("gbquad4k","gbue4k"):
+			move('%s/boot.bin' % self.WORKDIR, '%/boot.bin' % self.MAINDEST)
+			move('%s/rescue.bin' % self.WORKDIR, '%/rescue.bin' % self.MAINDEST)
 		fileout = open(self.MAINDEST + '/imageversion', 'w')
 		line = defaultprefix + '-' + getImageType() + '-backup-' + getImageVersion() + '.' + getImageBuild() + '-' + self.BackupDate
 		fileout.write(line)

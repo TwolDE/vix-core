@@ -270,10 +270,10 @@ class ImageBackup(Screen):
 		self.message += _("Please be patient, a fullbackup will now be created.\n")
 		if self.ROOTFSTYPE == "ubi":
 			self.message += _("Due to the used filesystem, the fullbackup\n")
-			self.message += _("will take about 3-12 minutes for this system.\n")
+			self.message += _("can take about 3-12 minutes for this system.\n")
 		elif SystemInfo["HaveMultiBoot"] and self.list[self.selection] == "Recovery":
 			self.message += _("because of the used filesystem the backup\n")
-			self.message += _("will take about 30 minutes for this system.\n")
+			self.message += _("can take about 30 minutes for this system.\n")
 		elif "tar.bz2" in self.ROOTFSTYPE.split() or SystemInfo["HaveMultiBoot"]:
 			self.message += _("because of the used filesystem the backup\n")
 			self.message += _("will take about 1-4 minutes for this system.\n")
@@ -332,7 +332,7 @@ class ImageBackup(Screen):
 		else:
 			cmdlist.append("chmod 644 %s/root.%s" %(self.WORKDIR, self.ROOTFSTYPE))
 
-		if self.MODEL in ("gbquad4k"):
+		if self.MODEL in ("gbquad4k","gbue4k"):
 			cmdlist.append('echo " "')
 			cmdlist.append('echo "Create: boot dump boot.bin"')
 			cmdlist.append('echo " "')
