@@ -623,9 +623,14 @@ class ImageBackup(Screen):
 		self.ROOTFSFILE = getMachineRootFile()
 		self.MAINDEST = self.MAINDESTROOT + '/' + getImageFolder() + '/'
 		self.MODEL = getBoxType()
+		self.GB4Kbin = 'boot.bin'
+		self.GB4Krescue = 'rescue.bin'
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
 		print '[ImageManager] Type:',getImageFileSystem()
+		print '[ImageManager] MAINDEST:',self.MAINDEST
+		print '[ImageManager] WORKDIR:',self.WORKDIR
+		print '[ImageManager] TMPDIR:',self.TMPDIR
 		if 'ubi' in getImageFileSystem():
 			self.ROOTDEVTYPE = 'ubifs'
 			self.ROOTFSTYPE = 'ubifs'
@@ -642,6 +647,9 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'jffs2'
 			self.ROOTFSTYPE= 'jffs2'
 			self.KERNELFSTYPE = 'gz'
+		print '[ImageManager] ROOTDEVTYPE:',self.ROOTDEVTYPE
+		print '[ImageManager] ROOTFSTYPE:',self.ROOTFSTYPE
+		print '[ImageManager] KERNELFSTYPE:',self.KERNELFSTYPE
 		self.swapdevice = ""
 		self.RamChecked = False
 		self.SwapCreated = False
@@ -841,6 +849,8 @@ class ImageBackup(Screen):
 			if self.MODEL in ("gbquad4k","gbue4k"):
 				self.commands.append("dd if=/dev/mmcblk0p1 of=%s/boot.bin" % self.WORKDIR)
 				self.commands.append("dd if=/dev/mmcblk0p5 of=%s/rescue.bin" % self.WORKDIR)
+				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
+				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
 		elif self.ROOTDEVTYPE == 'hd-emmc':
 			print '[ImageManager] Stage2: EMMC Detected.'
 			GPT_OFFSET=0
@@ -948,8 +958,8 @@ class ImageBackup(Screen):
 			else:
 				move('%s/vmlinux.gz' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
 		if self.MODEL in ("gbquad4k","gbue4k"):
-			move('%s/boot.bin' % self.WORKDIR, '%/boot.bin' % self.MAINDEST)
-			move('%s/rescue.bin' % self.WORKDIR, '%/rescue.bin' % self.MAINDEST)
+       			move('%s/%s' % (self.WORKDIR, self.GB4Kbin), '%s/%s' % (self.MAINDEST, self.GB4Kbin))
+			move('%s/%s' % (self.WORKDIR, self.GB4Krescue), '%s/%s' % (self.MAINDEST, self.GB4Krescue))
 		fileout = open(self.MAINDEST + '/imageversion', 'w')
 		line = defaultprefix + '-' + getImageType() + '-backup-' + getImageVersion() + '.' + getImageBuild() + '-' + self.BackupDate
 		fileout.write(line)

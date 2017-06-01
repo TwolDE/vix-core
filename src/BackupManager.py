@@ -1363,4 +1363,3 @@ class BackupFiles(Screen):
 			autoBackupManagerTimer.backupupdate(atLeast)
 		else:
 			autoBackupManagerTimer.backupstop()
-
