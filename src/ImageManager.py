@@ -101,7 +101,7 @@ class VIXImageManager(Screen):
 
 	def __init__(self, session, menu_path=""):
 		Screen.__init__(self, session)
-		screentitle = _("Image Manager")
+		screentitle = _("Image manager")
 		self.menu_path = menu_path
 		if config.usage.show_menupath.value == 'large':
 			self.menu_path += screentitle
@@ -124,7 +124,7 @@ class VIXImageManager(Screen):
 
 		self['lab1'] = Label()
 		self["backupstatus"] = Label()
-		self["key_blue"] = Button(_("Restore"))
+		self["key_blue"] = Button(_("Flash"))
 		self["key_green"] = Button()
 		self["key_yellow"] = Button(_("Downloads"))
 		self["key_red"] = Button(_("Delete"))
@@ -143,9 +143,9 @@ class VIXImageManager(Screen):
 
 		if BackupTime > 0:
 			t = localtime(BackupTime)
-			backuptext = _("Next Backup: ") + strftime(_("%a %e %b  %-H:%M"), t)
+			backuptext = _("Next backup: ") + strftime(_("%a %e %b  %-H:%M"), t)
 		else:
-			backuptext = _("Next Backup: ")
+			backuptext = _("Next backup: ")
 		self["backupstatus"].setText(str(backuptext))
 		if not self.selectionChanged in self["list"].onSelectionChanged:
 			self["list"].onSelectionChanged.append(self.selectionChanged)
@@ -169,12 +169,12 @@ class VIXImageManager(Screen):
 		self.populate_List()
 		self.BackupRunning = False
 		for job in Components.Task.job_manager.getPendingJobs():
-			if job.name.startswith(_("Image Manager")):
+			if job.name.startswith(_("Image manager")):
 				self.BackupRunning = True
 		if self.BackupRunning:
-			self["key_green"].setText(_("View Progress"))
+			self["key_green"].setText(_("View progress"))
 		else:
-			self["key_green"].setText(_("New Backup"))
+			self["key_green"].setText(_("New backup"))
 		self.activityTimer.startLongTimer(5)
 
 	def refreshUp(self):
@@ -242,7 +242,7 @@ class VIXImageManager(Screen):
 				self.BackupDirectory = '/media/hdd/imagebackups/'
 				config.imagemanager.backuplocation.value = '/media/hdd/'
 				config.imagemanager.backuplocation.save()
-				self['lab1'].setText(_("The chosen location does not exist, using /media/hdd") + "\n" + _("Select an image to restore:"))
+				self['lab1'].setText(_("The chosen location does not exist, using /media/hdd") + "\n" + _("Select an image to flash:"))
 			else:
 				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions"],
 											  {
@@ -250,7 +250,7 @@ class VIXImageManager(Screen):
 											  "menu": self.createSetup,
 											  }, -1)
 
-				self['lab1'].setText(_("Device: None available") + "\n" + _("Select an image to restore:"))
+				self['lab1'].setText(_("Device: None available") + "\n" + _("Select an image to flash:"))
 		else:
 			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 										  {
@@ -269,7 +269,7 @@ class VIXImageManager(Screen):
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
-			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Select an image to restore:"))
+			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Select an image to flash:"))
 
 		try:
 			if not path.exists(self.BackupDirectory):
@@ -279,7 +279,7 @@ class VIXImageManager(Screen):
 				remove(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
 			self.refreshList()
 		except:
-			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("there is a problem with this device, please reformat and try again."))
+			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("there is a problem with this device, please reformat device and try again."))
 
 	def createSetup(self):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
@@ -308,9 +308,9 @@ class VIXImageManager(Screen):
 				autoImageManagerTimer.backupstop()
 		if BackupTime > 0:
 			t = localtime(BackupTime)
-			backuptext = _("Next Backup: ") + strftime(_("%a %e %b  %-H:%M"), t)
+			backuptext = _("Next backup: ") + strftime(_("%a %e %b  %-H:%M"), t)
 		else:
-			backuptext = _("Next Backup: ")
+			backuptext = _("Next backup: ")
 		self["backupstatus"].setText(str(backuptext))
 
 	def keyDelete(self):
@@ -318,7 +318,7 @@ class VIXImageManager(Screen):
 		if self.sel:
 			message = _("Are you sure you want to delete this backup:\n ") + self.sel
 			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=False)
-			ybox.setTitle(_("Remove Confirmation"))
+			ybox.setTitle(_("Remove confirmation"))
 		else:
 			self.session.open(MessageBox, _("You have no image to delete."), MessageBox.TYPE_INFO, timeout=10)
 
@@ -336,7 +336,7 @@ class VIXImageManager(Screen):
 		backup = None
 		self.BackupRunning = False
 		for job in Components.Task.job_manager.getPendingJobs():
-			if job.name.startswith(_("Image Manager")):
+			if job.name.startswith(_("Image manager")):
 				backup = job
 				self.BackupRunning = True
 		if self.BackupRunning and backup:
@@ -347,17 +347,17 @@ class VIXImageManager(Screen):
 	def keyBackup(self):
 		message = _("Are you ready to create a backup image ?")
 		ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO)
-		ybox.setTitle(_("Backup Confirmation"))
+		ybox.setTitle(_("Backup confirmation"))
 
 	def doBackup(self, answer):
 		if answer is True:
 			self.ImageBackup = ImageBackup(self.session)
 			Components.Task.job_manager.AddJob(self.ImageBackup.createBackupJob())
 			self.BackupRunning = True
-			self["key_green"].setText(_("View Progress"))
+			self["key_green"].setText(_("View progress"))
 			self["key_green"].show()
 			for job in Components.Task.job_manager.getPendingJobs():
-				if job.name.startswith(_("Image Manager")):
+				if job.name.startswith(_("Image manager")):
 					break
 			self.showJobView(job)
 
@@ -367,7 +367,7 @@ class VIXImageManager(Screen):
 		Components.Task.job_manager.AddJob(self.BackupFiles.createBackupJob())
 		Components.Task.job_manager.in_background = False
 		for job in Components.Task.job_manager.getPendingJobs():
-			if job.name.startswith(_('Backup Manager')):
+			if job.name.startswith(_('Backup manager')):
 				break
 		self.session.openWithCallback(self.keyRestore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
 
@@ -378,9 +378,9 @@ class VIXImageManager(Screen):
 		if self.sel:
 			message = _("Are you sure you want to restore this image:\n ") + self.sel
 			ybox = self.session.openWithCallback(self.keyRestore2, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("Restore Confirmation"))
+			ybox.setTitle(_("Restore confirmation"))
 		else:
-			self.session.open(MessageBox, _("You have no image to restore or invalid format for flash restore."), MessageBox.TYPE_INFO, timeout=10)
+			self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
 
 	def keyRestore2(self, answer):
 		if answer:
@@ -391,9 +391,9 @@ class VIXImageManager(Screen):
 
 	def keyRestore3(self, val = None):
 		if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
-			self.session.open(MessageBox, _("Please wait while the restore prepares this can take over 3 mins"), MessageBox.TYPE_INFO, timeout=120, enable_input=False)
+			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares this can take over 3 mins"), MessageBox.TYPE_INFO, timeout=120, enable_input=False)
 		else:
-			self.session.open(MessageBox, _("Please wait while the restore prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)			
+			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)			
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
@@ -539,7 +539,7 @@ class AutoImageManagerTimer:
 			if not inStandby and config.imagemanager.query.value:
 				message = _("Your %s %s is about to run a full image backup, this can take about 6 minutes to complete,\ndo you want to allow this?") % (getMachineBrand(), getMachineName())
 				ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO, timeout=30)
-				ybox.setTitle('Scheduled Backup.')
+				ybox.setTitle('Scheduled backup.')
 			else:
 				print "[ImageManager] in Standby or no querying, so just running backup", strftime("%c", localtime(now))
 				self.doBackup(True)
@@ -562,7 +562,7 @@ class AutoImageManagerTimer:
 			else:
 				atLeast = 60
 				print "[ImageManager] Enough Retries, delaying till next schedule.", strftime("%c", localtime(now))
-				self.session.open(MessageBox, _("Enough Retries, delaying till next schedule."), MessageBox.TYPE_INFO, timeout=10)
+				self.session.open(MessageBox, _("Enough retries, delaying till next schedule."), MessageBox.TYPE_INFO, timeout=10)
 				config.imagemanager.backupretrycount.setValue(0)
 				self.backupupdate(atLeast)
 		else:
@@ -660,33 +660,33 @@ class ImageBackup(Screen):
 		self.Stage5Completed = False
 
 	def createBackupJob(self):
-		job = Components.Task.Job(_("Image Manager"))
+		job = Components.Task.Job(_("Image manager"))
 
-		task = Components.Task.PythonTask(job, _("Setting Up..."))
+		task = Components.Task.PythonTask(job, _("Setting up..."))
 		task.work = self.JobStart
 		task.weighting = 5
 
-		task = Components.Task.ConditionTask(job, _("Checking Free RAM.."), timeoutCount=10)
+		task = Components.Task.ConditionTask(job, _("Checking free RAM.."), timeoutCount=10)
 		task.check = lambda: self.RamChecked
 		task.weighting = 5
 
-		task = Components.Task.ConditionTask(job, _("Creating Swap.."), timeoutCount=120)
+		task = Components.Task.ConditionTask(job, _("Creating swap.."), timeoutCount=120)
 		task.check = lambda: self.SwapCreated
 		task.weighting = 5
 
-		task = Components.Task.PythonTask(job, _("Backing up Kernel..."))
+		task = Components.Task.PythonTask(job, _("Backing up kernel..."))
 		task.work = self.doBackup1
 		task.weighting = 5
 
-		task = Components.Task.ConditionTask(job, _("Backing up Kernel..."), timeoutCount=900)
+		task = Components.Task.ConditionTask(job, _("Backing up kernel..."), timeoutCount=900)
 		task.check = lambda: self.Stage1Completed
 		task.weighting = 35
 
-		task = Components.Task.PythonTask(job, _("Backing up Root file system..."))
+		task = Components.Task.PythonTask(job, _("Backing up root file system..."))
 		task.work = self.doBackup2
 		task.weighting = 5
 
-		task = Components.Task.ConditionTask(job, _("Backing up Root file system..."), timeoutCount=900)
+		task = Components.Task.ConditionTask(job, _("Backing up root file system..."), timeoutCount=900)
 		task.check = lambda: self.Stage2Completed
 		task.weighting = 15
 
@@ -698,11 +698,11 @@ class ImageBackup(Screen):
 		task.check = lambda: self.Stage3Completed
 		task.weighting = 5
 
-		task = Components.Task.PythonTask(job, _("Moving to Backup Location..."))
+		task = Components.Task.PythonTask(job, _("Moving to backup Location..."))
 		task.work = self.doBackup4
 		task.weighting = 5
 
-		task = Components.Task.ConditionTask(job, _("Moving to Backup Location..."), timeoutCount=30)
+		task = Components.Task.ConditionTask(job, _("Moving to backup Location..."), timeoutCount=30)
 		task.check = lambda: self.Stage4Completed
 		task.weighting = 5
 
@@ -714,7 +714,7 @@ class ImageBackup(Screen):
 		task.check = lambda: self.Stage5Completed
 		task.weighting = 5
 
-		task = Components.Task.PythonTask(job, _("Backup Complete..."))
+		task = Components.Task.PythonTask(job, _("Backup complete..."))
 		task.work = self.BackupComplete
 		task.weighting = 5
 
@@ -1232,7 +1232,7 @@ class ImageManagerDownload(Screen):
 		if self.sel:
 			message = _("Are you sure you want to download this image:\n ") + self.sel
 			ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("Download Confirmation"))
+			ybox.setTitle(_("Download confirmation"))
 		else:
 			self.session.open(MessageBox, _("You have no image to download."), MessageBox.TYPE_INFO, timeout=10)
 
