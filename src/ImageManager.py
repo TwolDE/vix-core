@@ -390,10 +390,7 @@ class VIXImageManager(Screen):
 				self.keyRestore3()
 
 	def keyRestore3(self, val = None):
-		if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
-			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares this can take over 3 mins"), MessageBox.TYPE_INFO, timeout=120, enable_input=False)
-		else:
-			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares"), MessageBox.TYPE_INFO, timeout=60, enable_input=False)			
+		self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares"), MessageBox.TYPE_INFO, timeout=180, enable_input=False)			
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
@@ -405,6 +402,7 @@ class VIXImageManager(Screen):
 
 	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
+			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=2)
 			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 				self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
 			elif getMachineMake() == 'et8500' and self.dualboot:
