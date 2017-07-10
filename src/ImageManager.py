@@ -402,7 +402,7 @@ class VIXImageManager(Screen):
 
 	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
-			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=2)
+			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=4)
 			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 				self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
 			elif getMachineMake() == 'et8500' and self.dualboot:
