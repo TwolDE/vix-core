@@ -8,6 +8,7 @@ from Components.Harddisk import harddiskmanager
 from BackupManager import BackupManagerautostart
 from ImageManager import ImageManagerautostart
 from SwapManager import SwapAutostart
+from IPTVcreate import IPTVcreateautostart
 from SoftcamManager import SoftcamAutostart
 from ScriptRunner import ScriptRunnerAutostart
 from IPKInstaller import IpkgInstaller
@@ -106,7 +107,14 @@ def HD51Flash(session):
 
 def HD51FlashMenu(session, **kwargs):
 	session.open(HD51Flash)
+	
+def IPTVcreate(session):
+	from IPTVcreate import IPTVcreate
+	return IPTVcreate(session)
 
+def IPTVcreateMenu(session, **kwargs):
+	session.open(IPTVcreate)
+	
 def HD51MultiBoot(session):
 	from HD51MultiBoot import HD51MultiBoot
 	return HD51MultiBoot(session)
@@ -162,14 +170,17 @@ def Plugins(**kwargs):
 		plist.append(PluginDescriptor(name=_("Script runner"), where=PluginDescriptor.WHERE_EXTENSIONSMENU, fnc=ScriptRunnerMenu))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_AUTOSTART, fnc=SoftcamAutostart))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_AUTOSTART, fnc=SwapAutostart))
+	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_AUTOSTART, fnc=IPTVcreateautostart))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=ImageManagerautostart))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=BackupManagerautostart))
+	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=IPTVcreateautostart))
 	if config.misc.firstrun.value and not config.misc.restorewizardrun.value and backupAvailable == 1:
 		plist.append(PluginDescriptor(name=_("Restore wizard"), where=PluginDescriptor.WHERE_WIZARD, needsRestart=False, fnc=(3, RestoreWizard)))
 	plist.append(PluginDescriptor(name=_("Ipkg"), where=PluginDescriptor.WHERE_FILESCAN, needsRestart=False, fnc=filescan))
 	plist.append(PluginDescriptor(name=_("ViX Backup manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=BackupManagerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Image manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ImageMangerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Mount manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=MountManagerMenu))
+	plist.append(PluginDescriptor(name=_("IPTV Bouquet manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=IPTVcreateMenu))
 	plist.append(PluginDescriptor(name=_("ViX Script runner"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ScriptRunnerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Swap manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=SwapManagerMenu))
 	return plist

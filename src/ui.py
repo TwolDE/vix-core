@@ -68,6 +68,7 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("image-manager", _("Image manager"), _("Backup/Flash system image(s)."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
+			self.list.append(("IPTV-manager", _("IPTV Bouquet manager"), _("Manage your IPTV Bouquets"), None))
 		if self.menu == 0 and SystemInfo["HasMMC"]:
 			self.list.append(("HD51Flash", _("Online Image flash"), _("Couch flash any Arm EMMC partition."), None))
 			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup to HDD or USB."), None))
@@ -141,6 +142,9 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "mount-manager":
 					from MountManager import VIXDevicesPanel
 					self.session.open(VIXDevicesPanel, self.menu_path)
+				elif currentEntry == "IPTV-manager":
+					from IPTVcreate import IPTVcreate
+					self.session.open(IPTVcreate, self.menu_path)
 				elif currentEntry == "HD51Flash":
 					from HD51Flash import HD51Flash
 					self.session.open(HD51Flash, self.menu_path)
