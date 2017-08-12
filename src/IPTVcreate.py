@@ -37,8 +37,8 @@ config.IPTVcreate.M3Uurl = ConfigText(default = "", fixed_size=False)
 config.IPTVcreate.EPGurl = ConfigText(default = "", fixed_size=False)
 config.IPTVcreate.Bouqueturl = ConfigText(default = "", fixed_size=False)
 config.IPTVcreate.Provname = ConfigSelection(default='ACE', choices=get_providers_list())
-config.IPTVcreate.Username = ConfigText(default = "awhalley@waitrose.com", fixed_size=False)
-config.IPTVcreate.Password = ConfigPassword(default='c6G1U3oj2t', fixed_size=False)
+config.IPTVcreate.Username = ConfigText(default = "", fixed_size=False)
+config.IPTVcreate.Password = ConfigPassword(default='', fixed_size=False)
 config.IPTVcreate.Piconpath = ConfigSelection(default='/usr/share/enigma2/picon/', choices=[
  '/usr/share/enigma2/picon/',
  '/media/usb/picon/',
