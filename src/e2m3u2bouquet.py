@@ -110,10 +110,6 @@ class IPTVSetup():
     def download_providers(self, url):
         """Download providers file from url"""
         filename = os.path.join(ENIGMAPATH, 'IPTVcreate_providers.txt')
-#	if os.path.isfile(filename):
-#            print '\n[e2m3u2bouquet]----Return Saved providers file----'
-#	    return filename
-        print '\n[e2m3u2bouquet]----Downloading Online providers file----'
         if DEBUG:
             print '[e2m3u2bouquet]providers url = {}'.format(url)
         try:
