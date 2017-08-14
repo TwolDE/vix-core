@@ -36,6 +36,7 @@ __date__ = '2017-06-04'
 __updated__ = '2017-08-01'
 DEBUG = 0
 TESTRUN = 0
+DELETEP = 0
 ENIGMAPATH = '/etc/enigma2/'
 EPGIMPORTPATH = '/etc/epgimport/'
 PICONSPATH = '/usr/share/enigma2/picon/'
@@ -87,12 +88,10 @@ class IPTVSetup():
             for line in bakfile:
                 if '.suls_iptv_' not in line:
                     tvfile.write(line)
-
             bakfile.close()
             tvfile.close()
         except Exception as e:
             raise e
-
         print '[e2m3u2bouquet]----Uninstall complete----'
 
     def download_m3u(self, url):
@@ -106,14 +105,15 @@ class IPTVSetup():
             urllib.urlretrieve(url, filename)
         except Exception as e:
             raise e
-
         return filename
 
     def download_providers(self, url):
         """Download providers file from url"""
-        path = tempfile.gettempdir()
-        filename = os.path.join(path, 'providers.txt')
-        print '\n[e2m3u2bouquet]----Downloading providers file----'
+        filename = os.path.join(ENIGMAPATH, 'IPTVcreate_providers.txt')
+#	if os.path.isfile(filename):
+#            print '\n[e2m3u2bouquet]----Return Saved providers file----'
+#	    return filename
+        print '\n[e2m3u2bouquet]----Downloading Online providers file----'
         if DEBUG:
             print '[e2m3u2bouquet]providers url = {}'.format(url)
         try:
@@ -791,6 +791,7 @@ def main(argv=None):
         parser.add_argument('-q', '--iconpath', dest='iconpath', action='store', help='Option path to store picons, if not supplied defaults to /usr/share/enigma2/picon/')
         parser.add_argument('-xs', '--xcludesref', dest='xcludesref', action='store_true', help='Disable service ref overriding from override.xml file')
         parser.add_argument('-U', '--uninstall', dest='uninstall', action='store_true', help='Uninstall all changes made by this script')
+        parser.add_argument('-D', '--deleteP', dest='deleteP', action='store_true', help='Replace Saved Prodiders file')
         args = parser.parse_args()
         m3uurl = args.m3uurl
         epgurl = args.epgurl
@@ -805,6 +806,7 @@ def main(argv=None):
         provider = args.providername
         username = args.username
         password = args.password
+	deleteP = args.deleteP
         delimiter_category = 7 if args.delimiter_category is None else args.delimiter_category
         delimiter_title = 8 if args.delimiter_title is None else args.delimiter_title
         delimiter_tvgid = 1 if args.delimiter_tvgid is None else args.delimiter_tvgid
@@ -834,7 +836,14 @@ def main(argv=None):
         sys.exit(1)
     else:
         if provider is not None and username is not None or password is not None:
-            providersfile = e2m3uSetup.download_providers(PROVIDERSURL)
+	    providersfile = os.path.join(ENIGMAPATH, 'IPTVcreate_providers.txt')
+            print '\n[e2m3u2bouquet]----Setup for Saved providers file'
+	    if deleteP:
+            	print '\n[e2m3u2bouquet]----Delete saved _ Downloading Online providers file'
+		providersfile = e2m3uSetup.download_providers(PROVIDERSURL)
+	    elif not os.path.isfile(providersfile):
+        		print '\n[e2m3u2bouquet]----Downloading Online providers file----'
+			providersfile = e2m3uSetup.download_providers(PROVIDERSURL)
             e2m3uSetup.read_providers(providersfile)
             m3uurl, epgurl, delimiter_category, delimiter_title, delimiter_tvgid, delimiter_logourl, supported_providers = e2m3uSetup.process_provider(provider, username, password)
             if m3uurl == 'NOTFOUND':

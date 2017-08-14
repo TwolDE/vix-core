@@ -26,16 +26,12 @@ import e2m3u2bouquet
 autoStartTimer = None
 _session = None
 
-
 def get_providers_list():
     	iptv = e2m3u2bouquet.IPTVSetup()
     	providers = iptv.read_providers(iptv.download_providers(e2m3u2bouquet.PROVIDERSURL))
     	return sorted(providers.keys())
 
 config.IPTVcreate = ConfigSubsection()
-config.IPTVcreate.M3Uurl = ConfigText(default = "", fixed_size=False)
-config.IPTVcreate.EPGurl = ConfigText(default = "", fixed_size=False)
-config.IPTVcreate.Bouqueturl = ConfigText(default = "", fixed_size=False)
 config.IPTVcreate.Provname = ConfigSelection(default='ACE', choices=get_providers_list())
 config.IPTVcreate.Username = ConfigText(default = "", fixed_size=False)
 config.IPTVcreate.Password = ConfigPassword(default='', fixed_size=False)
@@ -52,6 +48,9 @@ config.IPTVcreate.iptvtypes = ConfigEnableDisable(default=False)
 config.IPTVcreate.autobouquetupdateatboot = ConfigYesNo(default=False)
 config.IPTVcreate.autobouquetupdate = ConfigYesNo(default=False)
 config.IPTVcreate.updateinterval = ConfigSelectionNumber(default=6, min=2, max=48, stepwidth=1)
+config.IPTVcreate.M3Uurl = ConfigText(default = "", fixed_size=False)
+config.IPTVcreate.EPGurl = ConfigText(default = "", fixed_size=False)
+config.IPTVcreate.Bouqueturl = ConfigText(default = "", fixed_size=False)
 
 class IPTVcreate(Screen):
 	skin = """<screen name="IPTVcreate" position="center,center" size="560,400" title="Image Manager">
@@ -131,36 +130,38 @@ class IPTVcreate(Screen):
         	self.iptvtypes = config.IPTVcreate.iptvtypes.value
 
     	def manual_update(self):
-        	self.session.openWithCallback(self.manual_update_callback, MessageBox, _('Update of channels will start.\nThis may take a few minutes.\nProceed?'), MessageBox.TYPE_YESNO, timeout=15, default=True)
+        	self.session.openWithCallback(self.manual_update_callback, MessageBox, _('Start Channels Update with saved Providers?'), MessageBox.TYPE_YESNO, timeout=15, default=True)
 
     	def manual_update_callback(self, confirmed):
         	if not confirmed:
-	 	        return
+			self.do_mainupdate(1)
                 else:
-			do_mainupdate()
+			self.do_mainupdate(0)
 
-def do_mainupdate():
-    	if config.IPTVcreate.Provname.value:
-		sys.argv = []
-		sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
-		sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
-		sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
-		if config.IPTVcreate.iptvtypes.value:
-		    sys.argv.append('-i')
-		if config.IPTVcreate.Multivod.value:
-		    sys.argv.append('-M')
-		if config.IPTVcreate.Picon.value:
-		    sys.argv.append('-P')
-		    sys.argv.append('-q={}'.format(config.IPTVcreate.Piconpath.value))
-		if config.IPTVcreate.AllBouquet.value:
-		    sys.argv.append('-a')
-		if config.IPTVcreate.Xcludesref.value:
-		    sys.argv.append('-xs')
-		if config.IPTVcreate.Uninstall.value:
-		    sys.argv.append('-U')
-		print "[IPTVcreate] Start Manual IPTV Import Enabled"
-		e2m3u2bouquet.main(sys.argv)
-		print "[IPTVcreate] Manual IPTV Import Complete"
+	def do_mainupdate(self, ret):
+	    	if config.IPTVcreate.Provname.value:
+			sys.argv = []
+			sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
+			sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
+			sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
+			if config.IPTVcreate.iptvtypes.value:
+			    sys.argv.append('-i')
+			if config.IPTVcreate.Multivod.value:
+			    sys.argv.append('-M')
+			if config.IPTVcreate.Picon.value:
+			    sys.argv.append('-P')
+			    sys.argv.append('-q={}'.format(config.IPTVcreate.Piconpath.value))
+			if config.IPTVcreate.AllBouquet.value:
+			    sys.argv.append('-a')
+			if config.IPTVcreate.Xcludesref.value:
+			    sys.argv.append('-xs')
+			if config.IPTVcreate.Uninstall.value:
+			    sys.argv.append('-U')
+			if ret == 1:
+			    sys.argv.append('-D')
+			print "[IPTVcreate] Start Manual IPTV Import Enabled"
+			e2m3u2bouquet.main(sys.argv)
+			print "[IPTVcreate] Manual IPTV Import Complete"
 
 class AutoStartTimer:
 

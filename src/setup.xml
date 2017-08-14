@@ -35,8 +35,7 @@
         <item level="2" text="Password" description="IPTV Logon Password">config.IPTVcreate.Password</item>
         <item level="2" text="Picon" description="Set to download Picon">config.IPTVcreate.Picon</item>
         <item level="2" text="PiconPath" description="Picon location">config.IPTVcreate.Piconpath</item>
-        <item level="2" text="Bouqueturl" description="Url to download providers url for custom service refs">config.IPTVcreate.Bouqueturl</item>
-        <item level="2" text="Uninstall" description="Set to just Uninstall Bouquets">config.IPTVcreate.Uninstall</item>
+         <item level="2" text="Uninstall" description="Set to just Uninstall Bouquets">config.IPTVcreate.Uninstall</item>
         <item level="2" text="MultiVOD" description="Create Multiple VOD Bouquets ">config.IPTVcreate.Multivod</item>
         <item level="2" text="AllBouquet" description="Create all channels Bouquet">config.IPTVcreate.AllBouquet</item>
         <item level="2" text="Xcludesref" description="Disable service ref overriding from override.xml file">config.IPTVcreate.Xcludesref</item>
@@ -46,5 +45,6 @@
         <item level="2" text="Frequency of Bouquet Update" requires="config.IPTVcreate.autobouquetupdate" description="Set the Bouquet Update Frequency.">config.IPTVcreate.scheduletime</item>
         <item level="2" text="M3Uurl" description="M3u data URL.">config.IPTVcreate.M3Uurl</item>
         <item level="2" text="EPGurl" description="EPG data url">config.IPTVcreate.EPGurl</item>
+        <item level="2" text="Bouqueturl" description="Url to download providers url for custom service refs">config.IPTVcreate.Bouqueturl</item>
     </setup>
 </setupxml>
