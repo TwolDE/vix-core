@@ -36,7 +36,6 @@ __date__ = '2017-06-04'
 __updated__ = '2017-08-01'
 DEBUG = 0
 TESTRUN = 0
-DELETEP = 0
 ENIGMAPATH = '/etc/enigma2/'
 EPGIMPORTPATH = '/etc/epgimport/'
 PICONSPATH = '/usr/share/enigma2/picon/'
@@ -863,6 +862,13 @@ def main(argv=None):
         e2m3uSetup.create_epgimporter_config(categoryorder, category_options, dictchannels, list_xmltv_sources, epgurl, provider)
         print 'EPG-Importer config created...'
         e2m3uSetup.reload_bouquets()
+	sortfile = os.path.join(ENIGMAPATH + 'e2m3u2bouquet-sort-override.bak')
+	if os.path.isfile(sortfile):		
+		os.remove(sortfile)
+	sortfile = os.path.join(ENIGMAPATH + 'e2m3u2bouquet-sort-override.xml')
+	if os.path.isfile(sortfile):
+        	os.rename(ENIGMAPATH + 'e2m3u2bouquet-sort-override.xml', ENIGMAPATH + 'e2m3u2bouquet-sort-override.bak')
+        os.rename(ENIGMAPATH + 'e2m3u2bouquet-sort-current.xml', ENIGMAPATH + 'e2m3u2bouquet-sort-override.xml')
         print '\n********************************'
         print 'Engima2 IPTV bouquets created ! '
         print '********************************'
