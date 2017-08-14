@@ -868,7 +868,7 @@ def main(argv=None):
 	sortfile = os.path.join(ENIGMAPATH + 'e2m3u2bouquet-sort-override.xml')
 	if os.path.isfile(sortfile):
         	os.rename(ENIGMAPATH + 'e2m3u2bouquet-sort-override.xml', ENIGMAPATH + 'e2m3u2bouquet-sort-override.bak')
-        os.rename(ENIGMAPATH + 'e2m3u2bouquet-sort-current.xml', ENIGMAPATH + 'e2m3u2bouquet-sort-override.xml')
+        	os.rename(ENIGMAPATH + 'e2m3u2bouquet-sort-current.xml', ENIGMAPATH + 'e2m3u2bouquet-sort-override.xml')
         print '\n********************************'
         print 'Engima2 IPTV bouquets created ! '
         print '********************************'
