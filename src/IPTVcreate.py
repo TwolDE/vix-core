@@ -65,6 +65,7 @@ class IPTVcreate(Screen):
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1"/>
 		<widget name="cancel" position="22,1032" size="400,39" foregroundColor="grey" zPosition="1" font="Regular;33" halign="center"/>
 		<widget name="ok" position="457,1032" size="400,39" foregroundColor="grey" zPosition="1" font="Regular;33" halign="center"/>
+		widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
 		<applet type="onLayoutFinish">
 		</applet>
 	</screen>"""
@@ -103,6 +104,7 @@ class IPTVcreate(Screen):
 		self["key_yellow"] = Button("Run")
 		self["key_green"] = Button(_("Setup"))
 		self["key_blue"] = Button()
+		self['lab1'] = Label(_("Select Green button to Configure settings:\n Yellow button to load latest IPTV Bouquets"))
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 									  {
 									  'cancel': self.close,
