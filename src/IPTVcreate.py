@@ -53,7 +53,7 @@ config.IPTVcreate.EPGurl = ConfigText(default = "", fixed_size=False)
 config.IPTVcreate.Bouqueturl = ConfigText(default = "", fixed_size=False)
 
 class IPTVcreate(Screen):
-	skin = """<screen name="IPTVcreate" position="center,center" size="560,400" title="Image Manager">
+	skin = """<screen name="IPTVcreate" position="center,center" size="560,400" title="IPTVcreate">
 		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on"/>
 		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on"/>
 		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on"/>
@@ -63,6 +63,8 @@ class IPTVcreate(Screen):
 		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
 		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1"/>
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1"/>
+		<widget name="cancel" position="22,1032" size="400,39" foregroundColor="grey" zPosition="1" font="Regular;33" halign="center"/>
+		<widget name="ok" position="457,1032" size="400,39" foregroundColor="grey" zPosition="1" font="Regular;33" halign="center"/>
 		<applet type="onLayoutFinish">
 		</applet>
 	</screen>"""
