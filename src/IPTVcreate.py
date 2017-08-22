@@ -17,10 +17,7 @@ from Screens.Screen import Screen
 from Screens.Setup import Setup
 from Components.Console import Console
 from Screens.Console import Console as ScreenConsole
-from Components.SystemInfo import SystemInfo
-from Screens.TaskView import JobView
 from Screens.MessageBox import MessageBox
-from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import e2m3u2bouquet
 autoStartTimer = None
