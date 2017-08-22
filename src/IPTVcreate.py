@@ -101,7 +101,7 @@ class IPTVcreate(Screen):
 		self["key_yellow"] = Button("Run")
 		self["key_green"] = Button(_("Setup"))
 		self["key_blue"] = Button()
-		self['lab1'] = Label(_("Select Green button to Configure settings:\n Yellow button to load latest IPTV Bouquets"))
+		self['lab1'] = Label(_("Select Green button to set Config settings:\n Yellow button to download latest IPTV Bouquets"))
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 									  {
 									  'cancel': self.close,
