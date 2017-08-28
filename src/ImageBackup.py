@@ -22,10 +22,10 @@ from time import time, strftime, localtime
 from os import path, system, makedirs, listdir, walk, statvfs, remove
 import commands
 import datetime
-from boxbranding import getBoxType, getMachineBrand, getMachineName, getDriverDate, getImageVersion, getImageBuild, getBrandOEM, getMachineBuild, getImageFolder, getMachineUBINIZE, getMachineMKUBIFS, getMachineMtdKernel, getMachineMtdRoot, getMachineKernelFile, getMachineRootFile, getImageFileSystem
+from boxbranding import getBoxType, getMachineBrand, getMachineName, getDriverDate, getImageVersion, getImageBuild, getBrandOEM, getMachineBuild, getImageFolder, getMachineUBINIZE, getMachineMKUBIFS, getMachineMtdKernel, getMachineMtdRoot, getMachineKernelFile, getMachineRootFile, getImageFileSystem, getMachineMake
 from Tools.Directories import fileExists, fileCheck
 
-VERSION = "Version 5.0 openViX"
+VERSION = "Version 5.1 openViX"
 
 HaveGZkernel = True
 if getMachineBuild() in ("vuuno4k", "vuultimo4k", "vusolo4k", "hd51", "hd52", "sf4008", "gb7252", "vs1500"):
@@ -118,13 +118,13 @@ class ImageBackup(Screen):
 		self["key_green"] = Button("USB")
 		self["key_red"] = Button("HDD")
 		self["key_blue"] = Button(_("Exit"))
-		if SystemInfo["HaveMultiBoot"]:
+		if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 			self["key_yellow"] = Button(_("STARTUP"))
 			self["info-multi"] = Label(_("Select with yellow the HD51 Image\n or Recovery to create a USB Disk Image for clean Install."))
 		else:
 			self["key_yellow"] = Button("")
 			self["info-multi"] = Label(" ")
-		self["info-usb"] = Label(_("USB = USB Back-up image on USB\nFirst insert a USB\nBackUp from 4 -> 15 minutes based on filesystem.\nA HD51 Restore -> 30 minutes"))
+		self["info-usb"] = Label(_("USB = USB Back-up image on USB\nFirst insert a USB\nBackUp from 4 -> 15 minutes based on filesystem.\nA HD51 Restore -> 30 minutes"))		
 		self["info-hdd"] = Label(_("HDD = USB Back-up image on HDD \nThis only takes 2 or 10 minutes and is fully automatic."))
 		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], 
 		{

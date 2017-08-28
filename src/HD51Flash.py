@@ -176,8 +176,8 @@ class HD51Flash(Screen):
 			print "[Flash OnlineY2] MULTI rootfs ", self.devrootfs
 
 	def read_startup(self, FILE):
-		file = FILE
-		with open(file, 'r') as myfile:
+		self.file = FILE
+		with open(self.file, 'r') as myfile:
 			data=myfile.read().replace('\n', '')
 		myfile.close()
 		return data
