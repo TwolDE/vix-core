@@ -117,19 +117,19 @@ class ImageBackup(Screen):
 		self.list = self.list_files("/boot")
 		self["key_green"] = Button("USB")
 		self["key_red"] = Button("HDD")
-		self["key_blue"] = Button(_("Exit"))
+		self["key_yellow"] = Button(_("Exit"))
 		if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
-			self["key_yellow"] = Button(_("STARTUP"))
-			self["info-multi"] = Label(_("Select with yellow the HD51 Image\n or Recovery to create a USB Disk Image for clean Install."))
+			self["key_blue"] = Button(_("STARTUP"))
+			self["info-multi"] = Label(_("Select with blue the HD51 Image\n or Recovery to create a USB Disk Image for clean Install."))
 		else:
-			self["key_yellow"] = Button("")
+			self["key_blue"] = Button("")
 			self["info-multi"] = Label(" ")
 		self["info-usb"] = Label(_("USB = USB Back-up image on USB\nFirst insert a USB\nBackUp from 4 -> 15 minutes based on filesystem.\nA HD51 Restore -> 30 minutes"))		
 		self["info-hdd"] = Label(_("HDD = USB Back-up image on HDD \nThis only takes 2 or 10 minutes and is fully automatic."))
 		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], 
 		{
-			"blue": self.quit,
-			"yellow": self.yellow,
+			"blue": self.blue,
+			"yellow": self.quit,
 			"green": self.green,
 			"red": self.red,
 			"cancel": self.quit,
@@ -169,12 +169,12 @@ class ImageBackup(Screen):
 			if self.check_usb(USB_DEVICE):
 				self.doFullBackup(USB_DEVICE)
 
-	def yellow(self):
+	def blue(self):
 		if SystemInfo["HaveMultiBoot"]:
 			self.selection = self.selection + 1
 			if self.selection == len(self.list):
 				self.selection = 0
-			self["key_yellow"].setText(_(self.list[self.selection]))
+			self["key_blue"].setText(_(self.list[self.selection]))
 			if self.MACHINEBUILD in ("hd51","vs1500"):
 				if self.list[self.selection] == "Recovery":
 					cmdline = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
