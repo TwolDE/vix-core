@@ -39,12 +39,10 @@
         <item level="2" text="MultiVOD" description="Create Multiple VOD Bouquets ">config.IPTVcreate.Multivod</item>
         <item level="2" text="AllBouquet" description="Create all channels Bouquet">config.IPTVcreate.AllBouquet</item>
         <item level="2" text="Xcludesref" description="Disable service ref overriding from override.xml file">config.IPTVcreate.Xcludesref</item>
-        <item level="2" text="IPTV Types" description="override IPTV=1">config.IPTVcreate.iptvtypes</item>
+        <item level="2" text="IPTV Types" description="override IPTV type=1">config.IPTVcreate.iptvtypes</item>
         <item level="2" text="AutoBoot Bouquet Update" description="Allows Auto at Boot">config.IPTVcreate.autobouquetupdateatboot</item>
         <item level="2" text="Auto Bouquet Updates" description="Allows you schedule your backups">config.IPTVcreate.autobouquetupdate</item>
         <item level="2" text="Frequency of Bouquet Update" requires="config.IPTVcreate.autobouquetupdate" description="Set the Bouquet Update Frequency.">config.IPTVcreate.scheduletime</item>
-        <item level="2" text="M3Uurl" description="M3u data URL.">config.IPTVcreate.M3Uurl</item>
-        <item level="2" text="EPGurl" description="EPG data url">config.IPTVcreate.EPGurl</item>
-        <item level="2" text="Bouqueturl" description="Url to download providers url for custom service refs">config.IPTVcreate.Bouqueturl</item>
+        <item level="2" text="Provide Bouquet" description="Download provides Bouquet.">config.IPTVcreate.bouquetdownload</item>
     </setup>
 </setupxml>

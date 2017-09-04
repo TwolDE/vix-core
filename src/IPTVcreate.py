@@ -1,6 +1,6 @@
 import os
 import sys
-from time import localtime, time, strftime, mktime
+from time import localtime, time, strftime, mktime, asctime
 from enigma import eTimer
 import unicodedata
 import datetime
@@ -9,6 +9,8 @@ from . import _, PluginLanguageDomain
 import Components.Task
 from Components.ActionMap import ActionMap
 from Components.Label import Label
+from Components.SelectionList import SelectionList, SelectionEntryComponent
+from Components.ScrollLabel import ScrollLabel
 from Components.Button import Button
 from Components.MenuList import MenuList
 from Components.config import config, ConfigSubsection, ConfigYesNo, ConfigSelection, ConfigText, ConfigNumber, NoSave, ConfigClock, ConfigEnableDisable, getConfigListEntry, ConfigSubDict, ConfigPassword, ConfigSelectionNumber
@@ -39,15 +41,16 @@ config.IPTVcreate.Piconpath = ConfigSelection(default='/usr/share/enigma2/picon/
 config.IPTVcreate.Picon = ConfigYesNo(default = False)
 config.IPTVcreate.Uninstall = ConfigYesNo(default = False)
 config.IPTVcreate.Multivod = ConfigYesNo(default = False)
+config.IPTVcreate.bouquetpos = ConfigSelection(default='bottom', choices=[
+ 'bottom', 'top'])
+config.IPTVcreate.bouquetdownload = ConfigEnableDisable(default=False)
 config.IPTVcreate.AllBouquet = ConfigYesNo(default = False)
 config.IPTVcreate.Xcludesref = ConfigYesNo(default = False)
 config.IPTVcreate.iptvtypes = ConfigEnableDisable(default=False)
 config.IPTVcreate.autobouquetupdateatboot = ConfigYesNo(default=False)
 config.IPTVcreate.autobouquetupdate = ConfigYesNo(default=False)
 config.IPTVcreate.updateinterval = ConfigSelectionNumber(default=6, min=2, max=48, stepwidth=1)
-config.IPTVcreate.M3Uurl = ConfigText(default = "", fixed_size=False)
-config.IPTVcreate.EPGurl = ConfigText(default = "", fixed_size=False)
-config.IPTVcreate.Bouqueturl = ConfigText(default = "", fixed_size=False)
+config.IPTVcreate.last_update = ConfigText()
 
 class IPTVcreate(Screen):
 	skin = """<screen name="IPTVcreate" position="center,center" size="560,400" title="IPTVcreate">
@@ -62,7 +65,8 @@ class IPTVcreate(Screen):
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1"/>
 		<widget name="cancel" position="22,1032" size="400,39" foregroundColor="grey" zPosition="1" font="Regular;33" halign="center"/>
 		<widget name="ok" position="457,1032" size="400,39" foregroundColor="grey" zPosition="1" font="Regular;33" halign="center"/>
-		widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
+		<widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
+		<widget name="statusbar" position="10,410" size="500,20" font="Regular;18" />
 		<applet type="onLayoutFinish">
 		</applet>
 	</screen>"""
@@ -91,6 +95,7 @@ class IPTVcreate(Screen):
 		Screen.setTitle(self, title)
 		print "[IPTVcreate] Start Enabled"
 		self.Config_List()
+		self.update_status()
                 self.session = session
 		self.Console = Console()
 		
@@ -101,6 +106,7 @@ class IPTVcreate(Screen):
 		self["key_yellow"] = Button("Run")
 		self["key_green"] = Button(_("Setup"))
 		self["key_blue"] = Button()
+		self['statusbar'] = Label()
 		self['lab1'] = Label(_("Select Green button to set Config settings:\n Yellow button to download latest IPTV Bouquets"))
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 									  {
@@ -122,10 +128,7 @@ class IPTVcreate(Screen):
         	self.provider = config.IPTVcreate.Provname.value
         	self.username = config.IPTVcreate.Username.value 
         	self.password = config.IPTVcreate.Password.value
-        	self.m3uurl = config.IPTVcreate.M3Uurl.value
-        	self.epgurl = config.IPTVcreate.EPGurl.value
         	self.Piconpath = config.IPTVcreate.Piconpath.value
-        	self.bouquet_url = config.IPTVcreate.Bouqueturl.value
         	self.multivod = config.IPTVcreate.Multivod.value
         	self.xcludesref = config.IPTVcreate.Xcludesref.value
         	self.iptvtypes = config.IPTVcreate.iptvtypes.value
@@ -140,7 +143,7 @@ class IPTVcreate(Screen):
 			self.do_mainupdate(0)
 
 	def do_mainupdate(self, ret):
-	    	if config.IPTVcreate.Provname.value:
+		if config.IPTVcreate.Provname.value:
 			sys.argv = []
 			sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
 			sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
@@ -149,20 +152,29 @@ class IPTVcreate(Screen):
 			    sys.argv.append('-i')
 			if config.IPTVcreate.Multivod.value:
 			    sys.argv.append('-M')
+			if config.IPTVcreate.AllBouquet.value:
+			    sys.argv.append('-a')
 			if config.IPTVcreate.Picon.value:
 			    sys.argv.append('-P')
 			    sys.argv.append('-q={}'.format(config.IPTVcreate.Piconpath.value))
-			if config.IPTVcreate.AllBouquet.value:
-			    sys.argv.append('-a')
 			if config.IPTVcreate.Xcludesref.value:
 			    sys.argv.append('-xs')
+			if config.IPTVcreate.bouquetpos.value and config.IPTVcreate.bouquetpos.value == 'top':
+			    sys.argv.append('-bt')
+			if config.IPTVcreate.bouquetdownload.value:
+			    sys.argv.append('-bd')
 			if config.IPTVcreate.Uninstall.value:
 			    sys.argv.append('-U')
 			if ret == 1:
 			    sys.argv.append('-D')
 			print "[IPTVcreate] Start Manual IPTV Import Enabled"
 			e2m3u2bouquet.main(sys.argv)
+        		self.update_status()
 			print "[IPTVcreate] Manual IPTV Import Complete"
+
+    	def update_status(self):
+	        if config.IPTVcreate.last_update:
+  	          self['statusbar'].setText('Last channel update: {}'.format(config.IPTVcreate.last_update.value))
 
 class AutoStartTimer:
 
@@ -200,7 +212,7 @@ class AutoStartTimer:
 		now = int(time())
 		print "[IPTVcreate] on_timer occured at {}".format(now)
 		print "[IPTVcreate] Starting bouquet update because auto update bouquet schedule is enabled"
-		self.do_update()
+		do_update()
 		self.update()
 
 	def get_status(self):
@@ -217,20 +229,25 @@ def do_update():
 	    sys.argv.append('-i')
 	if config.IPTVcreate.Multivod.value:
 	    sys.argv.append('-M')
-	if config.IPTVcreate.multivod.value:
-	    sys.argv.append('-M')
+	if config.IPTVcreate.allbouquet.value:
+	    sys.argv.append('-a')
 	if config.IPTVcreate.Picon.value:
 	    sys.argv.append('-P')
 	    sys.argv.append('-q={}'.format(config.IPTVcreate.Piconpath.value))
-	if config.IPTVcreate.allbouquet.value:
-	    sys.argv.append('-a')
 	if config.IPTVcreate.Xcludesref.value:
 	    sys.argv.append('-xs')
+        if config.IPTVcreate.bouquetpos.value and config.IPTVcreate.bouquetpos.value == 'top':
+            sys.argv.append('-bt')
+        if config.IPTVcreate.bouquetdownload.value:
+            sys.argv.append('-bd')
 	if config.IPTVcreate.Uninstall.value:
 	    sys.argv.append('-U')
 	print "[IPTVcreate] Start Timer IPTV Import Enabled"
 	e2m3u2bouquet.main(sys.argv)
 	print "[IPTVcreate] Timer IPTV Import Complete"
+        localtime = asctime(localtime(time()))
+        config.IPTVcreate.last_update.value = localtime
+        config.IPTVcreate.last_update.save()
 
 
 def main(session, **kwargs):
