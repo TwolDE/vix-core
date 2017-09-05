@@ -95,7 +95,6 @@ class IPTVcreate(Screen):
 		Screen.setTitle(self, title)
 		print "[IPTVcreate] Start Enabled"
 		self.Config_List()
-		self.update_status()
                 self.session = session
 		self.Console = Console()
 		
@@ -169,12 +168,7 @@ class IPTVcreate(Screen):
 			    sys.argv.append('-D')
 			print "[IPTVcreate] Start Manual IPTV Import Enabled"
 			e2m3u2bouquet.main(sys.argv)
-        		self.update_status()
 			print "[IPTVcreate] Manual IPTV Import Complete"
-
-    	def update_status(self):
-	        if config.IPTVcreate.last_update:
-  	          self['statusbar'].setText('Last channel update: {}'.format(config.IPTVcreate.last_update.value))
 
 class AutoStartTimer:
 

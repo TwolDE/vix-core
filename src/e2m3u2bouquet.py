@@ -1036,6 +1036,7 @@ def main(argv=None):
         # create e2m3u2bouquet config folder if it doesn't exist
         if not os.path.isdir(CFGPATH):
             os.makedirs(CFGPATH)
+	    deleteP = True	
 
         # Work out provider based setup if that's what we have
 
