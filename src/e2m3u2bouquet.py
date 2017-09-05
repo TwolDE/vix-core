@@ -107,6 +107,9 @@ class IPTVSetup():
 
     def download_providers(self, url):
         """Download providers file from url"""
+        # create e2m3u2bouquet config folder if it doesn't exist
+        if not os.path.isdir(CFGPATH):
+            os.makedirs(CFGPATH)
         filename = os.path.join(CFGPATH, 'IPTVcreate_providers.txt')
         print("[e2m3u2bouquet]----Downloading providers file----")
         if DEBUG:
