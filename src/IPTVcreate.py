@@ -27,7 +27,11 @@ _session = None
 
 def get_providers_list():
     	iptv = e2m3u2bouquet.IPTVSetup()
-    	providers = iptv.read_providers(iptv.download_providers(e2m3u2bouquet.PROVIDERSURL))
+	if os.path.isdir(e2m3u2bouquet.CFGPATH):
+		filename = os.path.join(e2m3u2bouquet.CFGPATH, 'IPTVcreate_providers.txt')
+		providers =iptv.read_providers(filename)
+    	else:
+		providers = iptv.read_providers(iptv.download_providers(e2m3u2bouquet.PROVIDERSURL))
     	return sorted(providers.keys())
 
 config.IPTVcreate = ConfigSubsection()
