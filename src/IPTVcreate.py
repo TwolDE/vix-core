@@ -54,7 +54,7 @@ config.IPTVcreate.iptvtypes = ConfigEnableDisable(default=False)
 config.IPTVcreate.autobouquetupdateatboot = ConfigYesNo(default=False)
 config.IPTVcreate.autobouquetupdate = ConfigYesNo(default=False)
 config.IPTVcreate.updateinterval = ConfigSelectionNumber(default=6, min=2, max=48, stepwidth=1)
-config.IPTVcreate.last_update = ConfigText()
+config.IPTVcreate.last_update = ConfigNumber(default=0)
 
 class IPTVcreate(Screen):
 	skin = """<screen name="IPTVcreate" position="center,center" size="560,400" title="IPTVcreate">
@@ -98,6 +98,8 @@ class IPTVcreate(Screen):
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
 		print "[IPTVcreate] Start Enabled"
+		self['statusbar'] = Label()
+        	self.update_status()
 		self.Config_List()
                 self.session = session
 		self.Console = Console()
@@ -109,7 +111,6 @@ class IPTVcreate(Screen):
 		self["key_yellow"] = Button("Run")
 		self["key_green"] = Button(_("Setup"))
 		self["key_blue"] = Button()
-		self['statusbar'] = Label()
 		self['lab1'] = Label(_("Select Green button to set Config settings:\n Yellow button to download latest IPTV Bouquets"))
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 									  {
@@ -173,6 +174,19 @@ class IPTVcreate(Screen):
 			print "[IPTVcreate] Start Manual IPTV Import Enabled"
 			e2m3u2bouquet.main(sys.argv)
 			print "[IPTVcreate] Manual IPTV Import Complete"
+			now = int(time())
+			config.IPTVcreate.last_update.value = now
+			config.IPTVcreate.last_update.save()
+        		self.update_status()
+
+	def update_status(self):
+		print "[IPTVcreate] Update status %s" % (config.IPTVcreate.last_update.value) 
+	  	if config.IPTVcreate.last_update.value != 0:
+			t = localtime(config.IPTVcreate.last_update.value)
+			updatetext = _("Last channel update: ") + strftime(_("%a %e %b  %-H:%M"), t)
+		else:
+			updatetext = _("First channel update: ")
+		self['statusbar'].setText(str(updatetext))
 
 class AutoStartTimer:
 
