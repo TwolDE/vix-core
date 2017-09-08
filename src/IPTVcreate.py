@@ -174,8 +174,7 @@ class IPTVcreate(Screen):
 			print "[IPTVcreate] Start Manual IPTV Import Enabled"
 			e2m3u2bouquet.main(sys.argv)
 			print "[IPTVcreate] Manual IPTV Import Complete"
-			now = int(time())
-			config.IPTVcreate.last_update.value = now
+			config.IPTVcreate.last_update.value = int(time())
 			config.IPTVcreate.last_update.save()
         		self.update_status()
 
@@ -257,9 +256,8 @@ def do_update():
 	print "[IPTVcreate] Start Timer IPTV Import Enabled"
 	e2m3u2bouquet.main(sys.argv)
 	print "[IPTVcreate] Timer IPTV Import Complete"
-        localtime = asctime(localtime(time()))
-        config.IPTVcreate.last_update.value = localtime
-        config.IPTVcreate.last_update.save()
+	config.IPTVcreate.last_update.value = int(time())
+	config.IPTVcreate.last_update.save()
 
 
 def main(session, **kwargs):
