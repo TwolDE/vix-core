@@ -1325,11 +1325,7 @@ class FlashImage(Screen):
 # STARTUP_2 (Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
 # STARTUP_3		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
 # STARTUP_4		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
-#		#options
-#		Standard:     hd51_4.boxmode=1 (or no option)
-#		Experimental: hd51_4.boxmode=12
-#		#example
-#		boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait hd51_4.boxmode=12'
+
 
 
 	def FlashOS3(self):

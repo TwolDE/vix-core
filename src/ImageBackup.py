@@ -121,7 +121,7 @@ class ImageBackup(Screen):
 		self["key_green"] = Button("USB")
 		self["key_red"] = Button("HDD")
 		self["key_yellow"] = Button(_("Exit"))
-		if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
+		if SystemInfo["HaveMultiBoot"]:
 			self["key_blue"] = Button(_("STARTUP"))
 			self["info-multi"] = Label(_("Select with blue the OnlineFlash Image\n or Recovery to create a USB Disk Image for clean Install."))
 		else:
@@ -525,10 +525,10 @@ class ImageBackup(Screen):
 			cmdlist.append('echo "     no writing permission on back-up device"')
 			cmdlist.append('echo " "')
 
-		if self.DIRECTORY == "/hdd":
-			cmdlist.append('echo "\n"')
-			cmdlist.append('echo "\n"')
-			cmdlist.append('echo "Please wait..."')
+#		if self.DIRECTORY == "/hdd":
+#			cmdlist.append('echo "\n"')
+#			cmdlist.append('echo "\n"')
+#			cmdlist.append('echo "Please wait..."')
 #			self.TARGET = self.SearchUSBcandidate()
 #			print "[ImageBackup] TARGET = %s" % self.TARGET
 #			if self.TARGET == 'XX':
