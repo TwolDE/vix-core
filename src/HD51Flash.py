@@ -86,8 +86,10 @@ class HD51Flash(Screen):
 
 		self.session = session
 		self.selection = 0
-		if getMachineBuild() in ("hd51","vs1500"):
+		if getMachineBuild() in ("hd51","vs1500","h7","ceryon7252"):
 			self.devrootfs = "/dev/mmcblk0p3"
+		elif getMachineBuild() in ("gb7252"):
+			self.devrootfs = "/dev/mmcblk0p4"
 		else:
 			self.devrootfs = "/dev/mmcblk1p3"
 		self.multi = 1
@@ -112,9 +114,13 @@ class HD51Flash(Screen):
 			"cancel": self.quit,
 		}, -2)
 		if SystemInfo["HaveMultiBoot"]:
-			self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(" ",1)[0]
-			self.multi = self.multi[-1:]
-			print "[Flash Online1] MULTI:",self.multi
+			if getMachineBuild() in ("gb7252"):
+				self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(":",1)[0]
+				self.multi = self.multi[-1:]
+			else:
+				self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(" ",1)[0]
+				self.multi = self.multi[-1:]
+			print "[Flash Online] MULTI:",self.multi
 
 	def check_hdd(self):
 		if not os.path.exists("/media/hdd"):
@@ -165,10 +171,14 @@ class HD51Flash(Screen):
 			if self.selection == len(self.list):
 				self.selection = 0
 			self["key_yellow"].setText(_(self.list[self.selection]))
-			self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(" ",1)[0]
-			self.multi = self.multi[-1:]
-			print "[Flash OnlineY1] MULTI:",self.multi
-			if getMachineBuild() in ("hd51","vs1500"):
+			if getMachineBuild() in ("gb7252"):
+				self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(":",1)[0]
+				self.multi = self.multi[-1:]
+			else:
+				self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split("",1)[0]
+				self.multi = self.multi[-1:]
+			print "[Flash Online] MULTI:",self.multi
+			if getMachineBuild() in ("hd51","vs1500","h7","ceryon7252"):
 				cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",3)[3].split(" ",1)[0]
 			else:
 				cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",1)[1].split(" ",1)[0]
@@ -186,7 +196,7 @@ class HD51Flash(Screen):
 		files = []
 		if SystemInfo["HaveMultiBoot"]:
 			path = PATH
-			if getMachineBuild() in ("hd51","vs1500"):
+			if getMachineBuild() in ("hd51","vs1500","h7","ceryon7252"):
 				for name in os.listdir(path):
 					if name != 'bootname' and os.path.isfile(os.path.join(path, name)):
 						try:
@@ -194,6 +204,17 @@ class HD51Flash(Screen):
 						except IndexError:
 							continue
 						cmdline_startup = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
+						if (cmdline != cmdline_startup) and (name != "STARTUP"):
+							files.append(name)
+				files.insert(0,"STARTUP")
+			elif getMachineBuild() in ("gb7252"):
+				for name in os.listdir(path):
+					if name != 'bootname' and os.path.isfile(os.path.join(path, name)):
+						try:
+							cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
+						except IndexError:
+							continue
+						cmdline_startup = self.read_startup("/boot/STARTUP").split("=",1)[1].split(" ",1)[0]
 						if (cmdline != cmdline_startup) and (name != "STARTUP"):
 							files.append(name)
 				files.insert(0,"STARTUP")
@@ -257,7 +278,7 @@ class doFlashImage(Screen):
 
 
 	def quit(self):
-		if self.simulate or not self.List == "STARTUP":
+		if self.simulate or self.List not in ("STARTUP","cmdline.txt"):
 			fbClass.getInstance().unlock()
 		self.close()
 		

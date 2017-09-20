@@ -28,7 +28,7 @@ from Tools.Directories import fileExists, fileCheck
 VERSION = "Version 5.1 openViX"
 
 HaveGZkernel = True
-if getMachineBuild() in ("vuuno4k", "vuultimo4k", "vusolo4k", "hd51", "hd52", "sf4008", "gb7252", "vs1500"):
+if getMachineBuild() in ('et13000','et1x000',"vuuno4k", "vuultimo4k", "vusolo4k", "spark", "spark7162", "hd51", "hd52", "sf4008", "dags7252", "gb7252", "vs1500","h7",'xc7439','8100s'):
 	HaveGZkernel = False
 
 def Freespace(dev):
@@ -93,7 +93,7 @@ class ImageBackup(Screen):
 		self.KERNELBIN = getMachineKernelFile()
 		self.ROOTFSTYPE = getImageFileSystem()
 
-		if self.MACHINEBUILD in ("hd51","vs1500"):
+		if self.MACHINEBUILD in ("hd51","vs1500","h7","ceryon7252"):
 			self.MTDBOOT = "mmcblk0p1"
 			self.EMMCIMG = "disk.img"
 		elif self.MACHINEBUILD in ("xc7439"):
@@ -102,6 +102,7 @@ class ImageBackup(Screen):
 		else:
 			self.MTDBOOT = "none"
 			self.EMMCIMG = "none"
+
 		print "[ImageBackup] BOX MACHINEBUILD = >%s<" %self.MACHINEBUILD
 		print "[ImageBackup] BOX MACHINENAME = >%s<" %self.MACHINENAME
 		print "[ImageBackup] BOX MACHINEBRAND = >%s<" %self.MACHINEBRAND
@@ -110,9 +111,11 @@ class ImageBackup(Screen):
 		print "[ImageBackup] IMAGEFOLDER = >%s<" %self.IMAGEFOLDER
 		print "[ImageBackup] UBINIZE = >%s<" %self.UBINIZE_ARGS
 		print "[ImageBackup] MKUBIFS = >%s<" %self.MKUBIFS_ARGS
+		print "[ImageBackup] MTDBOOT = >%s<" %self.MTDBOOT
 		print "[ImageBackup] MTDKERNEL = >%s<" %self.MTDKERNEL
 		print "[ImageBackup] MTDROOTFS = >%s<" %self.MTDROOTFS
 		print "[ImageBackup] ROOTFSTYPE = >%s<" %self.ROOTFSTYPE
+		print "[ImageBackup] EMMCIMG = >%s<" %self.EMMCIMG
 
 		self.list = self.list_files("/boot")
 		self["key_green"] = Button("USB")
@@ -120,7 +123,7 @@ class ImageBackup(Screen):
 		self["key_yellow"] = Button(_("Exit"))
 		if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
 			self["key_blue"] = Button(_("STARTUP"))
-			self["info-multi"] = Label(_("Select with blue the HD51 Image\n or Recovery to create a USB Disk Image for clean Install."))
+			self["info-multi"] = Label(_("Select with blue the OnlineFlash Image\n or Recovery to create a USB Disk Image for clean Install."))
 		else:
 			self["key_blue"] = Button("")
 			self["info-multi"] = Label(" ")
@@ -175,7 +178,7 @@ class ImageBackup(Screen):
 			if self.selection == len(self.list):
 				self.selection = 0
 			self["key_blue"].setText(_(self.list[self.selection]))
-			if self.MACHINEBUILD in ("hd51","vs1500"):
+			if self.MACHINEBUILD in ("hd51","vs1500","h7","ceryon7252"):
 				if self.list[self.selection] == "Recovery":
 					cmdline = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
 				else:
@@ -204,13 +207,14 @@ class ImageBackup(Screen):
 			self.path = PATH
 			for name in listdir(self.path):
 				if path.isfile(path.join(self.path, name)):
-					if self.MACHINEBUILD in ("hd51","vs1500"):
+					if self.MACHINEBUILD in ("hd51","vs1500","h7","ceryon7252"):
 						cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
 					else:
 						cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
 					if cmdline in Harddisk.getextdevices("ext4"):
 						files.append(name)
-			files.append("Recovery")
+			if getMachineBuild() not in ("gb7252"):
+				files.append("Recovery")
 		return files
 
 	def SearchUSBcandidate(self):
@@ -326,11 +330,7 @@ class ImageBackup(Screen):
 			cmdlist.append(cmd2)
 		if cmd3:
 			cmdlist.append(cmd3)
-
-		if self.ROOTFSBIN == "rootfs.tar.bz2":
-			cmdlist.append("chmod 644 %s/rootfs.%s" %(self.WORKDIR, self.ROOTFSTYPE))
-		else:
-			cmdlist.append("chmod 644 %s/root.%s" %(self.WORKDIR, self.ROOTFSTYPE))
+		cmdlist.append("chmod 644 %s/%s" %(self.WORKDIR, self.ROOTFSBIN))
 
 		if self.MODEL in ("gbquad4k","gbue4k"):
 			cmdlist.append('echo " "')
@@ -340,7 +340,7 @@ class ImageBackup(Screen):
 			cmdlist.append('echo " "')
 			cmdlist.append('echo "Create: rescue dump rescue.bin"')
 			cmdlist.append('echo " "')
-			cmdlist.append("dd if=/dev/mmcblk0p5 of=%s/rescue.bin" % self.WORKDIR)
+			cmdlist.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 
 		cmdlist.append('echo " "')
 		cmdlist.append('echo "Create: kernel dump"')
@@ -357,7 +357,7 @@ class ImageBackup(Screen):
 			cmdlist.append('echo "Check: kerneldump"')
 		cmdlist.append("sync")
 
-		if SystemInfo["HaveMultiBoot"] and self.list[self.selection] == "Recovery":
+		if SystemInfo["HaveMultiBootHD"] or SystemInfo["HaveMultiBootXC"] and self.list[self.selection] == "Recovery":
 			GPT_OFFSET=0
 			GPT_SIZE=1024
 			BOOT_PARTITION_OFFSET = int(GPT_OFFSET) + int(GPT_SIZE)
@@ -438,7 +438,6 @@ class ImageBackup(Screen):
 			system('mv %s/rootfs.tar.bz2 %s/rootfs.tar.bz2' %(self.WORKDIR, self.MAINDEST))
 		else:
 			system('mv %s/root.%s %s/%s' %(self.WORKDIR, self.ROOTFSTYPE, self.MAINDEST, self.ROOTFSBIN))
-
 		if SystemInfo["HaveMultiBoot"]:
 			system('mv %s/kernel.bin %s/kernel.bin' %(self.WORKDIR, self.MAINDEST))
 		elif self.MTDKERNEL == "mmcblk0p1" or self.MTDKERNEL == "mmcblk0p3":
@@ -452,7 +451,7 @@ class ImageBackup(Screen):
 			cmdlist.append('echo "This file forces a reboot after the update." > %s/reboot.update' %self.MAINDEST)
 		elif self.MODEL in ("vuzero" , "vusolose", "vuuno4k"):
 			cmdlist.append('echo "This file forces the update." > %s/force.update' %self.MAINDEST)
-		elif self.MODEL in ("novaip" , "zgemmai55" , "sf98", "xpeedlxpro",'evoslim'):
+		elif self.MODEL in ('evoslimse','evoslimt2c', "novaip" , "zgemmai55" , "sf98", "xpeedlxpro",'evoslim','vipert2c'):
 			cmdlist.append('echo "This file forces the update." > %s/force' %self.MAINDEST)
 		else:
 			cmdlist.append('echo "rename this file to "force" to force an update without confirmation" > %s/noforce' %self.MAINDEST)
@@ -460,8 +459,9 @@ class ImageBackup(Screen):
 		if self.MODEL in ("gbquad4k","gbue4k"):
 			system('mv %s/boot.bin %s/boot.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/rescue.bin %s/rescue.bin' %(self.WORKDIR, self.MAINDEST))
+			system('cp -f /usr/share/gpt.bin %s/gpt.bin' %(self.MAINDEST))
 
-		if self.MODEL in ("gbquad4k", "gbue4k", "gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "gbultraueh"):
+		if self.MODEL in ("gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "gbultraueh", "twinboxlcd", "twinboxlcdci", "singleboxlcd", "sf208", "sf228"):
 			lcdwaitkey = '/usr/share/lcdwaitkey.bin'
 			lcdwarning = '/usr/share/lcdwarning.bin'
 			if path.exists(lcdwaitkey):

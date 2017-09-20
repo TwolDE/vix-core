@@ -403,7 +403,7 @@ class VIXImageManager(Screen):
 	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=4)
-			if getMachineMake() == 'mutant51' and SystemInfo["HaveMultiBoot"]:
+			if SystemInfo["HaveMultiBoot"]:
 				self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
 			elif getMachineMake() == 'et8500' and self.dualboot:
 				message = _("ET8500 Multiboot: Yes to restore OS1 No to restore OS2:\n ") + self.sel
@@ -846,7 +846,7 @@ class ImageBackup(Screen):
 			self.commands.append("/usr/bin/bzip2 %s/rootfs.tar" % self.WORKDIR)
 			if self.MODEL in ("gbquad4k","gbue4k"):
 				self.commands.append("dd if=/dev/mmcblk0p1 of=%s/boot.bin" % self.WORKDIR)
-				self.commands.append("dd if=/dev/mmcblk0p5 of=%s/rescue.bin" % self.WORKDIR)
+				self.commands.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
 				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
 		elif self.ROOTDEVTYPE == 'hd-emmc':
@@ -958,6 +958,7 @@ class ImageBackup(Screen):
 		if self.MODEL in ("gbquad4k","gbue4k"):
        			move('%s/%s' % (self.WORKDIR, self.GB4Kbin), '%s/%s' % (self.MAINDEST, self.GB4Kbin))
 			move('%s/%s' % (self.WORKDIR, self.GB4Krescue), '%s/%s' % (self.MAINDEST, self.GB4Krescue))
+			system('cp -f /usr/share/gpt.bin %s/gpt.bin' %(self.MAINDEST))
 		fileout = open(self.MAINDEST + '/imageversion', 'w')
 		line = defaultprefix + '-' + getImageType() + '-backup-' + getImageVersion() + '.' + getImageBuild() + '-' + self.BackupDate
 		fileout.write(line)
@@ -1295,7 +1296,10 @@ class FlashImage(Screen):
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Couch"))
 		self["key_yellow"] = Button(_("STARTUP_3"))
-		self["key_blue"] = Button(_("STARTUP_4"))
+		if SystemInfo["HaveMultiBootGB"]:
+			self["key_blue"] = Button(_("Not Valid for GB"))
+		else:
+			self["key_blue"] = Button(_("STARTUP_4"))
 
 		self.devrootfs = 3
 		self.flashnew = 4	
@@ -1316,11 +1320,11 @@ class FlashImage(Screen):
 									  }, -1)
 
 
-#		#default layout for Mut@nt HD51
-# STARTUP_1 (Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'
-# STARTUP_2 (Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'
-# STARTUP_3		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
-# STARTUP_4		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
+#		#default layout for Mut@nt HD51									for GigaBlue 4K
+# STARTUP_1 (Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
+# STARTUP_2 (Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
+# STARTUP_3		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
+# STARTUP_4		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
 #		#options
 #		Standard:     hd51_4.boxmode=1 (or no option)
 #		Experimental: hd51_4.boxmode=12
@@ -1335,7 +1339,10 @@ class FlashImage(Screen):
 
 	def FlashOS4(self):
 		self.FlashRunning = True
-		self.flashnew = 4
+		if SystemInfo["HaveMultiBootGB"]:
+			self.flashnew = 3
+		else:
+			self.flashnew = 4
 		self.Couch()
 
 	def Couch(self):
@@ -1352,6 +1359,8 @@ class FlashImage(Screen):
 		print "FLHD51-1 M-old M-new ", self.multiold, self.multinew
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		self.devrootfs = (2 * self.multinew) + 1
+		if SystemInfo["HaveMultiBootGB"]:
+			self.devrootfs = self.devrootfs  + 2
 		os.system('mkfs.ext4 -F /dev/mmcblk0p%s' %self.devrootfs)
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		CMD = '/usr/bin/ofgwrite -r -k -m%s %s/' % (self.multinew, MAINDEST)
@@ -1368,7 +1377,7 @@ class FlashImage(Screen):
 			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
 			self.session.open(TryQuitMainloop, 2)
 		else:
-			self.session.open(MessageBox, _("HD51 Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
+			self.session.open(MessageBox, _("Image Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
 			self.close()
 
 	def read_startupS(self, FILE):
