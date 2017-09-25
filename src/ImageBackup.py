@@ -357,7 +357,7 @@ class ImageBackup(Screen):
 			cmdlist.append('echo "Check: kerneldump"')
 		cmdlist.append("sync")
 
-		if SystemInfo["HaveMultiBootHD"] or SystemInfo["HaveMultiBootXC"] and self.list[self.selection] == "Recovery":
+		if ( SystemInfo["HaveMultiBootHD"] or SystemInfo["HaveMultiBootXC"] ) and self.list[self.selection] == "Recovery":
 			BLOCK_SIZE=512
 			BLOCK_SECTOR=2
 			IMAGE_ROOTFS_ALIGNMENT=1024
@@ -405,7 +405,7 @@ class ImageBackup(Screen):
 			KERNAL_IMAGE_SEEK = int(KERNEL_PARTITION_OFFSET) * int(BLOCK_SECTOR)
 			cmdlist.append('dd if=/dev/%s of=%s seek=%s' % (self.MTDKERNEL, EMMC_IMAGE, KERNAL_IMAGE_SEEK ))
 			ROOTFS_IMAGE_SEEK = int(ROOTFS_PARTITION_OFFSET) * int(BLOCK_SECTOR)
-			cmdlist.append('dd if=/dev/%s of=%s seek=%s ' % (self.MTDROOTFS, EMMC_IMAGE, ROOTFS_IMAGE_SEEK ))
+			cmdlist.append('dd if=/dev/%s of=%s seek=%s' % (self.MTDROOTFS, EMMC_IMAGE, ROOTFS_IMAGE_SEEK ))
 		self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, finishedCallback = self.doFullBackupCB, closeOnSuccess = True)
 
 	def doFullBackupCB(self):
