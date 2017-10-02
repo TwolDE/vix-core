@@ -1268,8 +1268,12 @@ class FlashImage(Screen):
 
 	def __init__(self, session, menu_path, BackupDirectory):
 		Screen.__init__(self, session)
-		self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
-		self.multiold = self.multiold[-1:]
+		if getMachineBuild() in ("gb7252"):
+			self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(":",1)[0]
+			self.multiold = self.multiold[-1:]
+		else:
+			self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
+			self.multiold = self.multiold[-1:]
 		screentitle = _("Current: boot/STARTUP_") + self.multiold
 		if config.usage.show_menupath.value == 'large':
 			menu_path += screentitle
