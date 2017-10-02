@@ -377,7 +377,7 @@ class VIXImageManager(Screen):
 			self.dualboot = self.dualBoot()
 		if self.sel:
 			message = _("Are you sure you want to flash this image:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
+			ybox = self.session.openWithCallback(self.keyRestore2, MessageBox, message, MessageBox.TYPE_YESNO)
 			ybox.setTitle(_("Restore confirmation"))
 		else:
 			self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
@@ -1123,7 +1123,6 @@ class ImageManagerDownload(Screen):
 				'gbquad'          : 'GiGaBlue-HD-QUAD',
 				'gbquad4k'	  : 'gbquad4k',	
 				'gbquadplus'      : 'GiGaBlue-HD-QUAD-PLUS',
-				'gbquad4k'        : 'GiGaBlue-HD-QUAD-4K',				
 				'gbultraue'       : 'GiGaBlue-HD-ULTRA-UE',
 				'gbx1'            : 'GiGaBlue-HD-X1',
 				'gbx3'            : 'GiGaBlue-HD-X3',
