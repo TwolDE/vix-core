@@ -27,9 +27,9 @@ from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
 __all__ = []
-__version__ = '0.6.1'
+__version__ = '0.6.3'
 __date__ = '2017-06-04'
-__updated__ = '2017-08-26'
+__updated__ = '2017-09-30'
 
 DEBUG = 0
 TESTRUN = 0
@@ -53,6 +53,9 @@ class CLIError(Exception):
     def __unicode__(self):
         return self.msg
 
+class AppUrlOpener(urllib.FancyURLopener):
+    """Set user agent for downloads"""
+    version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
 
 class IPTVSetup():
 
@@ -189,11 +192,13 @@ class IPTVSetup():
                 if 'EXTM3U' in line:  # First line we are not interested
                     continue
                 elif 'EXTINF:' in line:  # Info line - work out group and output the line
-                    channeldict = {'tvg-id': '','tvg-name': '','tvg-logo': '','group-title': '','stream-name': '','stream-url': '','enabled': True,
-                       'nameOverride': '',
-                       'serviceRef': '',
-                       'serviceRefOverride': False
-                       }
+                    channeldict = {'tvg-id': '', 'tvg-name': '', 'tvg-logo': '', 'group-title': '', 'stream-name': '',
+                                   'stream-url': '',
+                                   'enabled': True,
+                                   'nameOverride': '',
+                                   'serviceRef': '',
+                                   'serviceRefOverride': False
+                                   }
                     channel = line.split('"')
                     # strip unwanted info at start of line
                     pos = channel[0].find(' ')
@@ -615,7 +620,7 @@ class IPTVSetup():
         if type(name) is unicode:
             name = name.encode('utf-8')
         name = unicodedata.normalize('NFKD', unicode(name, 'utf_8')).encode('ASCII', 'ignore')
-        exclude_chars = ['/', '\\', "'", '"', '`', '?', ' ', '(', ')', ':', '<', '>', '|', '.', '\n', '!']
+        exclude_chars = ['/', '\\', '\'', '"', '`', '?', ' ', '(', ')', ':', '<', '>', '|', '.', '\n', '!']
         name = re.sub('[%s]' % ''.join(exclude_chars), '', name)
         name = name.replace('&', 'and')
         name = name.replace('+', 'plus')
@@ -630,9 +635,9 @@ class IPTVSetup():
         if type(name) is unicode:
             name = name.encode('utf-8')
         name = unicodedata.normalize('NFKD', unicode(name, 'utf_8')).encode('ASCII', 'ignore')
-        exclude_chars = ['/', '\\', "'", '"', '`',
-         '?', ' ', '(', ')', ':', '<', '>',
-         '|', '.', '\n', '!', '&', '+', '*']
+        exclude_chars = ['/', '\\', '\'', '"', '`',
+                         '?', ' ', '(', ')', ':', '<', '>',
+                         '|', '.', '\n', '!', '&', '+', '*']
         name = re.sub('[%s]' % ''.join(exclude_chars), '', name)
         name = name.lower()
         return name
@@ -841,7 +846,6 @@ class IPTVSetup():
         if not os.path.isdir(EPGIMPORTPATH):
             os.makedirs(EPGIMPORTPATH)
         channels_filename = os.path.join(EPGIMPORTPATH, 'suls_iptv_channels.xml')
-
         if dictchannels:
             with open(channels_filename, "w+") as f:
                 f.write('<channels>\n')
@@ -849,7 +853,6 @@ class IPTVSetup():
                     if cat in dictchannels:
                         if not cat.startswith('VOD'):
                             cat_title = self.get_category_title(cat, category_options)
-
                             f.write('{}<!-- {} -->\n'.format(indent, self.xml_escape(cat_title.encode('utf-8'))))
                             for x in dictchannels[cat]:
                                 tvg_id = x['tvg-id'] if x['tvg-id'] else self.get_service_title(x)
@@ -874,12 +877,14 @@ class IPTVSetup():
         source_filename = os.path.join(EPGIMPORTPATH, 'suls_iptv_{}.sources.xml'.format(self.get_safe_filename(source_name)))
         with open(os.path.join(EPGIMPORTPATH, source_filename), 'w+') as f:
             f.write('<sources>\n')
-            f.write('{}<source type="gen_xmltv" channels="{}">\n'.format(indent, channels_filename))
-            f.write('{}<description>{}</description>\n'.format(2 * indent, self.xml_escape(source_name)))
+            f.write('{}<sourcecat sourcecatname="IPTV Bouquet Maker - E2m3u2bouquet">\n'.format(indent))
+            f.write('{}<source type="gen_xmltv" channels="{}">\n'.format(2 * indent, channels_filename))
+            f.write('{}<description>{}</description>\n'.format(3 * indent, self.xml_escape(source_name)))
             for source in sources:
-                f.write('{}<url>{}</url>\n'.format(2 * indent, self.xml_escape(source)))
+                f.write('{}<url>{}</url>\n'.format(3 * indent, self.xml_escape(source)))
 
-            f.write('{}</source>\n'.format(indent))
+            f.write('{}</source>\n'.format(2 * indent))
+            f.write('{}</sourcecat>\n'.format(indent))
             f.write('</sources>\n')
 
     def read_providers(self, providerfile):
@@ -933,10 +938,19 @@ class IPTVSetup():
         return mapping_file
 
     def xml_escape(self, string):
-        return string.replace('&', '&amp;').replace('"', '&quot;').replace("'", '&apos;').replace('<', '&lt;').replace('>', '&gt;')
+        return string.replace("&", "&amp;") \
+            .replace("\"", "&quot;") \
+            .replace("'", "&apos;") \
+            .replace("<", "&lt;") \
+            .replace(">", "&gt;")
 
     def xml_unescape(self, string):
-        return string.replace('&quot;', '"').replace().replace('&apos;', "'").replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+        return string.replace('&quot;', '"') \
+            .replace() \
+            .replace("&apos;", "'") \
+            .replace("&lt;", "<") \
+            .replace("&gt;", ">") \
+            .replace("&amp;", "&")
 
     def get_service_title(self, channel):
         """Return the title override if set else the title
@@ -1026,6 +1040,7 @@ def main(argv=None):
         return 2
 
     # # Core program logic starts here
+    urllib._urlopener = AppUrlOpener()
     e2m3uSetup = IPTVSetup()
     print '[e2m3u2bouquet]  Core program logic starts here...'
     if uninstall:
