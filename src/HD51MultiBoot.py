@@ -10,6 +10,7 @@ from Components.Label import Label
 from Components.Button import Button
 from Components.Sources.StaticText import StaticText
 from Components import Harddisk
+from Components.SystemInfo import SystemInfo
 from os import path, listdir, system
 from boxbranding import getMachineBuild
 #
@@ -37,7 +38,7 @@ class HD51MultiBoot(Screen):
 
 	def __init__(self, session, menu_path=""):
 		Screen.__init__(self, session)
-		screentitle =  _("HD51 MultiBoot STARTUP Selector")
+		screentitle =  _("MultiBoot STARTUP Selector")
 		self.skinName = ["HD51MultiBoot"]
 
 		self.menu_path = menu_path
@@ -66,90 +67,41 @@ class HD51MultiBoot(Screen):
 		self["config"] = StaticText()
 		self["options"] = StaticText()
 		self["description"] = Label()
+		if SystemInfo["HaveMultiBootHD"]:
+			self["actions"] = ActionMap(["WizardActions", "SetupActions", "ColorActions"],
+			{
+				"left": self.left,
+				"right": self.right,
+				"up": self.up,
+				"down": self.down,
+				"green": self.save,
+				"red": self.cancel,
+				"cancel": self.cancel,
+				"ok": self.save,
+			}, -2)
+			self.getCurrent()
+			self.onLayoutFinish.append(self.layoutFinished)
+		elif SystemInfo["HaveMultiBootGB"]:
+			self.selection = 0
+			if path.exists('/boot/STARTUP'):
+				f = open('/boot/STARTUP', 'r')
+				f.seek(22)
+				image = f.read(1) 
+				f.close()
+				self["description"].setText(_("Current Startup: STARTUP_%s") %(image))
+			self.list = self.list_files("/boot")
+			self.startupGB()
+			self["actions"] = ActionMap(["WizardActions", "SetupActions", "ColorActions"],
+			{
+				"left": self.left,
+				"right": self.right,
+				"green": self.saveGB,
+				"red": self.cancel,
+				"cancel": self.cancel,
+				"ok": self.saveGB,
+			}, -2)
+			self.onLayoutFinish.append(self.layoutFinished)
 
-		self["actions"] = ActionMap(["WizardActions", "SetupActions", "ColorActions"],
-		{
-			"left": self.left,
-			"right": self.right,
-			"up": self.up,
-			"down": self.down,
-			"green": self.save,
-			"red": self.cancel,
-			"yellow": self.rename,
-			"cancel": self.cancel,
-			"ok": self.save,
-			"info": self.info,
-		}, -2)
-
-		self.getCurrent()
-		self.onLayoutFinish.append(self.layoutFinished)
-
-	def info(self):
-		message = (
-			#message 0
-			_("*** boxmode=1 (Standard) ***\n\n" +
-			"+++ Features +++\n" +
-			"3840x2160p60 10-bit HEVC, 3840x2160p60 8-bit VP9, 1920x1080p60 8-bit AVC,\nMAIN only (no PIP), Limited display usages, UHD only (no SD),\nNo multi-PIP, No transcoding\n\n" +
-			"--- Restrictions ---\n" +
-			"Decoder 0: 3840x2160p60 10-bit HEVC, 3840x2160p60 8-bit VP9, 1920x1080p60 8-bit AVC\n" +
-			"OSD Grafic 0: 1080p60 32 bit ARGB\n" +
-			"Display 0 Encode Restrictions: 3840x2160p60 12-bit 4:2:0 (HDMI),\n3840x2160p60 12-bit 4:2:2 (HDMI), 3840x2160p60 8-bit 4:4:4 (HDMI),\n1920x1080p60 (component), Only one display format at a time\n\n" +
-			"If you want 1080p60 component, HDMI also needs to be 1080p60."),
-			#message 1
-			_("*** boxmode=12 (Experimental) ***\n\n" +
-			"+++ Features +++\n" +
- 			"3840x2160p50 10-bit decode for MAIN, 1080p25/50i PIP support, HDMI input (if available),\n UHD display only, No SD display, No transcoding\n\n" +
-			"--- Restrictions ---\n" +
-			"Decoder 0: 3840x2160p50 10-bit HEVC, 3840x2160p50 8-bit VP9,\n1920x1080p50 8-bit AVC/MPEG\n" +
- 			"Decoder 1: 1920x1080p25/50i 10-bit HEVC, 1920x1080p25/50i 8-bit VP9/AVC/MPEG2,\nHDMI In (if available), 3840x2160p50\n" +
-			"OSD Graphic 0 (UHD): 1080p50 32-bit ARGB\n" +
-			"Window 0 (MAIN/UHD): Limited display capabilities, 1080i50 10-bit de-interlacing\n" +
-			"Multi-PIP mode (3x): Enigma2 supported no multi-PIP\n" +
-			"Window 1 (PIP/UHD) (Enigma2 PIP Mode): Up to 1/2 x 1/2 screen display, 576i50 de-interlacing\n" +
-			"Display 0 (UHD) Encode Restrictions: 3840x2160p50"),
-			#message 2
-			_("placeholder message 2"),
-			)
-
-		if not self.option_enabled:
-			idx = 0
-			blv = ''
-			for x in self.bootloaderList:
-				if idx: blv += ', '
-				blv += x
-				idx += 1
-			message = (_("Your box needs Bootloaderversion(s)\n\n%s\n\nto make compatible with Bootoptions!")%blv,) 
-		self.session.open(MessageBox, message[self.option], MessageBox.TYPE_INFO)
-
-	def rename(self):
-		self.oldname = self.list[self.selection]
-		if self.oldname:
-			self.session.openWithCallback(self.renameCB, VirtualKeyBoard, title=_("Please enter new name:"), text=self.oldname)
-
-	def renameCB(self, newname):
-		if newname and newname != 'bootname' and newname != self.oldname:
-			if not path.exists('/boot/%s' %newname) and path.isfile('/boot/%s' %self.oldname):
-				ret = system("mv -fn '/boot/%s' '/boot/%s'" %(self.oldname,newname))
-				if ret:
-					self.session.open(MessageBox, _('Rename failed!'), MessageBox.TYPE_ERROR)
-				else:
-					bootname = self.readlineFile('/boot/bootname').split('=')
-					if len(bootname) == 2 and bootname[1] == self.oldname:
-						self.writeFile('/boot/bootname', '%s=%s' %(bootname[0],newname))
-						self.getCurrent()
-						return
-					elif self.bootname == self.oldname:
-						self.getCurrent()
-						return
-					self.list[self.selection] = newname
-					self["config"].setText(_("Select Image: %s") %newname)
-			else:
-				if not path.exists('/boot/%s' %self.oldname):
-					self.getCurrent()
-					txt = _("File not found - rename failed!")
-				else:
-					txt = _("Name already exists - rename failed!")
-				self.session.open(MessageBox, txt, MessageBox.TYPE_ERROR)
 
 	def writeFile(self, FILE, DATA):
 		try:
@@ -424,6 +376,14 @@ class HD51MultiBoot(Screen):
 			self.option = 0
 		self.startup_option()
 
+	def startupGB(self):
+		self["config"].setText(_("Select Image: %s") %self.list[self.selection])
+
+	def saveGB(self):
+		print "[MultiBootStartup] select new startup: ", self.list[self.selection]
+		system("cp -f /boot/%s /boot/STARTUP"%self.list[self.selection])
+		restartbox = self.session.openWithCallback(self.restartBOX,MessageBox,_("Do you want to reboot now with selected image?"), MessageBox.TYPE_YESNO)
+
 	def left(self):
 		self.selection = self.selection - 1
 		if self.selection == -1:
@@ -438,19 +398,20 @@ class HD51MultiBoot(Screen):
 
 	def read_startup(self, FILE):
 		self.file = FILE
-		with open(FILE, 'r') as myfile:
+		with open(self.file, 'r') as myfile:
 			data=myfile.read().replace('\n', '')
 		myfile.close()
 		return data
 
 	def list_files(self, PATH):
 		files = []
-		for name in listdir(PATH):
-			if path.isfile(path.join(PATH, name)):
-				try:
+		self.path = PATH
+		for name in listdir(self.path):
+			if path.isfile(path.join(self.path, name)):
+				if SystemInfo["HaveMultiBootHD"]:
 					cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
-				except IndexError:
-					continue
+				if SystemInfo["HaveMultiBootGB"]:
+					cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
 				if cmdline in Harddisk.getextdevices("ext4") and not name == "STARTUP":
 					files.append(name)
 		return files
