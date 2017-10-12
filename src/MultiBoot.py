@@ -16,10 +16,10 @@ from boxbranding import getMachineBuild
 #
 #        Thanks to OpenATV Team for supplying most of this code
 #
-class HD51MultiBoot(Screen):
+class MultiBoot(Screen):
 
 	skin = """
-	<screen name="HD51MultiBoot" position="center,center" size="560,400" title="MultiBoot STARTUP Selector">
+	<screen name="MultiBoot" position="center,center" size="560,400" title="MultiBoot STARTUP Selector">
 		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
 		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
 		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on" />
@@ -39,7 +39,7 @@ class HD51MultiBoot(Screen):
 	def __init__(self, session, menu_path=""):
 		Screen.__init__(self, session)
 		screentitle =  _("MultiBoot STARTUP Selector")
-		self.skinName = ["HD51MultiBoot"]
+		self.skinName = ["MultiBoot"]
 
 		self.menu_path = menu_path
 		if config.usage.show_menupath.value == 'large':
@@ -123,12 +123,12 @@ class HD51MultiBoot(Screen):
 
 	def getCurrent(self):
 		'''
-		#default
+		#HD51 default
 		Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'
 		Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'
 		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'
 		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'
-		#options
+		#HD51 options
 		Standard:     hd51_4.boxmode=1 (or no option)
 		Experimental: hd51_4.boxmode=12
 		#example

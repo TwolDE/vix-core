@@ -101,12 +101,12 @@ def ImageBackup(session):
 def ImageBackupMenu(session, **kwargs):
 	session.open(ImageBackup)
 
-def HD51Flash(session):
-	from HD51Flash import HD51Flash
-	return HD51Flash(session)
+def ImageFlash(session):
+	from ImageFlash import ImageFlash
+	return ImageFlash(session)
 
-def HD51FlashMenu(session, **kwargs):
-	session.open(HD51Flash)
+def ImageFlashMenu(session, **kwargs):
+	session.open(ImageFlash)
 	
 def IPTVcreate(session):
 	from IPTVcreate import IPTVcreate
@@ -115,12 +115,12 @@ def IPTVcreate(session):
 def IPTVcreateMenu(session, **kwargs):
 	session.open(IPTVcreate)
 	
-def HD51MultiBoot(session):
-	from HD51MultiBoot import HD51MultiBoot
-	return HD51MultiBoot(session)
+def MultiBoot(session):
+	from MultiBoot import MultiBoot
+	return MultiBoot(session)
 
-def HD51MultiBootMenu(session, **kwargs):
-	session.open(HD51MultiBoot)
+def MultiBootMenu(session, **kwargs):
+	session.open(MultiBoot)
 
 def MountManager(session):
 	from MountManager import VIXDevicesPanel

@@ -65,14 +65,14 @@ class VIXMenu(Screen, ProtectedScreen):
 		self.list = []
 		if self.menu == 0:
 			self.list.append(("backup-manager", _("Backup settings"), _("Manage settings backup."), None))
-			self.list.append(("image-manager", _("Image manager"), _("Backup/Flash system image(s)."), None))
+			self.list.append(("image-manager", _("Manage Image Backup/Flash"), _("Backup/Flash system image(s)."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
 			self.list.append(("IPTV-manager", _("IPTV Bouquet manager"), _("Manage your IPTV Bouquets"), None))
 		if self.menu == 0 and SystemInfo["HaveMultiBoot"]:
-			self.list.append(("HD51Flash", _("Online Image flash"), _("Couch flash any Arm EMMC partition."), None))
+			self.list.append(("ImageFlash", _("Image flash+MultiBoot"), _("Couch flash any Arm EMMC partition."), None))
 			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup to HDD or USB."), None))
-			self.list.append(("HD51MultiBoot", _("Select MultiBoot Image"), _("Boot from any MultiBoot Image Partition."), None))
+			self.list.append(("MultiBoot", _("Select MultiBoot Image"), _("Boot from any MultiBoot Image Partition."), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
 
@@ -144,15 +144,15 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "IPTV-manager":
 					from IPTVcreate import IPTVcreate
 					self.session.open(IPTVcreate, self.menu_path)
-				elif currentEntry == "HD51Flash":
-					from HD51Flash import HD51Flash
-					self.session.open(HD51Flash, self.menu_path)
+				elif currentEntry == "ImageFlash":
+					from ImageFlash import ImageFlash
+					self.session.open(ImageFlash, self.menu_path)
 				elif currentEntry == "ImageBackup":
 					from ImageBackup import ImageBackup
 					self.session.open(ImageBackup, self.menu_path)
-				elif currentEntry == "HD51MultiBoot":
-					from HD51MultiBoot import HD51MultiBoot
-					self.session.open(HD51MultiBoot, self.menu_path)
+				elif currentEntry == "MultiBoot":
+					from MultiBoot import MultiBoot
+					self.session.open(MultiBoot, self.menu_path)
 
 	def closeRecursive(self):
 		self.close(True)

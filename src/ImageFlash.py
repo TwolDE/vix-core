@@ -45,9 +45,9 @@ def Freespace(dev):
 	print "[Flash Online] Free space on %s = %i kilobytes" %(dev, space)
 	return space
 
-class HD51Flash(Screen):
+class ImageFlash(Screen):
 	skin = """
-	<screen position="center,center" size="560,400" title="Flash On the Fly">
+	<screen position="center,center" size="560,400" title="Couch Flash">
 		<ePixmap position="0,360"   zPosition="1" size="140,40" pixmap="skin_default/buttons/red.png" transparent="1" alphatest="on" />
 		<ePixmap position="140,360" zPosition="1" size="140,40" pixmap="skin_default/buttons/green.png" transparent="1" alphatest="on" />
 		<ePixmap position="280,360" zPosition="1" size="140,40" pixmap="skin_default/buttons/yellow.png" transparent="1" alphatest="on" />
@@ -62,7 +62,7 @@ class HD51Flash(Screen):
 		
 	def __init__(self, session, menu_path=""):
 		Screen.__init__(self, session)
-		screentitle =  _("HD51 MultiBoot Couch Flash Manager")
+		screentitle =  _("Couch Flash Image Manager")
 
 		self.menu_path = menu_path
 		if config.usage.show_menupath.value == 'large':
@@ -235,7 +235,7 @@ class HD51Flash(Screen):
 
 class doFlashImage(Screen):
 	skin = """
-	<screen position="center,center" size="560,500" title="Flash On the fly (select a image)">
+	<screen position="center,center" size="560,500" title="Couch Flash (select a image)">
 		<ePixmap position="0,460"   zPosition="1" size="140,40" pixmap="skin_default/buttons/red.png" transparent="1" alphatest="on" />
 		<ePixmap position="140,460" zPosition="1" size="140,40" pixmap="skin_default/buttons/green.png" transparent="1" alphatest="on" />
 		<ePixmap position="280,460" zPosition="1" size="140,40" pixmap="skin_default/buttons/yellow.png" transparent="1" alphatest="on" />
@@ -251,7 +251,7 @@ class doFlashImage(Screen):
 		Screen.__init__(self, session)
 		self.session = session
 
-		Screen.setTitle(self, _("Flash On the fly (select a image)"))
+		Screen.setTitle(self, _("Couch Flash (select a image)"))
 		self["key_green"] = Button(_("Flash"))
 		self["key_red"] = Button(_("Exit"))
 		self["key_blue"] = Button("")
