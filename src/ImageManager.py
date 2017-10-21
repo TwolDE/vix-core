@@ -1197,7 +1197,7 @@ class ImageManagerDownload(Screen):
 				print "[ImageManager][populate_List] the %s is not currently supported by OpenViX." % getMachineMake()
 				self.boxtype = 'UNKNOWN'
 
-			url = 'http://192.168.0.26/openvix-builds/'+self.boxtype+'/'
+			url = 'http://192.168.0.171/openvix-builds/'+self.boxtype+'/'
 			conn = urllib2.urlopen(url)
 			html = conn.read()
 
