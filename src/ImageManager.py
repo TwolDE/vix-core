@@ -1234,7 +1234,7 @@ class ImageManagerDownload(Screen):
 	def doDownload(self, answer):
 		if answer is True:
 			selectedimage = self['list'].getCurrent()
-			fileurl = 'http://192.168.0.26/openvix-builds/%s/%s' % (self.boxtype, selectedimage)
+			fileurl = 'http://192.168.0.171/openvix-builds/%s/%s' % (self.boxtype, selectedimage)
 			fileloc = self.BackupDirectory + selectedimage
 			Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
 			for job in Components.Task.job_manager.getPendingJobs():
