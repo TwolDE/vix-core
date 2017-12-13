@@ -228,16 +228,16 @@ class VIXImageManager(Screen):
 			if hdd in config.imagemanager.backuplocation.choices.choices:
 				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 											  {
-											  "ok": self.close,
 											  'cancel': self.close,
 											  'red': self.keyDelete,
 											  'green': self.GreenPressed,
-											  'blue': self.keyRestore,
 											  'yellow': self.doDownload,
+											  'blue': self.keyResstore,
 											  "menu": self.createSetup,
 											  "up": self.refreshUp,
 											  "down": self.refreshDown,
 											  "displayHelp": self.doDownload,
+											  'ok': self.keyResstore,
 											  }, -1)
 
 				self.BackupDirectory = '/media/hdd/imagebackups/'
@@ -258,13 +258,13 @@ class VIXImageManager(Screen):
 										  'cancel': self.close,
 										  'red': self.keyDelete,
 										  'green': self.GreenPressed,
-										  'blue': self.keyRestore,
 										  'yellow': self.doDownload,
+										  'blue': self.keyResstore,
 										  "menu": self.createSetup,
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
 										  "displayHelp": self.doDownload,
-										  "ok": self.close,
+										  'ok': self.keyResstore,
 										  }, -1)
 
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
@@ -377,9 +377,12 @@ class VIXImageManager(Screen):
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
 			self.dualboot = self.dualBoot()
 		if self.sel:
-			message = _("Are you sure you want to flash this image:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.keyRestore2, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("Restore confirmation"))
+			if getImageFileSystem().replace(' ','') in ('tar.bz2', 'hd-emmc'):
+				message = _("You are about to flash an eMMC flash, we cannot take any responsibility for any errors or damage to your box during this process.\nProceed with CAUTION!:\nAre you sure you want to flash this image:\n ") + self.sel
+			else:
+				message = _("Are you sure you want to flash this image:\n ") + self.sel
+			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
+			ybox.setTitle(_("Flash confirmation"))
 		else:
 			self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
 
