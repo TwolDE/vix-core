@@ -232,12 +232,12 @@ class VIXImageManager(Screen):
 											  'red': self.keyDelete,
 											  'green': self.GreenPressed,
 											  'yellow': self.doDownload,
-											  'blue': self.keyResstore,
+											  'blue': self.keyRestore,
 											  "menu": self.createSetup,
 											  "up": self.refreshUp,
 											  "down": self.refreshDown,
 											  "displayHelp": self.doDownload,
-											  'ok': self.keyResstore,
+											  'ok': self.keyRestore,
 											  }, -1)
 
 				self.BackupDirectory = '/media/hdd/imagebackups/'
@@ -259,12 +259,12 @@ class VIXImageManager(Screen):
 										  'red': self.keyDelete,
 										  'green': self.GreenPressed,
 										  'yellow': self.doDownload,
-										  'blue': self.keyResstore,
+										  'blue': self.keyRestore,
 										  "menu": self.createSetup,
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
 										  "displayHelp": self.doDownload,
-										  'ok': self.keyResstore,
+										  'ok': self.keyRestore,
 										  }, -1)
 
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
@@ -381,7 +381,7 @@ class VIXImageManager(Screen):
 				message = _("You are about to flash an eMMC flash, we cannot take any responsibility for any errors or damage to your box during this process.\nProceed with CAUTION!:\nAre you sure you want to flash this image:\n ") + self.sel
 			else:
 				message = _("Are you sure you want to flash this image:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.keyResstore2, MessageBox, message, MessageBox.TYPE_YESNO)
+			ybox = self.session.openWithCallback(self.keyRestore2, MessageBox, message, MessageBox.TYPE_YESNO)
 			ybox.setTitle(_("Flash confirmation"))
 		else:
 			self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
