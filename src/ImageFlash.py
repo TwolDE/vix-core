@@ -86,7 +86,7 @@ class ImageFlash(Screen):
 
 		self.session = session
 		self.selection = 0
-		if getMachineBuild() in ("hd51","vs1500","h7","ceryon7252"):
+		if getMachineBuild() in ("hd51","vs1500","h7","8100s"):
 			self.devrootfs = "/dev/mmcblk0p3"
 		elif getMachineBuild() in ("gb7252"):
 			self.devrootfs = "/dev/mmcblk0p4"
