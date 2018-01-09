@@ -377,21 +377,13 @@ class VIXImageManager(Screen):
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
 			self.dualboot = self.dualBoot()
 		if self.sel:
-			if getImageFileSystem().replace(' ','') in ('tar.bz2', 'hd-emmc'):
-				message = _("You are about to flash an eMMC flash, we cannot take any responsibility for any errors or damage to your box during this process.\nProceed with CAUTION!:\nAre you sure you want to flash this image:\n ") + self.sel
-			else:
-				message = _("Are you sure you want to flash this image:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.keyRestore2, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("Flash confirmation"))
-		else:
-			self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
-
-	def keyRestore2(self, answer):
-		if answer:
 			if config.imagemanager.autosettingsbackup.value:
 				self.doSettingsBackup()
 			else:
 				self.keyRestore3()
+
+		else:
+			self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
 
 	def keyRestore3(self, val = None):
 		self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares"), MessageBox.TYPE_INFO, timeout=180, enable_input=False)			
