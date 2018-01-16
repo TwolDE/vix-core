@@ -65,14 +65,14 @@ class VIXMenu(Screen, ProtectedScreen):
 		self.list = []
 		if self.menu == 0:
 			self.list.append(("backup-manager", _("Backup settings"), _("Manage settings backup."), None))
-			self.list.append(("image-manager", _("Manage Image Backup/Flash"), _("Backup/Flash system image(s)."), None))
+			self.list.append(("image-manager", _("ViX Image Manager"), _("Backup/Flash/ReBoot system image."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
 			self.list.append(("IPTV-manager", _("IPTV Bouquet manager"), _("Manage your IPTV Bouquets"), None))
 		if self.menu == 0 and SystemInfo["HaveMultiBoot"]:
-			self.list.append(("ImageFlash", _("Image flash+MultiBoot"), _("Couch flash any Arm EMMC partition."), None))
+			self.list.append(("ImageFlash", _("MultiBoot-Image flash"), _("Couch flash any Arm EMMC partition."), None))
 			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup to HDD or USB."), None))
-			self.list.append(("MultiBoot", _("Select MultiBoot Image"), _("Boot from any MultiBoot Image Partition."), None))
+			self.list.append(("MultiBoot", _("Select MultiBoot Image to Reboot"), _("Boot from any MultiBoot Image Partition."), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
 

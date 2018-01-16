@@ -237,13 +237,13 @@ class VIXImageManager(Screen):
 											  "up": self.refreshUp,
 											  "down": self.refreshDown,
 											  "displayHelp": self.doDownload,
-											  'ok': self.keyRestore,
+											  'ok': self.keyReBoot,
 											  }, -1)
 
 				self.BackupDirectory = '/media/hdd/imagebackups/'
 				config.imagemanager.backuplocation.value = '/media/hdd/'
 				config.imagemanager.backuplocation.save()
-				self['lab1'].setText(_("The chosen location does not exist, using /media/hdd") + "\n" + _("Select an image to flash:"))
+				self['lab1'].setText(_("The chosen location does not exist, using /media/hdd") + "\n" + _("Select image to flash:"))
 			else:
 				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions"],
 											  {
@@ -251,7 +251,7 @@ class VIXImageManager(Screen):
 											  "menu": self.createSetup,
 											  }, -1)
 
-				self['lab1'].setText(_("Device: None available") + "\n" + _("Select an image to flash:"))
+				self['lab1'].setText(_("Device: None available") + "\n" + _("Select image to flash:"))
 		else:
 			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 										  {
@@ -264,14 +264,16 @@ class VIXImageManager(Screen):
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
 										  "displayHelp": self.doDownload,
-										  'ok': self.keyRestore,
+										  'ok': self.keyReBoot,
 										  }, -1)
 
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
-			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Select an image to flash:"))
-
+			if SystemInfo["HaveMultiBoot"]:
+				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Select an image:") + "\n" + _("OK:Multiboot Image restart:"))
+			else:
+				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Select an image:"))
 		try:
 			if not path.exists(self.BackupDirectory):
 				mkdir(self.BackupDirectory, 0755)
@@ -371,6 +373,11 @@ class VIXImageManager(Screen):
 			if job.name.startswith(_('Backup manager')):
 				break
 		self.session.openWithCallback(self.keyRestore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
+
+	def keyReBoot(self):
+		if SystemInfo["HaveMultiBoot"]:
+			self.BackupDirectory = 'Multiboot Reboot'
+			self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
 
 	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
@@ -1291,7 +1298,7 @@ class FlashImage(Screen):
 		Screen.setTitle(self, title)
 
 		self.BackupDirectory = BackupDirectory
-		self['lab1'] = Label(_("Select coloured STARTUP button to Flash:\n (Selection of current STARTUP invokes Couch Flash)"))
+		self['lab1'] = Label(_("Select STARTUP/Couch button to Flash/ReBoot:\n (Selection of current STARTUP forces alternate image thru Couch Flash/ReBoot)"))
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Couch"))
 		self["key_yellow"] = Button(_("STARTUP_3"))
@@ -1325,7 +1332,7 @@ class FlashImage(Screen):
 # STARTUP_3		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
 # STARTUP_4		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
 
-
+# If not Couch then set FlashRunning to indicate Flash OS3 or OS4
 
 	def FlashOS3(self):
 		self.FlashRunning = True
@@ -1351,7 +1358,14 @@ class FlashImage(Screen):
 				self.multinew = 1
 			else:
 				self.multinew = self.flashnew
-		print "FLHD51-1 M-old M-new ", self.multiold, self.multinew
+		print "FLHD51-1 OldImage %s NewFlash %s " % (self.multiold, self.multinew)
+		if self.BackupDirectory == 'Multiboot Reboot':
+			self.CopyStartup(0,0)
+		else:
+			self.FlashALL()
+
+	def FlashALL(self):
+
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		self.devrootfs = (2 * self.multinew) + 1
 		if SystemInfo["HaveMultiBootGB"]:
@@ -1364,9 +1378,7 @@ class FlashImage(Screen):
 
 
 	def CopyStartup(self, result, retval, extra_args=None):
-		print "FLHD51-2 Flash retval", retval
-		print "FLHD51-3 Flash result", result
-		print "FLHD51-4 Flash result", self.multinew
+		print "FLHD51-2 Flash retval %s result %s Image STARTUP_%s " % (retval, result, self.multinew)
 		fbClass.getInstance().unlock()
 		if retval == 0:
 			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
