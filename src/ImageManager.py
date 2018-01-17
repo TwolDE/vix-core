@@ -236,7 +236,6 @@ class VIXImageManager(Screen):
 											  "menu": self.createSetup,
 											  "up": self.refreshUp,
 											  "down": self.refreshDown,
-											  "displayHelp": self.doDownload,
 											  'ok': self.keyReBoot,
 											  }, -1)
 
@@ -263,7 +262,6 @@ class VIXImageManager(Screen):
 										  "menu": self.createSetup,
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
-										  "displayHelp": self.doDownload,
 										  'ok': self.keyReBoot,
 										  }, -1)
 
@@ -271,9 +269,9 @@ class VIXImageManager(Screen):
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
 			if SystemInfo["HaveMultiBoot"]:
-				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Select an image:") + "\n" + _("OK:Multiboot Image restart:"))
+				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash") + "\n" + _("Multiboot: Press OK then Select Image to reboot"))
 			else:
-				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Select an image:"))
+				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash"))
 		try:
 			if not path.exists(self.BackupDirectory):
 				mkdir(self.BackupDirectory, 0755)

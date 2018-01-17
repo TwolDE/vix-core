@@ -72,7 +72,6 @@ class VIXMenu(Screen, ProtectedScreen):
 		if self.menu == 0 and SystemInfo["HaveMultiBoot"]:
 			self.list.append(("ImageFlash", _("MultiBoot-Image flash"), _("Couch flash any Arm EMMC partition."), None))
 			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup to HDD or USB."), None))
-			self.list.append(("MultiBoot", _("Select MultiBoot Image to Reboot"), _("Boot from any MultiBoot Image Partition."), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
 
@@ -150,9 +149,6 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "ImageBackup":
 					from ImageBackup import ImageBackup
 					self.session.open(ImageBackup, self.menu_path)
-				elif currentEntry == "MultiBoot":
-					from MultiBoot import MultiBoot
-					self.session.open(MultiBoot, self.menu_path)
 
 	def closeRecursive(self):
 		self.close(True)

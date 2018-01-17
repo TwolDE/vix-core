@@ -114,13 +114,6 @@ def IPTVcreate(session):
 
 def IPTVcreateMenu(session, **kwargs):
 	session.open(IPTVcreate)
-	
-def MultiBoot(session):
-	from MultiBoot import MultiBoot
-	return MultiBoot(session)
-
-def MultiBootMenu(session, **kwargs):
-	session.open(MultiBoot)
 
 def MountManager(session):
 	from MountManager import VIXDevicesPanel
