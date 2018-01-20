@@ -13,7 +13,8 @@ from Components.Label import Label
 from Components.Button import Button
 from Components.MenuList import MenuList
 from Components.config import config, ConfigSubsection, ConfigYesNo, ConfigSelection, ConfigText, ConfigNumber, NoSave, ConfigClock
-from Components.Harddisk import harddiskmanager, getProcMounts
+from Components.ConfigList import ConfigListScreen
+from Components.Harddisk import harddiskmanager, getProcMounts, getextdevices
 from Components.Sources.StaticText import StaticText
 from Screens.Screen import Screen
 from Screens.Setup import Setup
@@ -269,7 +270,7 @@ class VIXImageManager(Screen):
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
 			if SystemInfo["HaveMultiBoot"]:
-				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash") + "\n" + _("Multiboot: Press OK then Select Image to reboot"))
+				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash") + "\n" + _("Reboot: Press OK then Select Image to reboot"))
 			else:
 				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash"))
 		try:
@@ -374,8 +375,7 @@ class VIXImageManager(Screen):
 
 	def keyReBoot(self):
 		if SystemInfo["HaveMultiBoot"]:
-			self.BackupDirectory = 'Multiboot Reboot'
-			self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
+			self.session.open(MultiBoot, self.menu_path)
 
 	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
@@ -1270,12 +1270,15 @@ class FlashImage(Screen):
 		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
 		widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
+		<widget name="list" position="10,105" size="540,260" scrollbarMode="showOnDemand" />
 		<applet type="onLayoutFinish">
+			self["list"].instance.setItemHeight(25)
 		</applet>
 	</screen>"""
 
 	def __init__(self, session, menu_path, BackupDirectory):
 		Screen.__init__(self, session)
+		self.session = session
 		if getMachineBuild() in ("gb7252"):
 			self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(":",1)[0]
 			self.multiold = self.multiold[-1:]
@@ -1296,54 +1299,62 @@ class FlashImage(Screen):
 		Screen.setTitle(self, title)
 
 		self.BackupDirectory = BackupDirectory
-		self['lab1'] = Label(_("Select STARTUP/Couch button to Flash/ReBoot:\n (Selection of current STARTUP forces alternate image thru Couch Flash/ReBoot)"))
-		self["key_red"] = Button(_("Close"))
-		self["key_green"] = Button(_("Couch"))
+		self['lab1'] = Label(_("Flash: Select OK to Couch Flash or STARTUP_x.\n (Couch Flash alternates STARTUP_1 and STARTUP_2) \n ReBoot: Select appropiate STARTUP to reboot selected Image. "))
+		self["key_red"] = Button(_("STARTUP_1"))
+		self["key_green"] = Button(_("STARTUP_2"))
 		self["key_yellow"] = Button(_("STARTUP_3"))
 		if SystemInfo["HaveMultiBootGB"]:
 			self["key_blue"] = Button(_("Not Valid for GB"))
 		else:
 			self["key_blue"] = Button(_("STARTUP_4"))
-
+		self.FlashRunning = True
+		self.Process = "Image Flash" 
 		self.devrootfs = 3
-		self.flashnew = 4	
-		self.FlashRunning = False
+		self.multinew = 1	
 		self.populateF()
-		self.session = session
 		self.Console = Console()
 
 	def populateF(self):
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
 									  {
 									  'cancel': self.close,
-									  'red': self.close,
-									  'green': self.Couch,
+									  'red': self.FlashOS1,
+									  'green': self.FlashOS2,
 									  'yellow': self.FlashOS3,
 									  'blue': self.FlashOS4,
-									  'ok': self.close,
+									  'ok': self.Couch,
 									  }, -1)
 
-
 #		#default layout for Mut@nt HD51									for GigaBlue 4K
-# STARTUP_1 (Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
-# STARTUP_2 (Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
-# STARTUP_3		Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
-# STARTUP_4		Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
+# STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
+# STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
+# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
+# STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
 
-# If not Couch then set FlashRunning to indicate Flash OS3 or OS4
+# If not Safety_Couch then set FlashRunning to indicate Flash OS3 or OS4
+
+	def FlashOS1(self):
+		self.multinew = 1
+		self.FlashRunning = True
+		self.CheckOK()
+
+	def FlashOS2(self):
+		self.multinew = 2
+		self.FlashRunning = True
+		self.CheckOK()
 
 	def FlashOS3(self):
+		self.multinew = 3
 		self.FlashRunning = True
-		self.flashnew = 3
-		self.Couch()
+		self.CheckOK()
 
 	def FlashOS4(self):
-		self.FlashRunning = True
 		if SystemInfo["HaveMultiBootGB"]:
-			self.flashnew = 3
+			self.multinew = 3
 		else:
-			self.flashnew = 4
-		self.Couch()
+			self.multinew = 4
+		self.FlashRunning = True
+		self.CheckOK()
 
 	def Couch(self):
 		self.multinew = 1
@@ -1351,32 +1362,36 @@ class FlashImage(Screen):
 			self.multinew = 2
 		if self.multiold == "2":
 			self.multinew = 1
-		if self.FlashRunning:
-			if self.multiold == self.flashnew:
-				self.multinew = 1
-			else:
-				self.multinew = self.flashnew
-		print "FLHD51-1 OldImage %s NewFlash %s " % (self.multiold, self.multinew)
+		self.FlashRunning = False
+		self.Process == "Image Flash"
+		self.CheckOK()
+
+	def CheckOK(self):
 		if self.BackupDirectory == 'Multiboot Reboot':
+			self.Process = "Image Reboot"
+			fbClass.getInstance().lock()
 			self.CopyStartup(0,0)
 		else:
-			self.FlashALL()
+			self.session.openWithCallback(self.FlashALL, MessageBox, _("%s FlashImage: Yes -> %s STARTUP_%s, No -> exit.") % (getMachineName(), self.Process, self.multinew), MessageBox.TYPE_YESNO)
 
-	def FlashALL(self):
 
-		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
-		self.devrootfs = (2 * self.multinew) + 1
-		if SystemInfo["HaveMultiBootGB"]:
-			self.devrootfs = self.devrootfs  + 2
-		os.system('mkfs.ext4 -F /dev/mmcblk0p%s' %self.devrootfs)
-		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		CMD = '/usr/bin/ofgwrite -r -k -m%s %s/' % (self.multinew, MAINDEST)
-		self.Console.ePopen(CMD, self.CopyStartup)
-		fbClass.getInstance().lock()
-
+	def FlashALL(self, answer):
+		print "FlashImage-2 OldImage %s NewFlash %s FlashType %s" % (self.multiold, self.multinew, self.Process)
+		if answer:
+			self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
+			self.devrootfs = (2 * self.multinew) + 1
+			if SystemInfo["HaveMultiBootGB"]:
+				self.devrootfs = self.devrootfs  + 2
+			os.system('mkfs.ext4 -F /dev/mmcblk0p%s' %self.devrootfs)
+			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+			CMD = '/usr/bin/ofgwrite -r -k -m%s %s/' % (self.multinew, MAINDEST)
+			self.Console.ePopen(CMD, self.CopyStartup)
+			fbClass.getInstance().lock()
+		else:
+			self.close()
 
 	def CopyStartup(self, result, retval, extra_args=None):
-		print "FLHD51-2 Flash retval %s result %s Image STARTUP_%s " % (retval, result, self.multinew)
+		print "FlashImage-3 Flash retval %s result %s Image STARTUP_%s " % (retval, result, self.multinew)
 		fbClass.getInstance().unlock()
 		if retval == 0:
 			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
@@ -1392,3 +1407,125 @@ class FlashImage(Screen):
 		myfile.close()
 		return data	
 
+
+#
+#        Thanks to OpenATV Team for supplying most of this code
+#
+class MultiBoot(Screen):
+
+	skin = """
+	<screen name="MultiBoot" position="center,center" size="560,400" title="MultiBoot STARTUP Selector">
+		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
+		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
+		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
+		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
+		<widget source="config" render="Label" position="150,150" size="580,150" halign="center" valign="center" font="Regular; 30" />
+		<applet type="onLayoutFinish">
+		</applet>
+	</screen>"""
+
+	def __init__(self, session, menu_path):
+		Screen.__init__(self, session)
+		self.session = session
+		if getMachineBuild() in ("gb7252"):
+			self.multiold = self.read_startup("/boot/STARTUP").split(".",1)[1].split(":",1)[0]
+			self.multiold = self.multiold[-1:]
+		else:
+			self.multiold = self.read_startup("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
+			self.multiold = self.multiold[-1:]
+		screentitle = _("Current:STARTUP_") + self.multiold
+		self.skinName = ["MultiBoot"]
+		self.title = _("Current:STARTUP_") + self.multiold
+
+		self.menu_path = menu_path
+		if config.usage.show_menupath.value == 'large':
+			self.menu_path += screentitle
+			title = self.menu_path
+			self["menu_path_compressed"] = StaticText("")
+			self.menu_path += ' / '
+		elif config.usage.show_menupath.value == 'small':
+			title = screentitle
+			condtext = ""
+			if self.menu_path and not self.menu_path.endswith(' / '):
+				condtext = self.menu_path + " >"
+			elif self.menu_path:
+				condtext = self.menu_path[:-3] + " >"
+			self["menu_path_compressed"] = StaticText(condtext)
+			self.menu_path += screentitle + ' / '
+		else:
+			title = screentitle
+			self["menu_path_compressed"] = StaticText("")
+		Screen.setTitle(self, title)
+
+		self["key_red"] = Button(_("Cancel"))
+		self["key_green"] = Button(_("Save"))
+		self["config"] = StaticText(_("Select Image: STARTUP_1"))
+		self.selection = 0
+		self.list = self.list_files("/boot")
+
+		self.startup()
+
+		self["actions"] = ActionMap(["WizardActions", "SetupActions", "ColorActions"],
+		{
+			"left": self.left,
+			"right": self.right,
+			"green": self.save,
+			"red": self.cancel,
+			"cancel": self.cancel,
+			"ok": self.save,
+		}, -2)
+
+		self.onLayoutFinish.append(self.layoutFinished)
+
+	def layoutFinished(self):
+		self.setTitle(self.title)
+
+
+	def startup(self):
+		self["config"].setText(_("Select Image: %s") %self.list[self.selection])
+
+	def save(self):
+		print "[MultiBootStartup] select new startup: ", self.list[self.selection]
+		system("cp -f /boot/%s /boot/STARTUP"%self.list[self.selection])
+		restartbox = self.session.openWithCallback(self.restartBOX,MessageBox,_("Do you want to reboot now with selected image?"), MessageBox.TYPE_YESNO)
+
+	def cancel(self):
+		self.close()
+
+	def left(self):
+		self.selection = self.selection - 1
+		if self.selection == -1:
+			self.selection = len(self.list) - 1
+		self.startup()
+
+	def right(self):
+		self.selection = self.selection + 1
+		if self.selection == len(self.list):
+			self.selection = 0
+		self.startup()
+
+	def read_startup(self, FILE):
+		self.file = FILE
+		with open(self.file, 'r') as myfile:
+			data=myfile.read().replace('\n', '')
+		myfile.close()
+		return data
+
+	def list_files(self, PATH):
+		files = []
+		self.path = PATH
+		for name in listdir(self.path):
+			if path.isfile(path.join(self.path, name)):
+				if SystemInfo["HaveMultiBootHD"]:
+					cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
+				if SystemInfo["HaveMultiBootGB"]:
+					cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
+				if cmdline in getextdevices("ext4") and not name == "STARTUP":
+					files.append(name)
+		return files
+
+	def restartBOX(self, answer):
+		if answer is True:
+			self.session.open(TryQuitMainloop, 2)
+		else:
+			self.close()
