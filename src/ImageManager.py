@@ -1363,16 +1363,11 @@ class FlashImage(Screen):
 		if self.multiold == "2":
 			self.multinew = 1
 		self.FlashRunning = False
-		self.Process == "Image Flash"
+		self.Process == "Couch Flash"
 		self.CheckOK()
 
 	def CheckOK(self):
-		if self.BackupDirectory == 'Multiboot Reboot':
-			self.Process = "Image Reboot"
-			fbClass.getInstance().lock()
-			self.CopyStartup(0,0)
-		else:
-			self.session.openWithCallback(self.FlashALL, MessageBox, _("%s FlashImage: Yes -> %s STARTUP_%s, No -> exit.") % (getMachineName(), self.Process, self.multinew), MessageBox.TYPE_YESNO)
+		self.session.openWithCallback(self.FlashALL, MessageBox, _("%s FlashImage: Yes -> %s STARTUP_%s, No -> exit.") % (getMachineName(), self.Process, self.multinew), MessageBox.TYPE_YESNO)
 
 
 	def FlashALL(self, answer):
@@ -1485,7 +1480,7 @@ class MultiBoot(Screen):
 		self["config"].setText(_("Select Image: %s") %self.list[self.selection])
 
 	def save(self):
-		print "[MultiBootStartup] select new startup: ", self.list[self.selection]
+		print "[MultiBoot Restart] select new startup: ", self.list[self.selection]
 		system("cp -f /boot/%s /boot/STARTUP"%self.list[self.selection])
 		restartbox = self.session.openWithCallback(self.restartBOX,MessageBox,_("Do you want to reboot now with selected image?"), MessageBox.TYPE_YESNO)
 
