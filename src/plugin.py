@@ -94,20 +94,20 @@ def ImageManager(session):
 def ImageMangerMenu(session, **kwargs):
 	session.open(ImageManager)
 
-def ImageBackup(session):
-	from ImageBackup import ImageBackup
-	return ImageBackup(session)
-
-def ImageBackupMenu(session, **kwargs):
-	session.open(ImageBackup)
-
-def ImageFlash(session):
-	from ImageFlash import ImageFlash
-	return ImageFlash(session)
-
-def ImageFlashMenu(session, **kwargs):
-	session.open(ImageFlash)
-	
+#def ImageBackup(session):
+#	from ImageBackup import ImageBackup
+#	return ImageBackup(session)
+#
+#def ImageBackupMenu(session, **kwargs):
+#	session.open(ImageBackup)
+#
+#def ImageFlash(session):
+#	from ImageFlash import ImageFlash
+#	return ImageFlash(session)
+#
+#def ImageFlashMenu(session, **kwargs):
+#	session.open(ImageFlash)
+#	
 def IPTVcreate(session):
 	from IPTVcreate import IPTVcreate
 	return IPTVcreate(session)
