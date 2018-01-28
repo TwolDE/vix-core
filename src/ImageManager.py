@@ -1299,7 +1299,7 @@ class FlashImage(Screen):
 		Screen.setTitle(self, title)
 
 		self.BackupDirectory = BackupDirectory
-		self['lab1'] = Label(_("Flash: Select OK to Couch Flash or STARTUP_x.\n (Couch Flash alternates STARTUP_1 and STARTUP_2) \n ReBoot: Select appropiate STARTUP to reboot selected Image. "))
+		self['lab1'] = Label(_("Flash: Select OK to Couch Flash or STARTUP_x.\n (Couch Flash alternates STARTUP_1 and STARTUP_2)"))
 		self["key_red"] = Button(_("STARTUP_1"))
 		self["key_green"] = Button(_("STARTUP_2"))
 		self["key_yellow"] = Button(_("STARTUP_3"))
@@ -1512,7 +1512,10 @@ class MultiBoot(Screen):
 		for name in listdir(self.path):
 			if path.isfile(path.join(self.path, name)):
 				if SystemInfo["HaveMultiBootHD"]:
-					cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
+					try:
+						cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
+					except:
+						cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
 				if SystemInfo["HaveMultiBootGB"]:
 					cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
 				if cmdline in getextdevices("ext4") and not name == "STARTUP":
