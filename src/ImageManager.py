@@ -237,7 +237,7 @@ class VIXImageManager(Screen):
 											  "menu": self.createSetup,
 											  "up": self.refreshUp,
 											  "down": self.refreshDown,
-											  'ok': self.keyReBoot,
+											  'ok': self.close,
 											  }, -1)
 
 				self.BackupDirectory = '/media/hdd/imagebackups/'
@@ -263,16 +263,13 @@ class VIXImageManager(Screen):
 										  "menu": self.createSetup,
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
-										  'ok': self.keyReBoot,
+										  'ok': self.close,
 										  }, -1)
 
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
-			if SystemInfo["HaveMultiBoot"]:
-				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash") + "\n" + _("Reboot: Press OK then Select Image to reboot"))
-			else:
-				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash"))
+			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash"))
 		try:
 			if not path.exists(self.BackupDirectory):
 				mkdir(self.BackupDirectory, 0755)
@@ -1325,7 +1322,7 @@ class FlashImage(Screen):
 									  'ok': self.Couch,
 									  }, -1)
 
-#		#default layout for Mut@nt HD51									for GigaBlue 4K
+#		#default layout for Mut@nt HD51	& Giga4K								for GigaBlue 4K
 # STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
 # STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
 # STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
