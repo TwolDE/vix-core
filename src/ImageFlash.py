@@ -25,8 +25,8 @@ import math
 from boxbranding import getBoxType,  getImageDistro, getMachineName, getMachineBrand, getImageVersion, getMachineKernelFile, getMachineRootFile, getMachineMake, getMachineBuild
 distro =  getImageDistro()
 ImageVersion = getImageVersion()
-ROOTFSBIN = getMachineRootFile()
-KERNELBIN = getMachineKernelFile()
+ROOTFSBIN = "roots.tar.bz2"
+KERNELBIN = "kernel.bin"
 
 #############################################################################################################
 #
@@ -422,16 +422,6 @@ class doFlashImage(Screen):
 				elif name.find('root') > -1 and (name.endswith('.bin') or name.endswith('.jffs2') or name.endswith('.bz2')) and rootfs:
 					binfile = os.path.join(path, name)
 					dest = flashTmp + '/%s' %ROOTFSBIN
-					shutil.copyfile(binfile, dest)
-					rootfs = False
-				elif name.find('uImage') > -1 and kernel:
-					binfile = os.path.join(path, name)
-					dest = flashTmp + '/uImage'
-					shutil.copyfile(binfile, dest)
-					kernel = False
-				elif name.find('e2jffs2') > -1 and name.endswith('.img') and rootfs:
-					binfile = os.path.join(path, name)
-					dest = flashTmp + '/e2jffs2.img'
 					shutil.copyfile(binfile, dest)
 					rootfs = False
 					

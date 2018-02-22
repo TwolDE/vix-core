@@ -18,6 +18,7 @@ from Components.Console import Console
 from Components.Sources.List import List
 from Components.Sources.StaticText import StaticText
 from Components.Harddisk import Harddisk
+from Components.SystemInfo import SystemInfo
 from Tools.LoadPixmap import LoadPixmap
 from Tools.Directories import SCOPE_ACTIVE_SKIN, resolveFilename
 
@@ -133,9 +134,7 @@ class VIXDevicesPanel(Screen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[1-9]',device):
 				continue
-			if getMachineBuild() in ('et1x000','vuuno4k', 'vuultimo4k', 'vusolo4k', 'hd51', 'hd52', 'dm820', 'dm7080', 'sf4008', 'dm900', 'gb7252', 'dags7252', 'vs1500','h7') and re.search('mmcblk0p[1-9]',device):
-				continue
-			if getMachineBuild() in ('xc7439') and re.search('mmcblk1p[1-9]',device):
+			if SystemInfo["HasMMC"] and re.search('mmcblk0p[1-9]',device):
 				continue
 			if device in list2:
 				continue
@@ -364,9 +363,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[1-9]',device):
 				continue
-			if getMachineBuild() in ('et1x000','vuuno4k', 'vuultimo4k', 'vusolo4k', 'hd51', 'hd52', 'dm820', 'dm7080', 'sf4008', 'dm900', 'gb7252', 'dags7252', 'vs1500','h7') and re.search('mmcblk0p[1-9]',device):
-				continue
-			if getMachineBuild() in ('xc7439') and re.search('mmcblk1p[1-9]',device):
+			if SystemInfo["HasMMC"] and re.search('mmcblk0p[1-9]',device):
 				continue
 			if device in list2:
 				continue
