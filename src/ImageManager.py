@@ -27,6 +27,7 @@ from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
 from Tools.Directories import fileExists, fileCheck
+from Tools.Multiboot import GetImagelist
 
 import urllib
 import os
@@ -1266,23 +1267,26 @@ class FlashImage(Screen):
 		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
 		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
-		widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
-		<widget name="list" position="10,105" size="540,260" scrollbarMode="showOnDemand" />
-		<applet type="onLayoutFinish">
-			self["list"].instance.setItemHeight(25)
-		</applet>
+		<widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
 	</screen>"""
+
+#		#default layout for Mut@nt HD51	& Giga4K								for GigaBlue 4K
+# STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
+# STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
+# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
+# STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
+# 			If not Safety_Couch then set FlashRunning to indicate Flash OS1 -> OSx
 
 	def __init__(self, session, menu_path, BackupDirectory):
 		Screen.__init__(self, session)
 		self.session = session
-		if getMachineBuild() in ("gb7252"):
-			self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(":",1)[0]
-			self.multiold = self.multiold[-1:]
-		else:
-			self.multiold = self.read_startupS("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
-			self.multiold = self.multiold[-1:]
+		if path.exists('/boot/STARTUP'):
+			f = open('/boot/STARTUP', 'r')
+			f.seek(22)
+			self.multiold = f.read(1) 
+			f.close()
 		screentitle = _("Current: boot/STARTUP_") + self.multiold
+
 		if config.usage.show_menupath.value == 'large':
 			menu_path += screentitle
 			title = menu_path
@@ -1304,14 +1308,20 @@ class FlashImage(Screen):
 			self["key_blue"] = Button(_("Not Valid for GB"))
 		else:
 			self["key_blue"] = Button(_("STARTUP_4"))
+		self.Imagelist = []
+		self.getImageList = None
 		self.FlashRunning = True
 		self.Process = "Image Flash" 
 		self.devrootfs = 3
-		self.multinew = 1	
-		self.populateF()
+		self.multinew = 1
+		self.selection = 0
+
+		self.STARTUPlist = self.list_files("/boot")
+		self.getImageList = GetImagelist(self.startup)	
+		self.populate()
 		self.Console = Console()
 
-	def populateF(self):
+	def populate(self):
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
 									  {
 									  'cancel': self.close,
@@ -1319,16 +1329,10 @@ class FlashImage(Screen):
 									  'green': self.FlashOS2,
 									  'yellow': self.FlashOS3,
 									  'blue': self.FlashOS4,
+									  'left': self.left,
+									  'right': self.right,
 									  'ok': self.Couch,
 									  }, -1)
-
-#		#default layout for Mut@nt HD51	& Giga4K								for GigaBlue 4K
-# STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
-# STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
-# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
-# STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
-
-# If not Safety_Couch then set FlashRunning to indicate Flash OS3 or OS4
 
 	def FlashOS1(self):
 		self.multinew = 1
@@ -1347,7 +1351,7 @@ class FlashImage(Screen):
 
 	def FlashOS4(self):
 		if SystemInfo["HaveMultiBootGB"]:
-			self.multinew = 3
+			self.Couch()
 		else:
 			self.multinew = 4
 		self.FlashRunning = True
@@ -1366,9 +1370,8 @@ class FlashImage(Screen):
 	def CheckOK(self):
 		self.session.openWithCallback(self.FlashALL, MessageBox, _("%s FlashImage: Yes -> %s STARTUP_%s, No -> exit.") % (getMachineName(), self.Process, self.multinew), MessageBox.TYPE_YESNO)
 
-
 	def FlashALL(self, answer):
-		print "FlashImage-2 OldImage %s NewFlash %s FlashType %s" % (self.multiold, self.multinew, self.Process)
+#		print "FlashImage-2 OldImage %s NewFlash %s FlashType %s" % (self.multiold, self.multinew, self.Process)
 		if answer:
 			self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 			self.devrootfs = (2 * self.multinew) + 1
@@ -1383,7 +1386,7 @@ class FlashImage(Screen):
 			self.close()
 
 	def CopyStartup(self, result, retval, extra_args=None):
-		print "FlashImage-3 Flash retval %s result %s Image STARTUP_%s " % (retval, result, self.multinew)
+#		print "FlashImage-3 Flash retval %s result %s Image STARTUP_%s " % (retval, result, self.multinew)
 		fbClass.getInstance().unlock()
 		if retval == 0:
 			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
@@ -1392,109 +1395,25 @@ class FlashImage(Screen):
 			self.session.open(MessageBox, _("Image Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
 			self.close()
 
-	def read_startupS(self, FILE):
-		file = FILE
-		with open(file, 'r') as myfile:
-			data=myfile.read().replace('\n', '')
-		myfile.close()
-		return data	
-
-
-#
-#        Thanks to OpenATV Team for supplying most of this code
-#
-class MultiBoot(Screen):
-
-	skin = """
-	<screen name="MultiBoot" position="center,center" size="560,400" title="MultiBoot STARTUP Selector">
-		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
-		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
-		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
-		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
-		<widget source="config" render="Label" position="150,150" size="580,150" halign="center" valign="center" font="Regular; 30" />
-		<applet type="onLayoutFinish">
-		</applet>
-	</screen>"""
-
-	def __init__(self, session, menu_path):
-		Screen.__init__(self, session)
-		self.session = session
-		if getMachineBuild() in ("gb7252"):
-			self.multiold = self.read_startup("/boot/STARTUP").split(".",1)[1].split(":",1)[0]
-			self.multiold = self.multiold[-1:]
-		else:
-			self.multiold = self.read_startup("/boot/STARTUP").split(".",1)[1].split(" ",1)[0]
-			self.multiold = self.multiold[-1:]
-		screentitle = _("Current:STARTUP_") + self.multiold
-		self.skinName = ["MultiBoot"]
-		self.title = _("Current:STARTUP_") + self.multiold
-
-		self.menu_path = menu_path
-		if config.usage.show_menupath.value == 'large':
-			self.menu_path += screentitle
-			title = self.menu_path
-			self["menu_path_compressed"] = StaticText("")
-			self.menu_path += ' / '
-		elif config.usage.show_menupath.value == 'small':
-			title = screentitle
-			condtext = ""
-			if self.menu_path and not self.menu_path.endswith(' / '):
-				condtext = self.menu_path + " >"
-			elif self.menu_path:
-				condtext = self.menu_path[:-3] + " >"
-			self["menu_path_compressed"] = StaticText(condtext)
-			self.menu_path += screentitle + ' / '
-		else:
-			title = screentitle
-			self["menu_path_compressed"] = StaticText("")
-		Screen.setTitle(self, title)
-
-		self["key_red"] = Button(_("Cancel"))
-		self["key_green"] = Button(_("Save"))
-		self["config"] = StaticText(_("Select Image: STARTUP_1"))
-		self.selection = 0
-		self.list = self.list_files("/boot")
-
-		self.startup()
-
-		self["actions"] = ActionMap(["WizardActions", "SetupActions", "ColorActions"],
-		{
-			"left": self.left,
-			"right": self.right,
-			"green": self.save,
-			"red": self.cancel,
-			"cancel": self.cancel,
-			"ok": self.save,
-		}, -2)
-
-		self.onLayoutFinish.append(self.layoutFinished)
-
-	def layoutFinished(self):
-		self.setTitle(self.title)
-
-
-	def startup(self):
-		self["config"].setText(_("Select Image: %s") %self.list[self.selection])
-
-	def save(self):
-		print "[MultiBoot Restart] select new startup: ", self.list[self.selection]
-		system("cp -f /boot/%s /boot/STARTUP"%self.list[self.selection])
-		restartbox = self.session.openWithCallback(self.restartBOX,MessageBox,_("Do you want to reboot now with selected image?"), MessageBox.TYPE_YESNO)
-
-	def cancel(self):
-		self.close()
-
 	def left(self):
 		self.selection = self.selection - 1
 		if self.selection == -1:
-			self.selection = len(self.list) - 1
-		self.startup()
+			self.selection = len(self.STARTUPlist) - 1
+		self.startup0()
 
 	def right(self):
 		self.selection = self.selection + 1
-		if self.selection == len(self.list):
+		if self.selection == len(self.STARTUPlist):
 			self.selection = 0
-		self.startup()
+		self.startup0()
+
+	def startup(self, imagedict):
+		self.Imagelist = imagedict
+		self.startup0()
+
+	def startup0(self):
+		x = self.selection+1
+		self['lab1'].setText(_("Press OK to Couch Flash or appropiate STARTUP_x button\n use <> keys to see STARTUP options  \n STARTUP_%s %s") %(x, self.Imagelist[x]['imagename']))
 
 	def read_startup(self, FILE):
 		self.file = FILE
@@ -1518,9 +1437,3 @@ class MultiBoot(Screen):
 				if cmdline in getextdevices("ext4") and not name == "STARTUP":
 					files.append(name)
 		return files
-
-	def restartBOX(self, answer):
-		if answer is True:
-			self.session.open(TryQuitMainloop, 2)
-		else:
-			self.close()
