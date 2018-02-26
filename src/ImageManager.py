@@ -1258,7 +1258,7 @@ class ImageManagerDownload(Screen):
 
 class FlashImage(Screen):
 	skin = """
-	<screen name="VIXImageManager" position="center,center" size="560,400" title="Image Manager" flags="wfBorder" >
+	<screen name="VIXImageManager" position="center,center" size="560,400" title="Image Manager" >
 		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
 		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
 		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on" />
@@ -1267,7 +1267,7 @@ class FlashImage(Screen):
 		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
 		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
 		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
-		<widget name="lab1" render="Label" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
+		<widget name="lab1" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
 	</screen>"""
 
 #		#default layout for Mut@nt HD51	& Giga4K								for GigaBlue 4K
