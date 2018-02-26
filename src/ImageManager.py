@@ -1413,27 +1413,15 @@ class FlashImage(Screen):
 
 	def startup0(self):
 		x = self.selection+1
+#		print "Multiboot OldImage %s NewFlash %s FlashType %s Imagelist %s" % (self.multiold, self.selection, x, self.Imagelist)
 		self['lab1'].setText(_("Press OK to Couch Flash or appropiate STARTUP_x button\n use <> keys to see STARTUP options  \n STARTUP_%s %s") %(x, self.Imagelist[x]['imagename']))
 
-	def read_startup(self, FILE):
-		self.file = FILE
-		with open(self.file, 'r') as myfile:
-			data=myfile.read().replace('\n', '')
-		myfile.close()
-		return data
 
 	def list_files(self, PATH):
 		files = []
 		self.path = PATH
 		for name in listdir(self.path):
 			if path.isfile(path.join(self.path, name)):
-				if SystemInfo["HaveMultiBootHD"]:
-					try:
-						cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
-					except:
-						cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
-				if SystemInfo["HaveMultiBootGB"]:
-					cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
-				if cmdline in getextdevices("ext4") and not name == "STARTUP":
+				if name != "STARTUP":
 					files.append(name)
 		return files
