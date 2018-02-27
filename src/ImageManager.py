@@ -1414,7 +1414,7 @@ class FlashImage(Screen):
 	def startup0(self):
 		x = self.selection+1
 #		print "Multiboot OldImage %s NewFlash %s FlashType %s Imagelist %s" % (self.multiold, self.selection, x, self.Imagelist)
-		self['lab1'].setText(_("Press OK to Couch Flash or appropiate STARTUP_x button\n use <> keys to see STARTUP options  \n STARTUP_%s %s") %(x, self.Imagelist[x]['imagename']))
+		self['lab1'].setText(_("Press OK to Couch Flash or STARTUP_x button\n use <> keys to see current STARTUP images  \n STARTUP_%s %s") %(x, self.Imagelist[x]['imagename']))
 
 
 	def list_files(self, PATH):
