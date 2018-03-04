@@ -636,7 +636,7 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
-		elif getImageFileSystem().replace(' ','') == 'hd-emmc':
+		elif getImageFileSystem().replace(' ','') in ('hdemmc', 'hd-emmc'):
 			self.ROOTDEVTYPE = 'hd-emmc'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
@@ -897,6 +897,7 @@ class ImageBackup(Screen):
 			self.commands.append('dd if=/dev/%s of=%s seek=%s' % (self.MTDKERNEL, EMMC_IMAGE, KERNEL_IMAGE_SEEK ))
 			ROOTFS_IMAGE_SEEK = int(ROOTFS_PARTITION_OFFSET) * int(BLOCK_SECTOR)
 			self.commands.append('dd if=/dev/%s of=%s seek=%s' % (self.MTDROOTFS, EMMC_IMAGE, ROOTFS_IMAGE_SEEK ))
+			self.session.open(MessageBox, _("You are creating a %s disk image - this can only be USB flashed." %self.MODEL), MessageBox.TYPE_INFO, timeout=10)
 		else:
 			print '[ImageManager] Stage2: UBIFS Detected.'
 			UBINIZE_ARGS = getMachineUBINIZE()
