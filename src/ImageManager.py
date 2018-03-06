@@ -630,7 +630,7 @@ class ImageBackup(Screen):
 			if path.exists('/boot/STARTUP'):
 				f = open('/boot/STARTUP', 'r')
 				f.seek(22)
-				kernel = f.read(1) 
+				kernel = int(f.read(1)) 
 				f.close() 
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +3)
