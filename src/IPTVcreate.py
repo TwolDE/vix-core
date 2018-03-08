@@ -38,6 +38,9 @@ config.IPTVcreate = ConfigSubsection()
 config.IPTVcreate.Provname = ConfigSelection(default='ACE', choices=get_providers_list())
 config.IPTVcreate.Username = ConfigText(default = "", fixed_size=False)
 config.IPTVcreate.Password = ConfigPassword(default='', fixed_size=False)
+config.IPTVcreate.Provname2 = ConfigSelection(default='FAB', choices=get_providers_list())
+config.IPTVcreate.Username2 = ConfigText(default = "", fixed_size=False)
+config.IPTVcreate.Password2 = ConfigPassword(default='', fixed_size=False)
 config.IPTVcreate.Piconpath = ConfigSelection(default='/usr/share/enigma2/picon/', choices=[
  '/usr/share/enigma2/picon/',
  '/media/usb/picon/',
@@ -103,21 +106,23 @@ class IPTVcreate(Screen):
 		self.Config_List()
                 self.session = session
 		self.Console = Console()
+		self.Prov = 1
 		
 		
 	def Config_List(self):
             	print "[IPTVcreate] Display Menu"
 		self["key_red"] = Button(_("Exit"))
-		self["key_yellow"] = Button("Run")
 		self["key_green"] = Button(_("Setup"))
-		self["key_blue"] = Button()
+		self["key_yellow"] = Button("Run")
+		self["key_blue"] = Button("ProvSwitch")
 		self['lab1'] = Label(_("Select Green button to set Config settings:\n Yellow button to download latest IPTV Bouquets"))
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 									  {
 									  'cancel': self.close,
 									  'red': self.close,
-									  'yellow': self.manual_update,
 									  'green': self.createSetup,
+									  'yellow': self.manual_update,
+									  'blue': self.Provswitch,
 									  "menu": self.createSetup,
 									  "ok": self.close,
 									  }, -1)
@@ -137,6 +142,11 @@ class IPTVcreate(Screen):
         	self.xcludesref = config.IPTVcreate.Xcludesref.value
         	self.iptvtypes = config.IPTVcreate.iptvtypes.value
 
+	def Provswitch(self):
+		self.Prov = 2
+		self.do_mainupdate(0)
+		
+
     	def manual_update(self):
         	self.session.openWithCallback(self.manual_update_callback, MessageBox, _('Start Channels Update with saved Providers?'), MessageBox.TYPE_YESNO, timeout=15, default=True)
 
@@ -149,9 +159,14 @@ class IPTVcreate(Screen):
 	def do_mainupdate(self, ret):
 		if config.IPTVcreate.Provname.value:
 			sys.argv = []
-			sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
-			sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
-			sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
+			if self.Prov == 1:
+				sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
+				sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
+				sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
+			else:
+				sys.argv.append('-n={}'.format(config.IPTVcreate.Provname2.value))
+				sys.argv.append('-u={}'.format(config.IPTVcreate.Username2.value))
+				sys.argv.append('-p={}'.format(config.IPTVcreate.Password2.value))
 			if config.IPTVcreate.iptvtypes.value:
 			    sys.argv.append('-i')
 			if config.IPTVcreate.Multivod.value:
