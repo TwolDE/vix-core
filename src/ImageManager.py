@@ -27,7 +27,7 @@ from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
 from Tools.Directories import fileExists, fileCheck
-from Tools.Multiboot import GetImagelist
+from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentImageMode
 
 import urllib
 import os
@@ -623,7 +623,7 @@ class ImageBackup(Screen):
 		self.GB4Kbin = 'boot.bin'
 		self.GB4Krescue = 'rescue.bin'
 		if SystemInfo["HaveMultiBootHD"]:
-			kernel = int(open('/sys/firmware/devicetree/base/chosen/kerneldev', 'r').read().replace('\0', '')[-1])
+			kernel = GetCurrentImage()
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +1)
 		if SystemInfo["HaveMultiBootGB"]:
@@ -1280,7 +1280,7 @@ class FlashImage(Screen):
 	</screen>"""
 
 #		#default layout for Mut@nt HD51	& Giga4K
-#				for HD51									for GigaBlue 4K
+#				for HD51								for GigaBlue 4K
 #BOOT				boot: mmcblk0p1								boot: mmcblk0p1	rescue: mmcblk0p3
 # STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
 # STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
@@ -1319,45 +1319,36 @@ class FlashImage(Screen):
 			self["key_blue"] = Button(_("Not Valid for GB"))
 		else:
 			self["key_blue"] = Button(_("STARTUP_4"))
-		self.Imagelist = []
 		self.getImageList = None
 		self.FlashRunning = True
 		self.Process = "Image Flash" 
 		self.devrootfs = 3
 		self.multinew = 1
-		self.selection = 0
-
-		self.STARTUPlist = self.list_files("/boot")
 		self.getImageList = GetImagelist(self.startup)	
 		self.populate()
 		self.Console = Console()
 
 	def populate(self):
-		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
+		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions'],
 									  {
 									  'cancel': self.close,
 									  'red': self.FlashOS1,
 									  'green': self.FlashOS2,
 									  'yellow': self.FlashOS3,
 									  'blue': self.FlashOS4,
-									  'left': self.left,
-									  'right': self.right,
 									  'ok': self.Couch,
 									  }, -1)
 
 	def FlashOS1(self):
 		self.multinew = 1
-		self.FlashRunning = True
 		self.CheckOK()
 
 	def FlashOS2(self):
 		self.multinew = 2
-		self.FlashRunning = True
 		self.CheckOK()
 
 	def FlashOS3(self):
 		self.multinew = 3
-		self.FlashRunning = True
 		self.CheckOK()
 
 	def FlashOS4(self):
@@ -1375,8 +1366,17 @@ class FlashImage(Screen):
 		if self.multiold == "2":
 			self.multinew = 1
 		self.FlashRunning = False
-		self.Process == "Couch Flash"
+		self.Process = "Couch Flash"
 		self.CheckOK()
+
+	def startup(self, imagedict):
+		choices = []
+		for x in range(1,5):
+			if x in imagedict:
+				choices.append(("\n STARTUP_%s %s") %(x, imagedict[x]['imagename']))
+		self['lab1'].setText(_("Flash Selected Image:- \n Select Couch Flash(OK) or \n STARTUP slot(Colour Button) %s") %choices)
+
+
 
 	def CheckOK(self):
 		self.session.openWithCallback(self.FlashALL, MessageBox, _("%s FlashImage: Yes -> %s STARTUP_%s, No -> exit.") % (getMachineName(), self.Process, self.multinew), MessageBox.TYPE_YESNO)
@@ -1405,34 +1405,3 @@ class FlashImage(Screen):
 		else:
 			self.session.open(MessageBox, _("Image Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
 			self.close()
-
-	def left(self):
-		self.selection = self.selection - 1
-		if self.selection == -1:
-			self.selection = len(self.STARTUPlist) - 1
-		self.startup0()
-
-	def right(self):
-		self.selection = self.selection + 1
-		if self.selection == len(self.STARTUPlist):
-			self.selection = 0
-		self.startup0()
-
-	def startup(self, imagedict):
-		self.Imagelist = imagedict
-		self.startup0()
-
-	def startup0(self):
-		x = self.selection+1
-#		print "Multiboot OldImage %s NewFlash %s FlashType %s Imagelist %s" % (self.multiold, self.selection, x, self.Imagelist)
-		self['lab1'].setText(_("Press OK to Couch Flash or STARTUP_x button\n use <> keys to see current STARTUP images  \n STARTUP_%s %s") %(x, self.Imagelist[x]['imagename']))
-
-
-	def list_files(self, PATH):
-		files = []
-		self.path = PATH
-		for name in listdir(self.path):
-			if path.isfile(path.join(self.path, name)):
-				if name != "STARTUP":
-					files.append(name)
-		return files
