@@ -27,7 +27,7 @@ from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
 from Tools.Directories import fileExists, fileCheck
-from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentImageMode
+from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentImageMode, GetSTARTUP
 
 import urllib
 import os
@@ -1291,12 +1291,8 @@ class FlashImage(Screen):
 	def __init__(self, session, menu_path, BackupDirectory):
 		Screen.__init__(self, session)
 		self.session = session
-		if path.exists('/boot/STARTUP'):
-			f = open('/boot/STARTUP', 'r')
-			f.seek(22)
-			self.multiold = f.read(1) 
-			f.close()
-		screentitle = _("Current: boot/STARTUP_") + self.multiold
+		self.STARTUPslot = GetSTARTUP()
+		screentitle = _("Current: boot/STARTUP_") + self.STARTUPslot
 
 		if config.usage.show_menupath.value == 'large':
 			menu_path += screentitle
@@ -1361,9 +1357,9 @@ class FlashImage(Screen):
 
 	def Couch(self):
 		self.multinew = 1
-		if self.multiold == "1":
+		if self.STARTUPslot == "1":
 			self.multinew = 2
-		if self.multiold == "2":
+		if self.STARTUPslot == "2":
 			self.multinew = 1
 		self.FlashRunning = False
 		self.Process = "Couch Flash"
@@ -1374,7 +1370,7 @@ class FlashImage(Screen):
 		for x in range(1,5):
 			if x in imagedict:
 				choices.append(("\n STARTUP_%s %s") %(x, imagedict[x]['imagename']))
-		self['lab1'].setText(_("Flash Selected Image:- \n Select Couch Flash(OK) or \n STARTUP slot(Colour Button) %s") %choices)
+		self['lab1'].setText(_("Flash Selected Image:- \n Select Couch Flash(OK) or \n STARTUP slot(Colour Button) \n %s") %choices)
 
 
 
@@ -1382,7 +1378,7 @@ class FlashImage(Screen):
 		self.session.openWithCallback(self.FlashALL, MessageBox, _("%s FlashImage: Yes -> %s STARTUP_%s, No -> exit.") % (getMachineName(), self.Process, self.multinew), MessageBox.TYPE_YESNO)
 
 	def FlashALL(self, answer):
-#		print "FlashImage-2 OldImage %s NewFlash %s FlashType %s" % (self.multiold, self.multinew, self.Process)
+#		print "FlashImage-2 OldImage %s NewFlash %s FlashType %s" % (self.STARTUPslot, self.multinew, self.Process)
 		if answer:
 			self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 			self.devrootfs = (2 * self.multinew) + 1
