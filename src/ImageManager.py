@@ -372,7 +372,7 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.keyRestore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
 
 	def keyReBoot(self):
-		if SystemInfo["HaveMultiBoot"]:
+		if SystemInfo["canMultiBoot"]:
 			self.session.open(MultiBoot, self.menu_path)
 
 	def keyRestore(self):
@@ -402,7 +402,7 @@ class VIXImageManager(Screen):
 	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=4)
-			if SystemInfo["HaveMultiBoot"]:
+			if SystemInfo["canMultiBoot"]:
 				self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
 			elif getMachineMake() == 'et8500' and self.dualboot:
 				message = _("ET8500 Multiboot: Yes to restore OS1 No to restore OS2:\n ") + self.sel
@@ -622,11 +622,11 @@ class ImageBackup(Screen):
 		self.MODEL = getBoxType()
 		self.GB4Kbin = 'boot.bin'
 		self.GB4Krescue = 'rescue.bin'
-		if SystemInfo["HaveMultiBootHD"]:
+		if SystemInfo["canMultiBootHD"]:
 			kernel = GetCurrentImage()
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +1)
-		if SystemInfo["HaveMultiBootGB"]:
+		if SystemInfo["canMultiBootGB"]:
 			kernel = GetCurrentImageGB()
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +3)
@@ -841,9 +841,9 @@ class ImageBackup(Screen):
 				JFFS2OPTIONS = " --disable-compressor=lzo --eraseblock=0x20000 -n -l"
 			self.commands.append('mount --bind / %s/root' % self.TMPDIR)
 			self.commands.append('mkfs.jffs2 --root=%s/root --faketime --output=%s/rootfs.jffs2 %s' % (self.TMPDIR, self.WORKDIR, JFFS2OPTIONS))
-		elif self.ROOTDEVTYPE == 'tar.bz2' or SystemInfo["HaveMultiBootHD"]:
+		elif self.ROOTDEVTYPE == 'tar.bz2' or SystemInfo["canMultiBootHD"]:
 			print '[ImageManager] Stage2: TAR.BZIP Detected.'
-			if SystemInfo["HaveMultiBoot"]:
+			if SystemInfo["canMultiBoot"]:
 				self.commands.append('mount /dev/%s %s/root' %(self.MTDROOTFS, self.TMPDIR))
 			else:
 				self.commands.append('mount --bind / %s/root' % self.TMPDIR)
@@ -854,7 +854,7 @@ class ImageBackup(Screen):
 				self.commands.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
 				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
-			if SystemInfo["HaveMultiBootHD"]:
+			if SystemInfo["canMultiBootHD"]:
 				print '[ImageManager] Stage2: HD51 EMMC Detected.'
 				self.MTDBOOT_HD51 = "mmcblk0p1"
 				self.EMMCIMG = "disk.img"
@@ -1287,7 +1287,7 @@ class FlashImage(Screen):
 	def __init__(self, session, menu_path, BackupDirectory):
 		Screen.__init__(self, session)
 		self.session = session
-		if SystemInfo["HaveMultiBootGB"]:
+		if SystemInfo["canMultiBootGB"]:
 			self.STARTUPslot = GetcurrentImageGB()
 		else:
 			self.STARTUPslot = GetcurrentImage()
@@ -1310,7 +1310,7 @@ class FlashImage(Screen):
 		self["key_red"] = Button(_("STARTUP_1"))
 		self["key_green"] = Button(_("STARTUP_2"))
 		self["key_yellow"] = Button(_("STARTUP_3"))
-		if SystemInfo["HaveMultiBootGB"]:
+		if SystemInfo["canMultiBootGB"]:
 			self["key_blue"] = Button(_("Not Valid for GB"))
 		else:
 			self["key_blue"] = Button(_("STARTUP_4"))
@@ -1347,7 +1347,7 @@ class FlashImage(Screen):
 		self.CheckOK()
 
 	def FlashOS4(self):
-		if SystemInfo["HaveMultiBootGB"]:
+		if SystemInfo["canMultiBootGB"]:
 			self.Couch()
 		else:
 			self.multinew = 4
@@ -1381,7 +1381,7 @@ class FlashImage(Screen):
 		if answer:
 			self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 			self.devrootfs = (2 * self.multinew) + 1
-			if SystemInfo["HaveMultiBootGB"]:
+			if SystemInfo["canMultiBootGB"]:
 				self.devrootfs = self.devrootfs  + 2
 			os.system('mkfs.ext4 -F /dev/mmcblk0p%s' %self.devrootfs)
 			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())

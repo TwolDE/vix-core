@@ -65,7 +65,7 @@ class MultiBoot(Screen):
 		self["config"] = StaticText()
 		self["options"] = StaticText()
 		self["description"] = Label()
-		if SystemInfo["HaveMultiBootHD"]:
+		if SystemInfo["canMultiBootHD"]:
 			self["actions"] = ActionMap(["WizardActions", "SetupActions", "ColorActions"],
 			{
 				"left": self.left,
@@ -79,7 +79,7 @@ class MultiBoot(Screen):
 			}, -2)
 			self.getCurrent()
 			self.onLayoutFinish.append(self.layoutFinished)
-		elif SystemInfo["HaveMultiBootGB"]:
+		elif SystemInfo["canMultiBootGB"]:
 			self.selection = 0
 			if path.exists('/boot/STARTUP'):
 				f = open('/boot/STARTUP', 'r')
@@ -406,9 +406,9 @@ class MultiBoot(Screen):
 		self.path = PATH
 		for name in listdir(self.path):
 			if path.isfile(path.join(self.path, name)):
-				if SystemInfo["HaveMultiBootHD"]:
+				if SystemInfo["canMultiBootHD"]:
 					cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
-				if SystemInfo["HaveMultiBootGB"]:
+				if SystemInfo["canMultiBootGB"]:
 					cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
 				if cmdline in Harddisk.getextdevices("ext4") and not name == "STARTUP":
 					files.append(name)

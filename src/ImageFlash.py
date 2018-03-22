@@ -95,7 +95,7 @@ class ImageFlash(Screen):
 		self.multi = 1
 		self.list = self.list_files("/boot")
 
-		if SystemInfo["HaveMultiBoot"]:
+		if SystemInfo["canMultiBoot"]:
 			self["key_yellow"] = Button(_("STARTUP"))
 		else:
 			self["key_yellow"] = Button("")
@@ -113,7 +113,7 @@ class ImageFlash(Screen):
 			"red": self.quit,
 			"cancel": self.quit,
 		}, -2)
-		if SystemInfo["HaveMultiBoot"]:
+		if SystemInfo["canMultiBoot"]:
 			if getMachineBuild() in ("gb7252"):
 				self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(":",1)[0]
 				self.multi = self.multi[-1:]
@@ -166,7 +166,7 @@ class ImageFlash(Screen):
 			self.close()
 
 	def yellow(self):
-		if SystemInfo["HaveMultiBoot"]:
+		if SystemInfo["canMultiBoot"]:
 			self.selection = self.selection + 1
 			if self.selection == len(self.list):
 				self.selection = 0
@@ -194,7 +194,7 @@ class ImageFlash(Screen):
 
 	def list_files(self, PATH):
 		files = []
-		if SystemInfo["HaveMultiBoot"]:
+		if SystemInfo["canMultiBoot"]:
 			path = PATH
 			if getMachineBuild() in ("hd51","vs1500","h7","8100s","gb7252"):
 				for name in os.listdir(path):
@@ -365,7 +365,7 @@ class doFlashImage(Screen):
 			text = _("Flashing: ")
 			if self.simulate:
 				text += _("Simulate (no write)")
-				if SystemInfo["HaveMultiBoot"]:
+				if SystemInfo["canMultiBoot"]:
 					cmdlist.append("%s -n -r -k -m%s %s > /dev/null 2>&1" % (ofgwritePath, self.multi, flashTmp))
 				else:
 					cmdlist.append("%s -n -r -k %s > /dev/null 2>&1" % (ofgwritePath, flashTmp))
@@ -375,7 +375,7 @@ class doFlashImage(Screen):
 				message += "'"
 			else:
 				text += _("root and kernel")
-				if SystemInfo["HaveMultiBoot"]:
+				if SystemInfo["canMultiBoot"]:
 					if self.List not in ("STARTUP","cmdline.txt"):
 						os.system('mkfs.ext4 -F ' + self.devrootfs)
 					cmdlist.append("%s -r -k -m%s %s > /dev/null 2>&1" % (ofgwritePath, self.multi, flashTmp))
@@ -385,7 +385,7 @@ class doFlashImage(Screen):
 				else:
 					cmdlist.append("%s -r -k %s > /dev/null 2>&1" % (ofgwritePath, flashTmp))
 				message = "echo -e '\n"
-				if self.List not in ("STARTUP","cmdline.txt") and SystemInfo["HaveMultiBoot"]:
+				if self.List not in ("STARTUP","cmdline.txt") and SystemInfo["canMultiBoot"]:
 					message += _('ofgwrite flashing ready.\n')
 					message += _('please press exit to go back to the menu.\n')
 				else:
