@@ -27,7 +27,7 @@ from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
 from Tools.Directories import fileExists, fileCheck
-from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentImageMode, GetSTARTUP
+from Tools.Multiboot import GetImagelist, GetCurrentImage, GetcurrentImageGB
 
 import urllib
 import os
@@ -627,11 +627,7 @@ class ImageBackup(Screen):
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +1)
 		if SystemInfo["HaveMultiBootGB"]:
-			if path.exists('/boot/STARTUP'):
-				f = open('/boot/STARTUP', 'r')
-				f.seek(22)
-				kernel = int(f.read(1)) 
-				f.close() 
+			kernel = GetCurrentImageGB()
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +3)
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
@@ -1291,8 +1287,11 @@ class FlashImage(Screen):
 	def __init__(self, session, menu_path, BackupDirectory):
 		Screen.__init__(self, session)
 		self.session = session
-		self.STARTUPslot = GetSTARTUP()
-		screentitle = _("Current: boot/STARTUP_") + self.STARTUPslot
+		if SystemInfo["HaveMultiBootGB"]:
+			self.STARTUPslot = GetcurrentImageGB()
+		else:
+			self.STARTUPslot = GetcurrentImage()
+		screentitle = _("Current: boot/STARTUP_") + str(self.STARTUPslot)
 
 		if config.usage.show_menupath.value == 'large':
 			menu_path += screentitle
@@ -1370,7 +1369,7 @@ class FlashImage(Screen):
 		for x in range(1,5):
 			if x in imagedict:
 				choices.append(("\n STARTUP_%s %s") %(x, imagedict[x]['imagename']))
-		self['lab1'].setText(_("Flash Selected Image:- \n Select Couch Flash(OK) or \n STARTUP slot(Colour Button) \n %s") %choices)
+		self['lab1'].setText(_("Select Couch Flash(OK) or \n STARTUP slot(Colour Button) \n \n %s") %choices)
 
 
 
