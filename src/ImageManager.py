@@ -27,7 +27,7 @@ from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
 from Tools.Directories import fileExists, fileCheck
-from Tools.Multiboot import GetImagelist, GetCurrentImage, GetcurrentImageGB
+from Tools.Multiboot import GetImagelist, GetCurrentImage
 
 import urllib
 import os
@@ -132,6 +132,7 @@ class VIXImageManager(Screen):
 		self["key_red"] = Button(_("Delete"))
 
 		self.BackupRunning = False
+		self.getImageList = None
 		self.onChangedEntry = []
 		self.oldlist = None
 		self.emlist = []
@@ -379,14 +380,54 @@ class VIXImageManager(Screen):
 		self.sel = self['list'].getCurrent()
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
 			self.dualboot = self.dualBoot()
-		if self.sel:
-			if config.imagemanager.autosettingsbackup.value:
-				self.doSettingsBackup()
-			else:
-				self.keyRestore3()
-
+		recordings = self.session.nav.getRecordings()
+		if not recordings:
+			next_rec_time = self.session.nav.RecordTimer.getNextRecordingTime()
+		if recordings or (next_rec_time > 0 and (next_rec_time - time.time()) < 360):
+			self.message = _("Recording(s) are in progress or coming up in few seconds!\nDo you still want to flash image\n%s?") % self.sel
 		else:
-			self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
+			self.message = _("Do you want to flash image\n%s") % self.sel
+		if SystemInfo["canMultiBoot"]:
+			self.getImageList = GetImagelist(self.getImagelistCallback)
+		else:
+			choices = [(_("Yes, with backup"), "with backup"), (_("No, do not flash image"), False), (_("Yes, without backup"), "without backup")]
+			self.session.openWithCallback(self.backupsettings, MessageBox, self.message , list=choices, default=False, simple=True)
+
+	def getImagelistCallback(self, imagedict):
+		self.getImageList = None
+		choices = []
+		if SystemInfo["canMultiBoot"]:
+			currentimageslot = GetCurrentImage()
+		for x in range(1,5):
+			if x in imagedict:
+				choices.append(((_("slot%s - %s (current image) with, backup") if x == currentimageslot else _("slot%s - %s, with backup")) % (x, imagedict[x]['imagename']), (x, "with backup")))
+			else:
+				choices.append((_("slot%s - empty, with backup") % x, (x, "with backup")))
+		choices.append((_("No, do not flash image"), False))
+		for x in range(1,5):
+			if x in imagedict:
+				choices.append(((_("slot%s - %s (current image), without backup") if x == currentimageslot else _("slot%s - %s, without backup")) % (x, imagedict[x]['imagename']), (x, "without backup")))
+			else:
+				choices.append((_("slot%s - empty, without backup") % x, (x, "without backup")))
+		self.session.openWithCallback(self.backupsettings, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
+
+	def backupsettings(self, retval):
+		if retval:
+			if SystemInfo["canMultiBoot"]:
+				self.multibootslot = retval[0]
+				doBackup = retval[1] == "with backup"
+			else:
+				doBackup = retval == "with backup"
+			if self.sel:
+				if config.imagemanager.autosettingsbackup.value or doBackup:
+					self.doSettingsBackup()
+				else:
+					self.keyRestore3()
+			else:
+				self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
+		else:
+			self.session.open(MessageBox, _("You have decided not to flash image."), MessageBox.TYPE_INFO, timeout=10)
+
 
 	def keyRestore3(self, val = None):
 		self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares"), MessageBox.TYPE_INFO, timeout=180, enable_input=False)			
@@ -402,11 +443,9 @@ class VIXImageManager(Screen):
 	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=4)
-			if SystemInfo["canMultiBoot"]:
-				self.session.open(FlashImage, self.menu_path, self.BackupDirectory)
-			elif getMachineMake() == 'et8500' and self.dualboot:
+			if getMachineMake() == 'et8500' and self.dualboot:
 				message = _("ET8500 Multiboot: Yes to restore OS1 No to restore OS2:\n ") + self.sel
-				ybox = self.session.openWithCallback(self.keyRestore5, MessageBox, message, MessageBox.TYPE_YESNO)
+				ybox = self.session.openWithCallback(self.keyRestore5_ET8500, MessageBox, message, MessageBox.TYPE_YESNO)
 				ybox.setTitle(_("ET8500 Image Restore"))
 			else:
 				self.keyRestore6(0)
@@ -415,7 +454,7 @@ class VIXImageManager(Screen):
 			print "[ImageManager] unzip failed:\n", result
 			self.close()
 
-	def keyRestore5(self, answer):
+	def keyRestore5_ET8500(self, answer):
 		if answer:
 			self.keyRestore6(0)
 		else:
@@ -424,12 +463,17 @@ class VIXImageManager(Screen):
 	def keyRestore6(self,ret):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		if ret == 0:
-			CMD = '/usr/bin/ofgwrite -r -k %s/' % (MAINDEST)
+			if SystemInfo["canMultiBoot"]:
+				CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
+			else:
+				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
 		else:
 			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)			
 		config.imagemanager.restoreimage.setValue(self.sel)
 		print '[ImageManager] running commnd:',CMD
 		self.Console.ePopen(CMD, self.ofgwriteResult)
+		fbClass.getInstance().lock()
+
 
 # We'll only arrive at this function if the ofgwrite failed.
 # If it succeeded it will have rebooted the system.
@@ -437,11 +481,17 @@ class VIXImageManager(Screen):
 # log, for reporting.
 #
 	def ofgwriteResult(self, result, retval, extra_args=None):
-		if retval != 0:
+		fbClass.getInstance().unlock()
+		if retval == 0:
+			if SystemInfo["canMultiBoot"]:
+				os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multibootslot)
+				self.session.open(TryQuitMainloop, 2)
+			else:
+				self.session.open(TryQuitMainloop, 2)
+		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
-		else:
-			self.session.open(TryQuitMainloop, 2)
+
 
 	def dualBoot(self):
 		rootfs2 = False
@@ -627,7 +677,7 @@ class ImageBackup(Screen):
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +1)
 		if SystemInfo["canMultiBootGB"]:
-			kernel = GetCurrentImageGB()
+			kernel = GetCurrentImage()
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +2)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +3)
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
@@ -1287,9 +1337,7 @@ class FlashImage(Screen):
 	def __init__(self, session, menu_path, BackupDirectory):
 		Screen.__init__(self, session)
 		self.session = session
-		if SystemInfo["canMultiBootGB"]:
-			self.STARTUPslot = GetcurrentImageGB()
-		else:
+		if SystemInfo["canMultiBoot"]:
 			self.STARTUPslot = GetcurrentImage()
 		screentitle = _("Current: boot/STARTUP_") + str(self.STARTUPslot)
 
