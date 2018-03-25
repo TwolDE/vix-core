@@ -376,6 +376,14 @@ class VIXImageManager(Screen):
 		if SystemInfo["canMultiBoot"]:
 			self.session.open(MultiBoot, self.menu_path)
 
+#		#default layout for Multiboot Images:- Mut@nt HD51 & Giga4K
+#				for HD51								for GigaBlue 4K
+#BOOT				boot: mmcblk0p1								boot: mmcblk0p1	rescue: mmcblk0p3
+# STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
+# STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
+# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
+# STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
+# 			If not Safety_Couch then set FlashRunning to indicate Flash OS1 -> OSx
 	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
@@ -1310,141 +1318,3 @@ class ImageManagerDownload(Screen):
 	def myclose(self, result, retval, extra_args):
 		remove(self.BackupDirectory + self.selectedimage)
 		self.close()
-
-class FlashImage(Screen):
-	skin = """
-	<screen name="VIXImageManager" position="center,center" size="560,400" title="Image Manager" >
-		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
-		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
-		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on" />
-		<ePixmap pixmap="skin_default/buttons/blue.png" position="420,0" size="140,40" alphatest="on" />
-		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
-		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
-		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
-		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
-		<widget name="lab1" position="100,700" size="580,200" halign="center" valign="center" font="Regular; 30" />
-	</screen>"""
-
-#		#default layout for Mut@nt HD51	& Giga4K
-#				for HD51								for GigaBlue 4K
-#BOOT				boot: mmcblk0p1								boot: mmcblk0p1	rescue: mmcblk0p3
-# STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
-# STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
-# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
-# STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
-# 			If not Safety_Couch then set FlashRunning to indicate Flash OS1 -> OSx
-
-	def __init__(self, session, menu_path, BackupDirectory):
-		Screen.__init__(self, session)
-		self.session = session
-		if SystemInfo["canMultiBoot"]:
-			self.STARTUPslot = GetcurrentImage()
-		screentitle = _("Current: boot/STARTUP_") + str(self.STARTUPslot)
-
-		if config.usage.show_menupath.value == 'large':
-			menu_path += screentitle
-			title = menu_path
-			self["menu_path_compressed"] = StaticText("")
-		elif config.usage.show_menupath.value == 'small':
-			title = screentitle
-			self["menu_path_compressed"] = StaticText(menu_path + " >" if not menu_path.endswith(' / ') else menu_path[:-3] + " >" or "")
-		else:
-			title = screentitle
-			self["menu_path_compressed"] = StaticText("")
-		Screen.setTitle(self, title)
-
-		self.BackupDirectory = BackupDirectory
-		self['lab1'] = Label(_("Flash: Select OK to Couch Flash or STARTUP_x.\n (Couch Flash alternates STARTUP_1 and STARTUP_2)"))
-		self["key_red"] = Button(_("STARTUP_1"))
-		self["key_green"] = Button(_("STARTUP_2"))
-		self["key_yellow"] = Button(_("STARTUP_3"))
-		if SystemInfo["canMultiBootGB"]:
-			self["key_blue"] = Button(_("Not Valid for GB"))
-		else:
-			self["key_blue"] = Button(_("STARTUP_4"))
-		self.getImageList = None
-		self.FlashRunning = True
-		self.Process = "Image Flash" 
-		self.devrootfs = 3
-		self.multinew = 1
-		self.getImageList = GetImagelist(self.startup)	
-		self.populate()
-		self.Console = Console()
-
-	def populate(self):
-		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions'],
-									  {
-									  'cancel': self.close,
-									  'red': self.FlashOS1,
-									  'green': self.FlashOS2,
-									  'yellow': self.FlashOS3,
-									  'blue': self.FlashOS4,
-									  'ok': self.Couch,
-									  }, -1)
-
-	def FlashOS1(self):
-		self.multinew = 1
-		self.CheckOK()
-
-	def FlashOS2(self):
-		self.multinew = 2
-		self.CheckOK()
-
-	def FlashOS3(self):
-		self.multinew = 3
-		self.CheckOK()
-
-	def FlashOS4(self):
-		if SystemInfo["canMultiBootGB"]:
-			self.Couch()
-		else:
-			self.multinew = 4
-		self.FlashRunning = True
-		self.CheckOK()
-
-	def Couch(self):
-		self.multinew = 1
-		if self.STARTUPslot == "1":
-			self.multinew = 2
-		if self.STARTUPslot == "2":
-			self.multinew = 1
-		self.FlashRunning = False
-		self.Process = "Couch Flash"
-		self.CheckOK()
-
-	def startup(self, imagedict):
-		choices = []
-		for x in range(1,5):
-			if x in imagedict:
-				choices.append(("\n STARTUP_%s %s") %(x, imagedict[x]['imagename']))
-		self['lab1'].setText(_("Select Couch Flash(OK) or \n STARTUP slot(Colour Button) \n \n %s") %choices)
-
-
-
-	def CheckOK(self):
-		self.session.openWithCallback(self.FlashALL, MessageBox, _("%s FlashImage: Yes -> %s STARTUP_%s, No -> exit.") % (getMachineName(), self.Process, self.multinew), MessageBox.TYPE_YESNO)
-
-	def FlashALL(self, answer):
-#		print "FlashImage-2 OldImage %s NewFlash %s FlashType %s" % (self.STARTUPslot, self.multinew, self.Process)
-		if answer:
-			self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
-			self.devrootfs = (2 * self.multinew) + 1
-			if SystemInfo["canMultiBootGB"]:
-				self.devrootfs = self.devrootfs  + 2
-			os.system('mkfs.ext4 -F /dev/mmcblk0p%s' %self.devrootfs)
-			MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-			CMD = '/usr/bin/ofgwrite -r -k -m%s %s/' % (self.multinew, MAINDEST)
-			self.Console.ePopen(CMD, self.CopyStartup)
-			fbClass.getInstance().lock()
-		else:
-			self.close()
-
-	def CopyStartup(self, result, retval, extra_args=None):
-#		print "FlashImage-3 Flash retval %s result %s Image STARTUP_%s " % (retval, result, self.multinew)
-		fbClass.getInstance().unlock()
-		if retval == 0:
-			os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multinew)
-			self.session.open(TryQuitMainloop, 2)
-		else:
-			self.session.open(MessageBox, _("Image Flash failed - note: ViX Backup not restorable, only image from feeds"), MessageBox.TYPE_INFO, timeout=10, enable_input=False)			
-			self.close()
