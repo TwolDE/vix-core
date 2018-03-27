@@ -391,7 +391,7 @@ class VIXImageManager(Screen):
 		recordings = self.session.nav.getRecordings()
 		if not recordings:
 			next_rec_time = self.session.nav.RecordTimer.getNextRecordingTime()
-		if recordings or (next_rec_time > 0 and (next_rec_time - time.time()) < 360):
+		if recordings or (next_rec_time > 0 and (next_rec_time - time()) < 360):
 			self.message = _("Recording(s) are in progress or coming up in few seconds!\nDo you still want to flash image\n%s?") % self.sel
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
