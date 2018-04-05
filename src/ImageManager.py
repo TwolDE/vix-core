@@ -318,7 +318,7 @@ class VIXImageManager(Screen):
 		self.sel = self['list'].getCurrent()
 		if self.sel:
 			message = _("Are you sure you want to delete this image backup:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=False)
+			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
 			ybox.setTitle(_("Remove confirmation"))
 		else:
 			self.session.open(MessageBox, _("You have no image to delete."), MessageBox.TYPE_INFO, timeout=10)
