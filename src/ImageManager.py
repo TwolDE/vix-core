@@ -404,22 +404,13 @@ class VIXImageManager(Screen):
 	def getImagelistCallback(self, imagedict):
 		self.getImageList = None
 		choices = []
-		hirange = 5
-		if SystemInfo["canMultiBoot"]:
-			currentimageslot = GetCurrentImage()
-		if SystemInfo["canMultiBootGB"]:
-			hirange = 4
-		for x in range(1,hirange):
-			if x in imagedict:
-				choices.append(((_("slot%s - %s (current image) with, backup") if x == currentimageslot else _("slot%s - %s, with backup")) % (x, imagedict[x]['imagename']), (x, "with backup")))
-			else:
-				choices.append((_("slot%s - empty, with backup") % x, (x, "with backup")))
+		HIslot = len(imagedict) + 1
+		currentimageslot = GetCurrentImage()
+		for x in range(1,HIslot):
+			choices.append(((_("slot%s - %s (current image) with, backup") if x == currentimageslot else _("slot%s - %s, with backup")) % (x, imagedict[x]['imagename']), (x, "with backup")))
 		choices.append((_("No, do not flash image"), False))
-		for x in range(1,hirange):
-			if x in imagedict:
-				choices.append(((_("slot%s - %s (current image), without backup") if x == currentimageslot else _("slot%s - %s, without backup")) % (x, imagedict[x]['imagename']), (x, "without backup")))
-			else:
-				choices.append((_("slot%s - empty, without backup") % x, (x, "without backup")))
+		for x in range(1,HIslot):
+			choices.append(((_("slot%s - %s (current image), without backup") if x == currentimageslot else _("slot%s - %s, without backup")) % (x, imagedict[x]['imagename']), (x, "without backup"))) 
 		self.session.openWithCallback(self.backupsettings, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
 
 	def backupsettings(self, retval):
