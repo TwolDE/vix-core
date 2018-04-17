@@ -27,7 +27,7 @@ from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
 from Tools.Directories import fileExists, fileCheck
-from Tools.Multiboot import GetImagelist, GetCurrentImage
+from Tools.Multiboot import GetImagelist, GetCurrentImage, WriteStartup
 
 import urllib
 import os
@@ -372,9 +372,6 @@ class VIXImageManager(Screen):
 				break
 		self.session.openWithCallback(self.keyRestore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
 
-	def keyReBoot(self):
-		if SystemInfo["canMultiBoot"]:
-			self.session.open(MultiBoot, self.menu_path)
 
 #		#default layout for Multiboot Images:- Mut@nt HD51 & Giga4K
 #				for HD51								for GigaBlue 4K
@@ -485,14 +482,31 @@ class VIXImageManager(Screen):
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
 		if retval == 0:
-			if SystemInfo["canMultiBoot"]:
-				os.system("cp -f '/boot/STARTUP_%s' /boot/STARTUP" %self.multibootslot)
+			if not SystemInfo["canMultiBoot"]:
 				self.session.open(TryQuitMainloop, 2)
 			else:
-				self.session.open(TryQuitMainloop, 2)
+				slot == self.multibootslot
+				model = getMachineBuild()
+				if not SystemInfo["canMode12"]:
+					xStartup = WriteStartup(slot, ReExit)
+				else:
+					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], SystemInfo["canMode12"][1], slot * 2 + 1, model)
+#					xStartup = WriteStartup(startupFileContents, ReExit)
+#				else:
+#					self.slot -= 12
+#					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=12'\n" % (slot, SystemInfo["canMode12"][2], SystemInfo["canMode12"][3], slot * 2 + 1, model)
+#					xStartup = WriteStartup(startupFileContents, ReExit)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
+
+
+#	def findSTARTUP(self, startupdict):	
+#		startupFileContents = startupdict[self.multibootslot]['STARTUP']
+#		xStartup = WriteStartup(startupFileContents, ReExit)
+
+	def ReExit(self):
+		self.session.open(TryQuitMainloop, 2)
 
 
 	def dualBoot(self):
@@ -674,14 +688,11 @@ class ImageBackup(Screen):
 		self.MODEL = getBoxType()
 		self.GB4Kbin = 'boot.bin'
 		self.GB4Krescue = 'rescue.bin'
-		if SystemInfo["canMultiBootHD"]:
+		if SystemInfo["canMultiBoot"]:
+			self.addin = SystemInfo["canMultiBoot"][0]
 			kernel = GetCurrentImage()
-			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2)
-			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +1)
-		if SystemInfo["canMultiBootGB"]:
-			kernel = GetCurrentImage()
-			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +2)
-			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +3)
+			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +self.addin -1)
+			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +self.addin)
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
 		print '[ImageManager] Type:',getImageFileSystem()
@@ -893,7 +904,7 @@ class ImageBackup(Screen):
 				JFFS2OPTIONS = " --disable-compressor=lzo --eraseblock=0x20000 -n -l"
 			self.commands.append('mount --bind / %s/root' % self.TMPDIR)
 			self.commands.append('mkfs.jffs2 --root=%s/root --faketime --output=%s/rootfs.jffs2 %s' % (self.TMPDIR, self.WORKDIR, JFFS2OPTIONS))
-		elif self.ROOTDEVTYPE == 'tar.bz2' or SystemInfo["canMultiBootHD"]:
+		elif self.ROOTDEVTYPE == 'tar.bz2' or SystemInfo["canMultiBoot"] and 'rootflags=data=journal' not in open("/proc/cmdline", "r").read():
 			print '[ImageManager] Stage2: TAR.BZIP Detected.'
 			if SystemInfo["canMultiBoot"]:
 				self.commands.append('mount /dev/%s %s/root' %(self.MTDROOTFS, self.TMPDIR))
@@ -906,7 +917,7 @@ class ImageBackup(Screen):
 				self.commands.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
 				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
-			if SystemInfo["canMultiBootHD"]:
+			if SystemInfo["canMultiBoot"] and 'rootflags=data=journal' not in open("/proc/cmdline", "r").read()
 				print '[ImageManager] Stage2: HD51 EMMC Detected.'
 				self.MTDBOOT_HD51 = "mmcblk0p1"
 				self.EMMCIMG = "disk.img"
