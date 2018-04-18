@@ -491,9 +491,9 @@ class VIXImageManager(Screen):
 					xStartup = WriteStartup(slot, ReExit)
 				else:
 					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], SystemInfo["canMode12"][1], slot * 2 + 1, model)
-#					xStartup = WriteStartup(startupFileContents, ReExit)
+					xStartup = WriteStartup(startupFileContents, ReExit)
 #				else:
-#					self.slot -= 12
+#					slot -= 12
 #					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=12'\n" % (slot, SystemInfo["canMode12"][2], SystemInfo["canMode12"][3], slot * 2 + 1, model)
 #					xStartup = WriteStartup(startupFileContents, ReExit)
 		else:
