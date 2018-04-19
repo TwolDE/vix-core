@@ -492,18 +492,11 @@ class VIXImageManager(Screen):
 				else:
 					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], SystemInfo["canMode12"][1], slot * 2 + 1, model)
 					xStartup = WriteStartup(startupFileContents, ReExit)
-#				else:
-#					slot -= 12
-#					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=12'\n" % (slot, SystemInfo["canMode12"][2], SystemInfo["canMode12"][3], slot * 2 + 1, model)
-#					xStartup = WriteStartup(startupFileContents, ReExit)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
 
 
-#	def findSTARTUP(self, startupdict):	
-#		startupFileContents = startupdict[self.multibootslot]['STARTUP']
-#		xStartup = WriteStartup(startupFileContents, ReExit)
 
 	def ReExit(self):
 		self.session.open(TryQuitMainloop, 2)
@@ -917,7 +910,7 @@ class ImageBackup(Screen):
 				self.commands.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
 				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
-			if SystemInfo["canMultiBoot"] and 'rootflags=data=journal' not in open("/proc/cmdline", "r").read()
+			if SystemInfo["canMultiBoot"] and 'coherent_poll=2M' not in open("/proc/cmdline", "r").read():
 				print '[ImageManager] Stage2: HD51 EMMC Detected.'
 				self.MTDBOOT_HD51 = "mmcblk0p1"
 				self.EMMCIMG = "disk.img"
