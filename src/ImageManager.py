@@ -133,6 +133,8 @@ class VIXImageManager(Screen):
 
 		self.BackupRunning = False
 		self.getImageList = None
+		if SystemInfo["canMultiBoot"]:
+			self.addin = SystemInfo["canMultiBoot"][0]
 		self.onChangedEntry = []
 		self.oldlist = None
 		self.emlist = []
@@ -485,13 +487,13 @@ class VIXImageManager(Screen):
 			if not SystemInfo["canMultiBoot"]:
 				self.session.open(TryQuitMainloop, 2)
 			else:
-				slot == self.multibootslot
+				slot = self.multibootslot
 				model = getMachineBuild()
-				if not SystemInfo["canMode12"]:
-					xStartup = WriteStartup(slot, ReExit)
+				if 'coherent_poll=2M' in open("/proc/cmdline", "r").read():
+					WriteStartup(slot, self.ReExit)
 				else:
-					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], SystemInfo["canMode12"][1], slot * 2 + 1, model)
-					xStartup = WriteStartup(startupFileContents, ReExit)
+					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], SystemInfo["canMode12"][1], slot * 2 + self.addin, model)
+					WriteStartup(startupFileContents, self.ReExit)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
