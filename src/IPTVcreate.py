@@ -106,7 +106,7 @@ class IPTVcreate(Screen):
 		self.Config_List()
                 self.session = session
 		self.Console = Console()
-		self.Prov = 1
+		self.Prov = 2
 		
 		
 	def Config_List(self):
@@ -134,16 +134,16 @@ class IPTVcreate(Screen):
                  
 	def configOK(self, test=None):
             	print "[IPTVcreate] Config OK"
-        	self.provider = config.IPTVcreate.Provname.value
-        	self.username = config.IPTVcreate.Username.value 
-        	self.password = config.IPTVcreate.Password.value
+        	self.provider = config.IPTVcreate.Provname2.value
+        	self.username = config.IPTVcreate.Username2.value 
+        	self.password = config.IPTVcreate.Password2.value
         	self.Piconpath = config.IPTVcreate.Piconpath.value
         	self.multivod = config.IPTVcreate.Multivod.value
         	self.xcludesref = config.IPTVcreate.Xcludesref.value
         	self.iptvtypes = config.IPTVcreate.iptvtypes.value
 
 	def Provswitch(self):
-		self.Prov = 2
+		self.Prov = 1
 		self.do_mainupdate(0)
 		
 
