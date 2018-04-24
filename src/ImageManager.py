@@ -382,7 +382,7 @@ class VIXImageManager(Screen):
 # STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
 # STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
 # STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
-# 			If not Safety_Couch then set FlashRunning to indicate Flash OS1 -> OSx
+# 
 	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
