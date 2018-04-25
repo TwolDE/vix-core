@@ -148,12 +148,6 @@ class IPTVcreate(Screen):
 		
 
     	def manual_update(self):
-        	self.session.openWithCallback(self.manual_update_callback, MessageBox, _('Start Channels Update with saved Providers?'), MessageBox.TYPE_YESNO, timeout=15, default=True)
-
-    	def manual_update_callback(self, confirmed):
-        	if not confirmed:
-			self.do_mainupdate(1)
-                else:
 			self.do_mainupdate(0)
 
 	def do_mainupdate(self, ret):
