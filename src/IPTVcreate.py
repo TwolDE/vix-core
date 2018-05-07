@@ -25,23 +25,19 @@ import e2m3u2bouquet
 autoStartTimer = None
 _session = None
 
-def get_providers_list():
-    	iptv = e2m3u2bouquet.IPTVSetup()
-	if os.path.isdir(e2m3u2bouquet.CFGPATH):
-		filename = os.path.join(e2m3u2bouquet.CFGPATH, 'IPTVcreate_providers.txt')
-		providers =iptv.read_providers(filename)
-    	else:
-		providers = iptv.read_providers(iptv.download_providers(e2m3u2bouquet.PROVIDERSURL))
-    	return sorted(providers.keys())
 
 config.IPTVcreate = ConfigSubsection()
-config.IPTVcreate.Provname = ConfigSelection(default='ACE', choices=get_providers_list())
-config.IPTVcreate.Username = ConfigText(default = "", fixed_size=False)
-config.IPTVcreate.Password = ConfigPassword(default='', fixed_size=False)
-config.IPTVcreate.Provname2 = ConfigSelection(default='FAB', choices=get_providers_list())
-config.IPTVcreate.Username2 = ConfigText(default = "", fixed_size=False)
-config.IPTVcreate.Password2 = ConfigPassword(default='', fixed_size=False)
-config.IPTVcreate.Piconpath = ConfigSelection(default='/usr/share/enigma2/picon/', choices=[
+config.IPTVcreate.Provname = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.Username = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.Password = ConfigPassword(default = '', fixed_size=False)
+config.IPTVcreate.m3u_url = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.epg_url = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.Provname2 = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.Username2 = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.Password2 = ConfigPassword(default = '', fixed_size=False)
+config.IPTVcreate.m3u2_url = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.epg2_url = ConfigText(default = '', fixed_size=False)
+config.IPTVcreate.Piconpath = ConfigSelection(default = '/usr/share/enigma2/picon/', choices=[
  '/usr/share/enigma2/picon/',
  '/media/usb/picon/',
  '/media/hdd/picon/'])
@@ -102,19 +98,20 @@ class IPTVcreate(Screen):
 		Screen.setTitle(self, title)
 		print "[IPTVcreate] Start Enabled"
 		self['statusbar'] = Label()
+		self.Prov = 2
         	self.update_status()
 		self.Config_List()
                 self.session = session
 		self.Console = Console()
-		self.Prov = 2
+
 		
 		
 	def Config_List(self):
             	print "[IPTVcreate] Display Menu"
 		self["key_red"] = Button(_("Exit"))
 		self["key_green"] = Button(_("Setup"))
-		self["key_yellow"] = Button("Run")
-		self["key_blue"] = Button("ProvSwitch")
+		self["key_yellow"] = Button("Run FAB")
+		self["key_blue"] = Button("Run UpMaker")
 		self['lab1'] = Label(_("Select Green button to set Config settings:\n Yellow button to download latest IPTV Bouquets"))
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 									  {
@@ -134,13 +131,6 @@ class IPTVcreate(Screen):
                  
 	def configOK(self, test=None):
             	print "[IPTVcreate] Config OK"
-        	self.provider = config.IPTVcreate.Provname2.value
-        	self.username = config.IPTVcreate.Username2.value 
-        	self.password = config.IPTVcreate.Password2.value
-        	self.Piconpath = config.IPTVcreate.Piconpath.value
-        	self.multivod = config.IPTVcreate.Multivod.value
-        	self.xcludesref = config.IPTVcreate.Xcludesref.value
-        	self.iptvtypes = config.IPTVcreate.iptvtypes.value
 
 	def Provswitch(self):
 		self.Prov = 1
@@ -154,10 +144,14 @@ class IPTVcreate(Screen):
 		if config.IPTVcreate.Provname.value:
 			sys.argv = []
 			if self.Prov == 1:
+				sys.argv.append(('-m={}').format(config.IPTVcreate.m3u_url.value))
+				sys.argv.append(('-e={}').format(config.IPTVcreate.epg_url.value))
 				sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
 				sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
 				sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
 			else:
+				sys.argv.append(('-m={}').format(config.IPTVcreate.m3u2_url.value))
+				sys.argv.append(('-e={}').format(config.IPTVcreate.epg2_url.value))
 				sys.argv.append('-n={}'.format(config.IPTVcreate.Provname2.value))
 				sys.argv.append('-u={}'.format(config.IPTVcreate.Username2.value))
 				sys.argv.append('-p={}'.format(config.IPTVcreate.Password2.value))
@@ -242,9 +236,18 @@ class AutoStartTimer:
 def do_update():
     if config.IPTVcreate.Provname.value:
 	sys.argv = []
-	sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
-	sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
-	sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
+	if self.Prov == 1:
+		sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
+		sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
+		sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
+		sys.argv.append(('-m={}').format(config.IPTVcreate.m3u_url.value))
+		sys.argv.append(('-e={}').format(config.IPTVcreate.epg_url.value))
+	else:
+		sys.argv.append('-n={}'.format(config.IPTVcreate.Provname2.value))
+		sys.argv.append('-u={}'.format(config.IPTVcreate.Username2.value))
+		sys.argv.append('-p={}'.format(config.IPTVcreate.Password2.value))
+		sys.argv.append(('-m={}').format(config.IPTVcreate.m3u2_url.value))
+		sys.argv.append(('-e={}').format(config.IPTVcreate.epg2_url.value))
 	if config.IPTVcreate.iptvtypes.value:
 	    sys.argv.append('-i')
 	if config.IPTVcreate.Multivod.value:

@@ -1234,8 +1234,8 @@ def main(argv=None):  # IGNORE:C0111
         # Set piconpath
         if iconpath is None:
             iconpath = PICONSPATH
-        if provider is None:
-            provider = 'E2m3u2Bouquet'
+#        if provider is None:
+#            provider = 'E2m3u2Bouquet'
         # Check we have enough to proceed
         if (m3uurl is None) and ((provider is None) or (username is None) or (password is None)) and uninstall is False:
             print('\n********************************')
@@ -1293,7 +1293,7 @@ def main(argv=None):  # IGNORE:C0111
 
         # Work out provider based setup if that's what we have
 
-        if provider is not None and username is not None or password is not None:
+        if provider == "FAB":
 	    providersfile = os.path.join(CFGPATH, 'IPTVcreate_providers.txt')
             print '\n[e2m3u2bouquet]----Setup for Saved providers file', providersfile
 	    if deleteP:
