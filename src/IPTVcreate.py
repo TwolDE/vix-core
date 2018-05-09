@@ -98,7 +98,7 @@ class IPTVcreate(Screen):
 		Screen.setTitle(self, title)
 		print "[IPTVcreate] Start Enabled"
 		self['statusbar'] = Label()
-		self.Prov = 2
+		self.Prov = 1
         	self.update_status()
 		self.Config_List()
                 self.session = session
@@ -110,8 +110,8 @@ class IPTVcreate(Screen):
             	print "[IPTVcreate] Display Menu"
 		self["key_red"] = Button(_("Exit"))
 		self["key_green"] = Button(_("Setup"))
-		self["key_yellow"] = Button("Run FAB")
-		self["key_blue"] = Button("Run UpMaker")
+		self["key_yellow"] = Label("Run %s" %config.IPTVcreate.Provname.value)
+		self["key_blue"] = Label("Run %s" %config.IPTVcreate.Provname2.value)
 		self['lab1'] = Label(_("Select Green button to set Config settings:\n Yellow button to download latest IPTV Bouquets"))
 		self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 									  {
@@ -133,7 +133,7 @@ class IPTVcreate(Screen):
             	print "[IPTVcreate] Config OK"
 
 	def Provswitch(self):
-		self.Prov = 1
+		self.Prov = 2
 		self.do_mainupdate(0)
 		
 
