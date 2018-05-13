@@ -475,12 +475,6 @@ class VIXImageManager(Screen):
 		self.Console.ePopen(CMD, self.ofgwriteResult)
 		fbClass.getInstance().lock()
 
-
-# We'll only arrive at this function if the ofgwrite failed.
-# If it succeeded it will have rebooted the system.
-# This displays the errors to the user, and puts them into any debug
-# log, for reporting.
-#
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
 		if retval == 0:
