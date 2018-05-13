@@ -118,8 +118,8 @@ class IPTVcreate(Screen):
 									  'cancel': self.close,
 									  'red': self.close,
 									  'green': self.createSetup,
-									  'yellow': self.manual_update,
-									  'blue': self.Provswitch,
+									  'yellow': self.Prov1,
+									  'blue': self.Prov2,
 									  "menu": self.createSetup,
 									  "ok": self.close,
 									  }, -1)
@@ -132,54 +132,51 @@ class IPTVcreate(Screen):
 	def configOK(self, test=None):
             	print "[IPTVcreate] Config OK"
 
-	def Provswitch(self):
+    	def Prov1(self):
+		self.Prov = 1
+		self.ProvUpdate()
+
+	def Prov2(self):
 		self.Prov = 2
-		self.do_mainupdate(0)
-		
+		self.ProvUpdate()
 
-    	def manual_update(self):
-			self.do_mainupdate(0)
-
-	def do_mainupdate(self, ret):
-		if config.IPTVcreate.Provname.value:
-			sys.argv = []
-			if self.Prov == 1:
-				sys.argv.append(('-m={}').format(config.IPTVcreate.m3u_url.value))
-				sys.argv.append(('-e={}').format(config.IPTVcreate.epg_url.value))
-				sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
-				sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
-				sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
-			else:
-				sys.argv.append(('-m={}').format(config.IPTVcreate.m3u2_url.value))
-				sys.argv.append(('-e={}').format(config.IPTVcreate.epg2_url.value))
-				sys.argv.append('-n={}'.format(config.IPTVcreate.Provname2.value))
-				sys.argv.append('-u={}'.format(config.IPTVcreate.Username2.value))
-				sys.argv.append('-p={}'.format(config.IPTVcreate.Password2.value))
-			if config.IPTVcreate.iptvtypes.value:
-			    sys.argv.append('-i')
-			if config.IPTVcreate.Multivod.value:
-			    sys.argv.append('-M')
-			if config.IPTVcreate.AllBouquet.value:
-			    sys.argv.append('-a')
-			if config.IPTVcreate.Picon.value:
-			    sys.argv.append('-P')
-			    sys.argv.append('-q={}'.format(config.IPTVcreate.Piconpath.value))
-			if config.IPTVcreate.Xcludesref.value:
-			    sys.argv.append('-xs')
-			if config.IPTVcreate.bouquetpos.value and config.IPTVcreate.bouquetpos.value == 'top':
-			    sys.argv.append('-bt')
-			if config.IPTVcreate.bouquetdownload.value:
-			    sys.argv.append('-bd')
-			if config.IPTVcreate.Uninstall.value:
-			    sys.argv.append('-U')
-			if ret == 1:
-			    sys.argv.append('-D')
-			print "[IPTVcreate] Start Manual IPTV Import Enabled"
-			e2m3u2bouquet.main(sys.argv)
-			print "[IPTVcreate] Manual IPTV Import Complete"
-			config.IPTVcreate.last_update.value = int(time())
-			config.IPTVcreate.last_update.save()
-        		self.update_status()
+	def ProvUpdate(self):
+		sys.argv = []
+		if self.Prov == 1:
+			sys.argv.append(('-m={}').format(config.IPTVcreate.m3u_url.value))
+			sys.argv.append(('-e={}').format(config.IPTVcreate.epg_url.value))
+			sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
+			sys.argv.append('-u={}'.format(config.IPTVcreate.Username.value))
+			sys.argv.append('-p={}'.format(config.IPTVcreate.Password.value))
+		else:
+			sys.argv.append(('-m={}').format(config.IPTVcreate.m3u2_url.value))
+			sys.argv.append(('-e={}').format(config.IPTVcreate.epg2_url.value))
+			sys.argv.append('-n={}'.format(config.IPTVcreate.Provname2.value))
+			sys.argv.append('-u={}'.format(config.IPTVcreate.Username2.value))
+			sys.argv.append('-p={}'.format(config.IPTVcreate.Password2.value))
+		if config.IPTVcreate.iptvtypes.value:
+		    sys.argv.append('-i')
+		if config.IPTVcreate.Multivod.value:
+		    sys.argv.append('-M')
+		if config.IPTVcreate.AllBouquet.value:
+		    sys.argv.append('-a')
+		if config.IPTVcreate.Picon.value:
+		    sys.argv.append('-P')
+		    sys.argv.append('-q={}'.format(config.IPTVcreate.Piconpath.value))
+		if config.IPTVcreate.Xcludesref.value:
+		    sys.argv.append('-xs')
+		if config.IPTVcreate.bouquetpos.value and config.IPTVcreate.bouquetpos.value == 'top':
+		    sys.argv.append('-bt')
+		if config.IPTVcreate.bouquetdownload.value:
+		    sys.argv.append('-bd')
+		if config.IPTVcreate.Uninstall.value:
+		    sys.argv.append('-U')
+		print "[IPTVcreate] Start Manual IPTV Import Enabled"
+		e2m3u2bouquet.main(sys.argv)
+		print "[IPTVcreate] Manual IPTV Import Complete"
+		config.IPTVcreate.last_update.value = int(time())
+		config.IPTVcreate.last_update.save()
+		self.update_status()
 
 	def update_status(self):
 		print "[IPTVcreate] Update status %s" % (config.IPTVcreate.last_update.value) 
@@ -234,7 +231,6 @@ class AutoStartTimer:
 
 
 def do_update():
-    if config.IPTVcreate.Provname.value:
 	sys.argv = []
 	if self.Prov == 1:
 		sys.argv.append('-n={}'.format(config.IPTVcreate.Provname.value))
@@ -259,10 +255,10 @@ def do_update():
 	    sys.argv.append('-q={}'.format(config.IPTVcreate.Piconpath.value))
 	if config.IPTVcreate.Xcludesref.value:
 	    sys.argv.append('-xs')
-        if config.IPTVcreate.bouquetpos.value and config.IPTVcreate.bouquetpos.value == 'top':
-            sys.argv.append('-bt')
-        if config.IPTVcreate.bouquetdownload.value:
-            sys.argv.append('-bd')
+	if config.IPTVcreate.bouquetpos.value and config.IPTVcreate.bouquetpos.value == 'top':
+	    sys.argv.append('-bt')
+	if config.IPTVcreate.bouquetdownload.value:
+	    sys.argv.append('-bd')
 	if config.IPTVcreate.Uninstall.value:
 	    sys.argv.append('-U')
 	print "[IPTVcreate] Start Timer IPTV Import Enabled"
