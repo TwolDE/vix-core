@@ -4,7 +4,7 @@ from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, sta
 from shutil import rmtree, move, copy
 from time import localtime, time, strftime, mktime
 
-from enigma import eTimer
+from enigma import eTimer, fbClass
 
 from . import _, PluginLanguageDomain
 import Components.Task
@@ -13,9 +13,9 @@ from Components.Label import Label
 from Components.Button import Button
 from Components.MenuList import MenuList
 from Components.config import config, ConfigSubsection, ConfigYesNo, ConfigSelection, ConfigText, ConfigNumber, NoSave, ConfigClock
-from Components.ConfigList import ConfigListScreen
-from Components.Harddisk import harddiskmanager, getProcMounts, getextdevices
+from Components.Harddisk import harddiskmanager, getProcMounts
 from Components.Sources.StaticText import StaticText
+from Components.SystemInfo import SystemInfo
 from Screens.Screen import Screen
 from Screens.Setup import Setup
 from Components.Console import Console
@@ -26,13 +26,9 @@ from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
-from Tools.Directories import fileExists, fileCheck
 from Tools.Multiboot import GetImagelist, GetCurrentImage, WriteStartup
 
 import urllib
-import os
-from Components.SystemInfo import SystemInfo
-from enigma import fbClass
 
 RAMCHEKFAILEDID = 'RamCheckFailedNotification'
 
@@ -143,7 +139,6 @@ class VIXImageManager(Screen):
 		self.activityTimer = eTimer()
 		self.activityTimer.timeout.get().append(self.backupRunning)
 		self.activityTimer.start(10)
-		self.session = session
 		self.Console = Console()
 
 		if BackupTime > 0:
