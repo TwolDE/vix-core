@@ -1,7 +1,7 @@
 # for localized messages
 from os import listdir, path, walk, stat
 from enigma import eDVBDB, quitMainloop
-from boxbranding import getMachineBrand, getMachineName
+from boxbranding import getMachineBrand, getMachineName, getImageDistro
 
 from . import _
 from Components.About import about
@@ -28,6 +28,7 @@ class RestoreWizard(WizardLanguage, Rc):
 		self.selectedAction = None
 		self.NextStep = None
 		self.Text = None
+		self.defaultprefix = getImageDistro()[4:]
 		self.buildListRef = None
 		self.didSettingsRestore = False
 		self.didPluginRestore = False
@@ -59,6 +60,10 @@ class RestoreWizard(WizardLanguage, Rc):
 				else:
 					files = []
 				if len(files):
+					for file in files:
+						if file.endswith('.tar.gz') and file.startswith('%s' %self.defaultprefix):
+							mtimes.append((path.join(devpath, file), stat(path.join(devpath, file)).st_mtime)) # (filname, mtime)
+				if mtimes == []:
 					for file in files:
 						if file.endswith('.tar.gz'):
 							mtimes.append((path.join(devpath, file), stat(path.join(devpath, file)).st_mtime)) # (filname, mtime)
