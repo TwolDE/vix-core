@@ -401,10 +401,10 @@ class VIXImageManager(Screen):
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
 		for x in range(1,HIslot):
-			choices.append(((_("slot%s - %s (current image) with, backup") if x == currentimageslot else _("slot%s - %s, with backup")) % (x, imagedict[x]['imagename']), (x, "with backup")))
+			choices.append(((_("slot%s - %s (current image), without backup") if x == currentimageslot else _("slot%s - %s, without backup")) % (x, imagedict[x]['imagename']), (x, "without backup"))) 
 		choices.append((_("No, do not flash image"), False))
 		for x in range(1,HIslot):
-			choices.append(((_("slot%s - %s (current image), without backup") if x == currentimageslot else _("slot%s - %s, without backup")) % (x, imagedict[x]['imagename']), (x, "without backup"))) 
+			choices.append(((_("slot%s - %s (current image) with, backup") if x == currentimageslot else _("slot%s - %s, with backup")) % (x, imagedict[x]['imagename']), (x, "with backup"))) 
 		self.session.openWithCallback(self.backupsettings, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
 
 	def backupsettings(self, retval):
@@ -415,10 +415,10 @@ class VIXImageManager(Screen):
 			else:
 				doBackup = retval == "with backup"
 			if self.sel:
-				if doBackup:
-					self.doSettingsBackup()
-				else:
+				if not doBackup:
 					self.keyRestore3()
+				elif config.imagemanager.autosettingsbackup.value or doBackup:
+					self.doSettingsBackup()
 			else:
 				self.session.open(MessageBox, _("You have no image to flash."), MessageBox.TYPE_INFO, timeout=10)
 		else:
