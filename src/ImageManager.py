@@ -53,7 +53,8 @@ config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
 config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
-
+if SystemInfo["canMultiBoot"]:
+	config.imagemanager.multiboot = ConfigYesNo(default=False)
 autoImageManagerTimer = None
 
 if path.exists(config.imagemanager.backuplocation.value + 'imagebackups/imagerestore'):
@@ -140,6 +141,7 @@ class VIXImageManager(Screen):
 		self.activityTimer.timeout.get().append(self.backupRunning)
 		self.activityTimer.start(10)
 		self.Console = Console()
+		self.multibootslot = 1
 
 		if BackupTime > 0:
 			t = localtime(BackupTime)
@@ -389,28 +391,27 @@ class VIXImageManager(Screen):
 			self.message = _("Recording(s) are in progress or coming up in few seconds!\nDo you still want to flash image\n%s?") % self.sel
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
-		if SystemInfo["canMultiBoot"]:
-			self.getImageList = GetImagelist(self.getImagelistCallback)
+		if SystemInfo["canMultiBoot"] and config.imagemanager.multiboot.value:
+			self.getImageList = GetImagelist(self.keyRestore1)
 		elif config.imagemanager.autosettingsbackup.value:
 			self.doSettingsBackup()
 		else:
-			choices = [(_("Yes, with backup"), "with backup"), (_("No, do not flash image"), False), (_("Yes, without backup"), "without backup")]
-			self.session.openWithCallback(self.backupsettings, MessageBox, self.message , list=choices, default=False, simple=True)
+			self.keyRestore3()
 
-	def getImagelistCallback(self, imagedict):
+
+	def keyRestore1(self, imagedict):
 		self.getImageList = None
 		choices = []
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
-		if not config.imagemanager.autosettingsbackup.value:
-			for x in range(1,HIslot):
-				choices.append(((_("slot%s - %s (current image), without backup") if x == currentimageslot else _("slot%s - %s, without backup")) % (x, imagedict[x]['imagename']), (x, "without backup"))) 
 		for x in range(1,HIslot):
-			choices.append(((_("slot%s - %s (current image) with, backup") if x == currentimageslot else _("slot%s - %s, with backup")) % (x, imagedict[x]['imagename']), (x, "with backup")))
+			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x, "without backup"))) 
+		for x in range(1,HIslot):
+			choices.append(((_("slot%s - %s (current image) backup") if x == currentimageslot else _("slot%s - %s backup")) % (x, imagedict[x]['imagename']), (x, "with backup")))
 		choices.append((_("No, do not flash image"), False))
-		self.session.openWithCallback(self.backupsettings, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
+		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
 
-	def backupsettings(self, retval):
+	def keyRestore2(self, retval):
 		if retval:
 			if SystemInfo["canMultiBoot"]:
 				self.multibootslot = retval[0]
@@ -475,6 +476,7 @@ class VIXImageManager(Screen):
 
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
+		print "[ImageManager] slot %s\n" %self.multibootslot
 		if retval == 0:
 			if not SystemInfo["canMultiBoot"]:
 				self.session.open(TryQuitMainloop, 2)
@@ -482,9 +484,11 @@ class VIXImageManager(Screen):
 				slot = self.multibootslot
 				model = getMachineBuild()
 				if 'coherent_poll=2M' in open("/proc/cmdline", "r").read():
+					print "[ImageManager] GB slot %s\n" %slot
 					WriteStartup(slot, self.ReExit)
 				else:
 					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], slot * 2 + self.addin, model)
+					print "[ImageManager] HD slot %s\n" %slot
 					WriteStartup(startupFileContents, self.ReExit)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
