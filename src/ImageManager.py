@@ -481,15 +481,9 @@ class VIXImageManager(Screen):
 			if not SystemInfo["canMultiBoot"]:
 				self.session.open(TryQuitMainloop, 2)
 			else:
-				slot = self.multibootslot
-				model = getMachineBuild()
-				if 'coherent_poll=2M' in open("/proc/cmdline", "r").read():
-					print "[ImageManager] GB slot %s\n" %slot
-					WriteStartup(slot, self.ReExit)
-				else:
-					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], slot * 2 + self.addin, model)
-					print "[ImageManager] HD slot %s\n" %slot
-					WriteStartup(startupFileContents, self.ReExit)
+				import shutil
+				shutil.copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
+				self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
