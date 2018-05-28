@@ -1,7 +1,7 @@
 # for localized messages
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
 from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
-from shutil import rmtree, move, copy
+from shutil import rmtree, move, copy, copyfile
 from time import localtime, time, strftime, mktime
 
 from enigma import eTimer, fbClass
@@ -26,7 +26,7 @@ from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 import Tools.CopyFiles
-from Tools.Multiboot import GetImagelist, GetCurrentImage, WriteStartup
+from Tools.Multiboot import GetImagelist, GetCurrentImage
 
 import urllib
 
@@ -481,18 +481,11 @@ class VIXImageManager(Screen):
 			if not SystemInfo["canMultiBoot"]:
 				self.session.open(TryQuitMainloop, 2)
 			else:
-				import shutil
-				shutil.copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
+				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
-
-
-
-	def ReExit(self):
-		self.session.open(TryQuitMainloop, 2)
-
 
 	def dualBoot(self):
 		rootfs2 = False
