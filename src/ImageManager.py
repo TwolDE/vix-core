@@ -54,7 +54,7 @@ config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
 if SystemInfo["canMultiBoot"]:
-	config.imagemanager.multiboot = ConfigYesNo(default=False)
+	config.imagemanager.multiboot = ConfigYesNo(default=True)
 autoImageManagerTimer = None
 
 if path.exists(config.imagemanager.backuplocation.value + 'imagebackups/imagerestore'):
@@ -443,32 +443,18 @@ class VIXImageManager(Screen):
 	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=4)
-			if getMachineMake() == 'et8500' and self.dualboot:
-				message = _("ET8500 Multiboot: Yes to restore OS1 No to restore OS2:\n ") + self.sel
-				ybox = self.session.openWithCallback(self.keyRestore5_ET8500, MessageBox, message, MessageBox.TYPE_YESNO)
-				ybox.setTitle(_("ET8500 Image Restore"))
-			else:
-				self.keyRestore6(0)
+			self.keyRestore6()
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("unzip error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] unzip failed:\n", result
 			self.close()
 
-	def keyRestore5_ET8500(self, answer):
-		if answer:
-			self.keyRestore6(0)
-		else:
-			self.keyRestore6(1)
-
-	def keyRestore6(self,ret):
+	def keyRestore6(self):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		if ret == 0:
-			if SystemInfo["canMultiBoot"]:
-				CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
-			else:
-				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
+		if SystemInfo["canMultiBoot"]:
+			CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
 		else:
-			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)			
+			CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
 		config.imagemanager.restoreimage.setValue(self.sel)
 		print '[ImageManager] running commnd:',CMD
 		self.Console.ePopen(CMD, self.ofgwriteResult)
@@ -486,22 +472,6 @@ class VIXImageManager(Screen):
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
-
-	def dualBoot(self):
-		rootfs2 = False
-		kernel2 = False
-		f = open("/proc/mtd")
-		L = f.readlines()
-		for x in L:
-			if 'rootfs2' in x:
-				rootfs2 = True
-			if 'kernel2' in x:
-				kernel2 = True
-		f.close()
-		if rootfs2 and kernel2:
-			return True
-		else:
-			return False
 
 class AutoImageManagerTimer:
 	def __init__(self, session):
