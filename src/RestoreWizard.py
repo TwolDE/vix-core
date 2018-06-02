@@ -63,10 +63,6 @@ class RestoreWizard(WizardLanguage, Rc):
 					for file in files:
 						if file.endswith('.tar.gz') and file.startswith('%s' %self.defaultprefix):
 							mtimes.append((path.join(devpath, file), stat(path.join(devpath, file)).st_mtime)) # (filname, mtime)
-					if mtimes == []:
-						for file in files:
-							if file.endswith('.tar.gz'):
-								mtimes.append((path.join(devpath, file), stat(path.join(devpath, file)).st_mtime)) # (filname, mtime)
 		for file in [x[0] for x in sorted(mtimes, key=lambda x: x[1], reverse=True)]: # sort by mtime
 			list.append((file, file))
 		return list
