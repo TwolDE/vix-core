@@ -406,9 +406,6 @@ class VIXImageManager(Screen):
 		currentimageslot = GetCurrentImage()
 		for x in range(1,HIslot):
 			choices.append(((_("slot%s - %s (current)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x, "without backup"))) 
-		choices.append((_("No, do not flash image"), False))
-		for x in range(1,HIslot):
-			choices.append(((_("slot%s - %s (current) backup") if x == currentimageslot else _("slot%s - %s backup")) % (x, imagedict[x]['imagename']), (x, "with backup")))
 		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
 
 	def keyRestore2(self, retval):
