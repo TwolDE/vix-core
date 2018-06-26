@@ -115,6 +115,13 @@ def IPTVcreate(session):
 def IPTVcreateMenu(session, **kwargs):
 	session.open(IPTVcreate)
 
+def Multibootmgr(session):
+	from Multibootmgr import MultiBoot
+	return Multibootmgr(session)
+
+def MultibootmgrMenu(session, **kwargs):
+	session.open(Multibootmgr)
+
 def MountManager(session):
 	from MountManager import VIXDevicesPanel
 	return VIXDevicesPanel(session)
