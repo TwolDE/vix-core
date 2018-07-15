@@ -154,10 +154,11 @@ class IPTVcreate(Screen):
 			sys.argv.append('-n={}'.format(config.IPTVcreate.Provname2.value))
 			sys.argv.append('-u={}'.format(config.IPTVcreate.Username2.value))
 			sys.argv.append('-p={}'.format(config.IPTVcreate.Password2.value))
+		sys.argv.append('-M')
 		if config.IPTVcreate.iptvtypes.value:
 		    sys.argv.append('-i')
-		if config.IPTVcreate.Multivod.value:
-		    sys.argv.append('-M')
+#		if config.IPTVcreate.Multivod.value:
+#		    sys.argv.append('-M')
 		if config.IPTVcreate.AllBouquet.value:
 		    sys.argv.append('-a')
 		if config.IPTVcreate.Picon.value:
@@ -244,10 +245,11 @@ def do_update():
 		sys.argv.append('-p={}'.format(config.IPTVcreate.Password2.value))
 		sys.argv.append(('-m={}').format(config.IPTVcreate.m3u2_url.value))
 		sys.argv.append(('-e={}').format(config.IPTVcreate.epg2_url.value))
+	sys.argv.append('-M')
 	if config.IPTVcreate.iptvtypes.value:
 	    sys.argv.append('-i')
-	if config.IPTVcreate.Multivod.value:
-	    sys.argv.append('-M')
+#	if config.IPTVcreate.Multivod.value:
+#	    sys.argv.append('-M')
 	if config.IPTVcreate.allbouquet.value:
 	    sys.argv.append('-a')
 	if config.IPTVcreate.Picon.value:
