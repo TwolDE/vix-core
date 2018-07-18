@@ -69,8 +69,8 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
 			self.list.append(("IPTV-manager", _("IPTV Bouquet manager"), _("Manage your IPTV Bouquets"), None))
-		if self.menu == 0 and SystemInfo["canMultiBoot"]:
-			self.list.append(("multiboot manager", _("MultiBoot Manager"), _("Create empty slot"), None))
+			if SystemInfo["canMultiBoot"]:
+				self.list.append(("multiboot manager", _("MultiBoot Manager"), _("Create empty slot"), None))
 #			self.list.append(("ImageFlash", _("MultiBoot-Image flash"), _("Flash any MultiBoot Arm EMMC partition."), None))
 #			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup to HDD or USB."), None))
 		self["menu"] = List(self.list)

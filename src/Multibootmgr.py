@@ -102,7 +102,7 @@ class MultiBoot(Screen):
 		self.currentSelected = self["config"].l.getCurrentSelection()
 		if self.currentSelected[0][1] != "Queued":
 			self.multibootslot = self.currentSelected[0][1]
-		sloterase = EmptySlot(self.multibootslot, self.close)
+		sloterase = EmptySlot(self.multibootslot, self.startit)
 
 	def selectionChanged(self):
 		currentSelected = self["config"].l.getCurrentSelection()
