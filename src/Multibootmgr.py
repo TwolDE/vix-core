@@ -101,11 +101,16 @@ class MultiBoot(Screen):
 	def erase(self):
 		self.currentSelected = self["config"].l.getCurrentSelection()
 		if self.currentSelected[0][1] != "Queued":
-			self.multibootslot = self.currentSelected[0][1]
-		sloterase = EmptySlot(self.multibootslot, self.startit)
+			message = _("Are you sure you want to delete image slot %s" %self.currentSelected[0][1])
+			ybox = self.session.openWithCallback(self.doErase, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
+			ybox.setTitle(_("Remove confirmation"))
+
+	def doErase(self, answer):
+		if answer is True:
+			sloterase = EmptySlot(self.currentSelected[0][1], self.startit)
 
 	def selectionChanged(self):
-		currentSelected = self["config"].l.getCurrentSelection()
+		pass
 
 	def keyLeft(self):
 		self["config"].instance.moveSelection(self["config"].instance.moveUp)
