@@ -375,8 +375,8 @@ class VIXImageManager(Screen):
 #		#default layout for Multiboot Images:- Mut@nt HD51 & Giga4K
 #				for HD51								for GigaBlue 4K
 #BOOT				boot: mmcblk0p1								boot: mmcblk0p1	rescue: mmcblk0p3
-# STARTUP_1 (Safety_Couch)	Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
-# STARTUP_2 (Safety_Couch)	Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
+# STARTUP_1 			Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
+# STARTUP_2 			Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
 # STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
 # STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
 # 
@@ -461,10 +461,10 @@ class VIXImageManager(Screen):
 		fbClass.getInstance().unlock()
 		print "[ImageManager] slot %s\n" %self.multibootslot
 		if retval == 0:
-			if not SystemInfo["canMultiBoot"]:
+			if SystemInfo["canMultiBoot"]:
+				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
 			else:
-				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
@@ -625,19 +625,21 @@ class ImageBackup(Screen):
 		if getImageType() != 'release':
 			imageSubBuild = ".%s" % getImageDevBuild()
 		self.MAINDESTROOT = self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + backupType + getImageVersion() + '.' + getImageBuild() + imageSubBuild + '-' + self.BackupDate
-		self.MTDKERNEL = getMachineMtdKernel()
 		self.KERNELFILE = getMachineKernelFile()
-		self.MTDROOTFS = getMachineMtdRoot()
 		self.ROOTFSFILE = getMachineRootFile()
 		self.MAINDEST = self.MAINDESTROOT + '/' + getImageFolder() + '/'
 		self.MODEL = getBoxType()
-		self.GB4Kbin = 'boot.bin'
-		self.GB4Krescue = 'rescue.bin'
 		if SystemInfo["canMultiBoot"]:
 			self.addin = SystemInfo["canMultiBoot"][0]
 			kernel = GetCurrentImage()
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +self.addin -1)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +self.addin)
+		else:
+			self.MTDKERNEL = getMachineMtdKernel()
+			self.MTDROOTFS = getMachineMtdRoot()
+		if self.MODEL in ("gbquad4k","gbue4k"):
+			self.GB4Kbin = 'boot.bin'
+			self.GB4Krescue = 'rescue.bin'
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
 		print '[ImageManager] Type:',getImageFileSystem()
@@ -652,8 +654,8 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
-		elif getImageFileSystem().replace(' ','') in ('hdemmc', 'hd-emmc'):
-			self.ROOTDEVTYPE = 'hd-emmc'
+		elif getImageFileSystem().replace(' ','') in ('hdemmc', 'hd-emmc'):	# handle new & old formats
+			self.ROOTDEVTYPE = 'hd-emmc'					# HD51 type receiver with multiple eMMC partitions in class
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
 		else:
@@ -849,7 +851,7 @@ class ImageBackup(Screen):
 				JFFS2OPTIONS = " --disable-compressor=lzo --eraseblock=0x20000 -n -l"
 			self.commands.append('mount --bind / %s/root' % self.TMPDIR)
 			self.commands.append('mkfs.jffs2 --root=%s/root --faketime --output=%s/rootfs.jffs2 %s' % (self.TMPDIR, self.WORKDIR, JFFS2OPTIONS))
-		elif self.ROOTDEVTYPE == 'tar.bz2' or SystemInfo["canMultiBoot"] and 'rootflags=data=journal' not in open("/proc/cmdline", "r").read():
+		elif self.ROOTFSTYPE == 'tar.bz2':
 			print '[ImageManager] Stage2: TAR.BZIP Detected.'
 			if SystemInfo["canMultiBoot"]:
 				self.commands.append('mount /dev/%s %s/root' %(self.MTDROOTFS, self.TMPDIR))
@@ -862,7 +864,7 @@ class ImageBackup(Screen):
 				self.commands.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
 				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
-			if SystemInfo["canMultiBoot"] and 'coherent_poll=2M' not in open("/proc/cmdline", "r").read():
+			if SystemInfo["canMultiBoot"] and SystemInfo["canMode12"]:
 				print '[ImageManager] Stage2: HD51 EMMC Detected.'
 				self.MTDBOOT_HD51 = "mmcblk0p1"
 				self.EMMCIMG = "disk.img"
