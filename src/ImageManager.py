@@ -124,7 +124,7 @@ class VIXImageManager(Screen):
 		self['lab1'] = Label()
 		self["backupstatus"] = Label()
 		self["key_blue"] = Button(_("Flash"))
-		self["key_green"] = Button()
+		self["key_green"] = Button("New backup")
 		self["key_yellow"] = Button(_("Downloads"))
 		self["key_red"] = Button(_("Delete"))
 
@@ -175,17 +175,17 @@ class VIXImageManager(Screen):
 				self.BackupRunning = True
 		if self.BackupRunning:
 			self["key_green"].setText(_("View progress"))
-		else:
-			self["key_green"].setText(_("New backup"))
-		self.activityTimer.startLongTimer(5)
+#		else:
+#			self["key_green"].setText(_("New backup"))
+			self.activityTimer.startLongTimer(5)
 
 	def refreshUp(self):
-		self.refreshList()
+#		self.refreshList()
 		if self['list'].getCurrent():
 			self["list"].instance.moveSelection(self["list"].instance.moveUp)
 
 	def refreshDown(self):
-		self.refreshList()
+#		self.refreshList()
 		if self['list'].getCurrent():
 			self["list"].instance.moveSelection(self["list"].instance.moveDown)
 
@@ -315,12 +315,20 @@ class VIXImageManager(Screen):
 
 	def keyDelete(self):
 		self.sel = self['list'].getCurrent()
-		if self.sel:
-			message = _("Are you sure you want to delete this image backup:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
-			ybox.setTitle(_("Remove confirmation"))
+		self["list"].instance.moveSelectionTo(0)
+		if self.sel.endswith('.zip'):
+			remove(self.BackupDirectory + self.sel)
 		else:
-			self.session.open(MessageBox, _("You have no image to delete."), MessageBox.TYPE_INFO, timeout=10)
+			rmtree(self.BackupDirectory + self.sel)
+		self.populate_List()
+
+#		self.sel = self['list'].getCurrent()
+#		if self.sel:
+#			message = _("Are you sure you want to delete this image backup:\n ") + self.sel
+#			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
+#			ybox.setTitle(_("Remove confirmation"))
+#		else:
+#			self.session.open(MessageBox, _("You have no image to delete."), MessageBox.TYPE_INFO, timeout=10)
 
 	def doDelete(self, answer):
 		if answer is True:
@@ -864,7 +872,7 @@ class ImageBackup(Screen):
 				self.commands.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
 				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
-			if SystemInfo["canMultiBoot"] and SystemInfo["canMode12"]:
+			if SystemInfo["canMultiBoot"] and self.ROOTDEVTYPE = 'hd-emmc':
 				print '[ImageManager] Stage2: HD51 EMMC Detected.'
 				self.MTDBOOT_HD51 = "mmcblk0p1"
 				self.EMMCIMG = "disk.img"

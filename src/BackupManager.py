@@ -149,7 +149,7 @@ class VIXBackupManager(Screen):
 
 		self['lab1'] = Label()
 		self["backupstatus"] = Label()
-		self["key_green"] = Button()
+		self["key_green"] = Button("New backup")
 		self["key_yellow"] = Button(_("Restore"))
 		self["key_red"] = Button(_("Delete"))
 
@@ -195,9 +195,9 @@ class VIXBackupManager(Screen):
 				self.BackupRunning = True
 		if self.BackupRunning:
 			self["key_green"].setText(_("View progress"))
-		else:
-			self["key_green"].setText(_("New backup"))
-		self.activityTimer.startLongTimer(5)
+#		else:
+#			self["key_green"].setText(_("New backup"))
+			self.activityTimer.startLongTimer(5)
 
 	def getJobName(self, job):
 		return "%s: %s (%d%%)" % (job.getStatustext(), job.name, int(100 * job.progress / float(job.end)))
@@ -318,12 +318,15 @@ class VIXBackupManager(Screen):
 
 	def keyDelete(self):
 		self.sel = self['list'].getCurrent()
-		if self.sel:
-			message = _("Are you sure you want to delete this backup:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
-			ybox.setTitle(_("Remove confirmation"))
-		else:
-			self.session.open(MessageBox, _("You have no backup to delete."), MessageBox.TYPE_INFO, timeout=10)
+		self["list"].instance.moveSelectionTo(0)
+		remove(self.BackupDirectory + self.sel)
+		self.populate_List()
+#		if self.sel:
+#			message = _("Are you sure you want to delete this backup:\n ") + self.sel
+#			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
+#			ybox.setTitle(_("Remove confirmation"))
+#		else:
+#			self.session.open(MessageBox, _("You have no backup to delete."), MessageBox.TYPE_INFO, timeout=10)
 
 	def doDelete(self, answer):
 		if answer is True:
@@ -1215,6 +1218,8 @@ class BackupFiles(Screen):
 			self.selectedFiles.append('/etc/rc3.d/S99tuner.sh')
 		if path.exists('/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/custom/favourites.xml') and '/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/custom/favourites.xml' not in self.selectedFiles:
 			self.selectedFiles.append('/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/custom/favourites.xml')
+		if path.exists('/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/providers/terrestrial_finder.xml') and '/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/providers/terrestrial_finder.xml' not in self.selectedFiles:
+			self.selectedFiles.append('/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/providers/terrestrial_finder.xml')
 		if path.exists('/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/custom'):
 			for custommix in glob.glob('/usr/lib/enigma2/python/Plugins/SystemPlugins/AutoBouquetsMaker/custom/*CustomMix.xml'):
 				if custommix not in self.selectedFiles:
