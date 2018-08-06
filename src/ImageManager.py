@@ -883,7 +883,7 @@ class ImageBackup(Screen):
 				self.commands.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
 				print '[ImageManager] Stage2: Create: boot dump boot.bin:',self.MODEL
 				print '[ImageManager] Stage2: Create: rescue dump rescue.bin:',self.MODEL
-			if SystemInfo["canMultiBoot"] and self.ROOTDEVTYPE = 'hd-emmc':
+			if SystemInfo["canMultiBoot"] and self.ROOTDEVTYPE == 'hd-emmc':
 				print '[ImageManager] Stage2: HD51 EMMC Detected.'
 				self.MTDBOOT_HD51 = "mmcblk0p1"
 				self.EMMCIMG = "disk.img"
