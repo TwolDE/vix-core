@@ -73,8 +73,6 @@ class VIXMenu(Screen, ProtectedScreen):
 				self.list.append(("multiboot manager", _("MultiBoot Manager"), _("Create empty slot"), None))
 #			self.list.append(("ImageFlash", _("MultiBoot-Image flash"), _("Flash any MultiBoot Arm EMMC partition."), None))
 #			self.list.append(("ImageBackup", _("HDD/USB Image backup"), _("Backup to HDD or USB."), None))
-			self.list.append(("script-runner", _("Script runner"), _("Run your shell scripts."), None))
-			self.list.append(("swap-manager", _("Swap manager"), _("Create and Manage your swap files."), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
 
@@ -149,9 +147,6 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "IPTV-manager":
 					from IPTVcreate import IPTVcreate
 					self.session.open(IPTVcreate, self.menu_path)
-				elif currentEntry == "multiboot manager":
-					from Multibootmgr import MultiBoot
-					self.session.open(MultiBoot, self.menu_path)
 				elif currentEntry == "ImageFlash":
 					from ImageFlash import ImageFlash
 					self.session.open(ImageFlash, self.menu_path)
