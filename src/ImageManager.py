@@ -168,26 +168,22 @@ class VIXImageManager(Screen):
 			cb(name, desc)
 
 	def backupRunning(self):
-		self.populate_List()
 		self.BackupRunning = False
 		for job in Components.Task.job_manager.getPendingJobs():
 			if job.name.startswith(_("Image manager")):
 				self.BackupRunning = True
 		if self.BackupRunning:
 			self["key_green"].setText(_("View progress"))
-#		else:
-#			self["key_green"].setText(_("New backup"))
-			self.activityTimer.startLongTimer(5)
+		else:
+			self["key_green"].setText(_("New backup"))
+		self.activityTimer.startLongTimer(5)
+		self.populate_List()
 
 	def refreshUp(self):
-#		self.refreshList()
-		if self['list'].getCurrent():
-			self["list"].instance.moveSelection(self["list"].instance.moveUp)
+		self["list"].instance.moveSelection(self["list"].instance.moveUp)
 
 	def refreshDown(self):
-#		self.refreshList()
-		if self['list'].getCurrent():
-			self["list"].instance.moveSelection(self["list"].instance.moveDown)
+		self["list"].instance.moveSelection(self["list"].instance.moveDown)
 
 	def refreshList(self):
 		images = listdir(self.BackupDirectory)
@@ -322,24 +318,6 @@ class VIXImageManager(Screen):
 			rmtree(self.BackupDirectory + self.sel)
 		self.populate_List()
 
-#		self.sel = self['list'].getCurrent()
-#		if self.sel:
-#			message = _("Are you sure you want to delete this image backup:\n ") + self.sel
-#			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
-#			ybox.setTitle(_("Remove confirmation"))
-#		else:
-#			self.session.open(MessageBox, _("You have no image to delete."), MessageBox.TYPE_INFO, timeout=10)
-
-	def doDelete(self, answer):
-		if answer is True:
-			self.sel = self['list'].getCurrent()
-			self["list"].instance.moveSelectionTo(0)
-			if self.sel.endswith('.zip'):
-				remove(self.BackupDirectory + self.sel)
-			else:
-				rmtree(self.BackupDirectory + self.sel)
-		self.populate_List()
-
 	def GreenPressed(self):
 		backup = None
 		self.BackupRunning = False
@@ -399,7 +377,7 @@ class VIXImageManager(Screen):
 			self.message = _("Recording(s) are in progress or coming up in few seconds!\nDo you still want to flash image\n%s?") % self.sel
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
-		if SystemInfo["canMultiBoot"] and config.imagemanager.multiboot.value:
+		if SystemInfo["canMultiBoot"]:
 			self.getImageList = GetImagelist(self.keyRestore1)
 		elif config.imagemanager.autosettingsbackup.value:
 			self.doSettingsBackup()
@@ -448,18 +426,32 @@ class VIXImageManager(Screen):
 	def keyRestore4(self, result, retval, extra_args=None):
 		if retval == 0:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("flash image unzip successful"), MessageBox.TYPE_INFO, timeout=4)
-			self.keyRestore6()
+			if getMachineMake() == 'et8500' and self.dualboot:
+				message = _("ET8500 Multiboot: Yes to restore OS1 No to restore OS2:\n ") + self.sel
+				ybox = self.session.openWithCallback(self.keyRestore5_ET8500, MessageBox, message, MessageBox.TYPE_YESNO)
+				ybox.setTitle(_("ET8500 Image Restore"))
+			else:
+				self.keyRestore6(0)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("unzip error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] unzip failed:\n", result
 			self.close()
 
-	def keyRestore6(self):
-		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		if SystemInfo["canMultiBoot"]:
-			CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
+	def keyRestore5_ET8500(self, answer):
+		if answer:
+			self.keyRestore6(0)
 		else:
-			CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
+			self.keyRestore6(1)
+
+	def keyRestore6(self,ret):
+		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+		if ret == 0:
+			if SystemInfo["canMultiBoot"]:
+				CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
+			else:
+				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
+		else:
+			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)
 		config.imagemanager.restoreimage.setValue(self.sel)
 		print '[ImageManager] running commnd:',CMD
 		self.Console.ePopen(CMD, self.ofgwriteResult)
@@ -477,6 +469,25 @@ class VIXImageManager(Screen):
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
+
+	def ReExit(self):
+		self.session.open(TryQuitMainloop, 2)
+
+	def dualBoot(self):
+		rootfs2 = False
+		kernel2 = False
+		f = open("/proc/mtd")
+		L = f.readlines()
+		for x in L:
+			if 'rootfs2' in x:
+				rootfs2 = True
+			if 'kernel2' in x:
+				kernel2 = True
+		f.close()
+		if rootfs2 and kernel2:
+			return True
+		else:
+			return False
 
 class AutoImageManagerTimer:
 	def __init__(self, session):

@@ -188,16 +188,16 @@ class VIXBackupManager(Screen):
 			cb(name, desc)
 
 	def backupRunning(self):
-		self.populate_List()
 		self.BackupRunning = False
 		for job in Components.Task.job_manager.getPendingJobs():
 			if job.name.startswith(_("Backup manager")):
 				self.BackupRunning = True
 		if self.BackupRunning:
 			self["key_green"].setText(_("View progress"))
-#		else:
-#			self["key_green"].setText(_("New backup"))
-			self.activityTimer.startLongTimer(5)
+		else:
+			self["key_green"].setText(_("New backup"))
+		self.activityTimer.startLongTimer(5)
+		self.populate_List()
 
 	def getJobName(self, job):
 		return "%s: %s (%d%%)" % (job.getStatustext(), job.name, int(100 * job.progress / float(job.end)))
