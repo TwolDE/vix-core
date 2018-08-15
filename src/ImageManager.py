@@ -53,8 +53,7 @@ config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
 config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
-if SystemInfo["canMultiBoot"]:
-	config.imagemanager.multiboot = ConfigYesNo(default=True)
+
 autoImageManagerTimer = None
 
 if path.exists(config.imagemanager.backuplocation.value + 'imagebackups/imagerestore'):
@@ -391,18 +390,15 @@ class VIXImageManager(Screen):
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
 		for x in range(1,HIslot):
-			choices.append(((_("slot%s - %s (current)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x, "without backup"))) 
+			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x)))
 		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
 
 	def keyRestore2(self, retval):
 		if retval:
 			if SystemInfo["canMultiBoot"]:
-				self.multibootslot = retval[0]
-				doBackup = retval[1] == "with backup"
-			else:
-				doBackup = retval == "with backup"
+				self.multibootslot = retval
 			if self.sel:
-				if doBackup:
+				if config.imagemanager.autosettingsbackup.value:
 					self.doSettingsBackup()
 				else:
 					self.keyRestore3()
@@ -981,7 +977,7 @@ class ImageBackup(Screen):
 		else:
 			move('%s/vmlinux.gz' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
 		if self.MODEL in ("gbquad4k","gbue4k"):
-       			move('%s/%s' % (self.WORKDIR, self.GB4Kbin), '%s/%s' % (self.MAINDEST, self.GB4Kbin))
+			move('%s/%s' % (self.WORKDIR, self.GB4Kbin), '%s/%s' % (self.MAINDEST, self.GB4Kbin))
 			move('%s/%s' % (self.WORKDIR, self.GB4Krescue), '%s/%s' % (self.MAINDEST, self.GB4Krescue))
 			system('cp -f /usr/share/gpt.bin %s/gpt.bin' %(self.MAINDEST))
 		fileout = open(self.MAINDEST + '/imageversion', 'w')
