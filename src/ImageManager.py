@@ -646,6 +646,7 @@ class ImageBackup(Screen):
 		self.MODEL = getBoxType()
 		if SystemInfo["canMultiBoot"]:
 			self.addin = SystemInfo["canMultiBoot"][0]
+			self.MTDBOOT = SystemInfo["canMultiBoot"][2]
 			kernel = GetCurrentImage()
 			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +self.addin -1)
 			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +self.addin)
@@ -655,6 +656,7 @@ class ImageBackup(Screen):
 		if self.MODEL in ("gbquad4k","gbue4k"):
 			self.GB4Kbin = 'boot.bin'
 			self.GB4Krescue = 'rescue.bin'
+		print '[ImageManager] MTD Boot:',self.MTDBOOT
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
 		print '[ImageManager] Type:',getImageFileSystem()
@@ -917,7 +919,6 @@ class ImageBackup(Screen):
 			print '[ImageManager] Stage3: Making eMMC Image.'
 			self.commandMB = []
 			print '[ImageManager] Stage3: EMMC Detected.'
-			self.MTDBOOT_HD51 = "mmcblk0p1"
 			self.EMMCIMG = "disk.img"
 			BLOCK_SIZE=512
 			BLOCK_SECTOR=2
@@ -959,7 +960,7 @@ class ImageBackup(Screen):
 			self.commandMB.append('parted -s %s unit KiB mkpart rootfs4 ext4 %s %s' % (EMMC_IMAGE, FOURTH_ROOTFS_PARTITION_OFFSET, PARTED_END_ROOTFS4 ))
 			self.commandMB.append('parted -s %s unit KiB mkpart swap linux-swap %s 100%%' % (EMMC_IMAGE, SWAP_PARTITION_OFFSET))
 			BOOT_IMAGE_SEEK = int(IMAGE_ROOTFS_ALIGNMENT) * int(BLOCK_SECTOR)
-			self.commandMB.append('dd if=/dev/%s of=%s seek=%s' % (self.MTDBOOT_HD51, EMMC_IMAGE, BOOT_IMAGE_SEEK ))
+			self.commandMB.append('dd if=/dev/%s of=%s seek=%s' % (self.MTDBOOT, EMMC_IMAGE, BOOT_IMAGE_SEEK ))
 			KERNEL_IMAGE_SEEK = int(KERNEL_PARTITION_OFFSET) * int(BLOCK_SECTOR)
 			self.commandMB.append('dd if=/dev/%s of=%s seek=%s' % (self.MTDKERNEL, EMMC_IMAGE, KERNEL_IMAGE_SEEK ))
 			ROOTFS_IMAGE_SEEK = int(ROOTFS_PARTITION_OFFSET) * int(BLOCK_SECTOR)
