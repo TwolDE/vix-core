@@ -409,7 +409,7 @@ class VIXImageManager(Screen):
 
 
 	def keyRestore3(self, val = None):
-		self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares"), MessageBox.TYPE_INFO, timeout=180, enable_input=False)			
+		self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares"), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
@@ -1168,8 +1168,8 @@ class ImageManagerDownload(Screen):
 				'et8500'          : 'ET-8500',
 				'et9x00'          : 'ET-9x00',
 				'formuler4turbo'  : 'Formuler4turbo',
-				'formuler1'       : 'Formuler1',					
-				'formuler1tc'     : 'Formuler1tc',				
+				'formuler1'       : 'Formuler1',
+				'formuler1tc'     : 'Formuler1tc',
 				'gb800se'         : 'GiGaBlue-HD800SE',
 				'gb800seplus'     : 'GiGaBlue-HD800SE-PLUS',
 				'gb800ue'         : 'GiGaBlue-HD800UE',
@@ -1180,9 +1180,9 @@ class ImageManagerDownload(Screen):
 				'gbue4k'          : 'gbue4k',				
 				'gbultraue'       : 'GiGaBlue-HD-ULTRA-UE',
 				'gbx1'            : 'GiGaBlue-HD-X1',
-				'gbx2'            : 'GiGaBlue-HD-X2',				
+				'gbx2'            : 'GiGaBlue-HD-X2',
 				'gbx3'            : 'GiGaBlue-HD-X3',
-				'gbx3h'           : 'GiGaBlue-HD-X3H',				
+				'gbx3h'           : 'GiGaBlue-HD-X3H',
 				'iqonios100hd'    : 'iqon-IOS-100HD',
 				'iqonios200hd'    : 'iqon-IOS-200HD',
 				'iqonios300hd'    : 'iqon-IOS-300HD',
@@ -1206,7 +1206,7 @@ class ImageManagerDownload(Screen):
 				'osmini'          : 'OS-mini',
 				'osminiplus'      : 'OS-miniplus',
 				'osnino'          : 'OS-nino',
-				'osninoplus'      : 'OS-ninoplus',					
+				'osninoplus'      : 'OS-ninoplus',
 				'qb800solo'       : 'GiGaBlue-HD800Solo',
 				'sf8'             : 'OCTAGON-SF8-HD',
 				'sf128'           : 'OCTAGON-SF128',
@@ -1214,7 +1214,7 @@ class ImageManagerDownload(Screen):
 				'sf228'           : 'OCTAGON-SF228',
 				'sf4008'          : 'OCTAGON-SF4008',
 				'spycat'          : 'Spycat',
-				'tiviaraplus'     : 'TiviarAlphaPlus',				
+				'tiviaraplus'     : 'TiviarAlphaPlus',
 				'tm2t'            : 'TM-2T',
 				'tmnano'          : 'TM-Nano-OE',
 				'tmnano2super'    : 'TM-Nano2-Super',
