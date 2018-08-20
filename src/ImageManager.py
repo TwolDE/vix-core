@@ -129,8 +129,6 @@ class VIXImageManager(Screen):
 
 		self.BackupRunning = False
 		self.getImageList = None
-		if SystemInfo["canMultiBoot"]:
-			self.addin = SystemInfo["canMultiBoot"][0]
 		self.onChangedEntry = []
 		self.oldlist = None
 		self.emlist = []
@@ -140,7 +138,6 @@ class VIXImageManager(Screen):
 		self.activityTimer.timeout.get().append(self.backupRunning)
 		self.activityTimer.start(10)
 		self.Console = Console()
-		self.multibootslot = 1
 
 		if BackupTime > 0:
 			t = localtime(BackupTime)
@@ -455,9 +452,9 @@ class VIXImageManager(Screen):
 
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
-		print "[ImageManager] slot %s\n" %self.multibootslot
 		if retval == 0:
 			if SystemInfo["canMultiBoot"]:
+				print "[ImageManager] slot %s\n" %self.multibootslot
 				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
 			else:
