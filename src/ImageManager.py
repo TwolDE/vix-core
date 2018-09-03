@@ -454,7 +454,7 @@ class VIXImageManager(Screen):
 		fbClass.getInstance().unlock()
 		if retval == 0:
 			if SystemInfo["canMultiBoot"]:
-				print "[ImageManager] slot %s\n" %self.multibootslot
+				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
 				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
 			else:
