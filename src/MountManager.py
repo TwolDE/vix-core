@@ -136,6 +136,8 @@ class VIXDevicesPanel(Screen):
 				continue
 			if SystemInfo["HasMMC"] and re.search('mmcblk0p[1-9]',device):
 				continue
+			if SystemInfo["HasMMC"] and re.search('sda[1-9]',device):
+				continue
 			if device in list2:
 				continue
 			self.buildMy_rec(device)
@@ -364,6 +366,8 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			if not re.search('sd[a-z][1-9]',device) and not re.search('mmcblk[0-9]p[1-9]',device):
 				continue
 			if SystemInfo["HasMMC"] and re.search('mmcblk0p[1-9]',device):
+				continue
+			if SystemInfo["HasMMC"] and re.search('sda[1-9]',device):
 				continue
 			if device in list2:
 				continue
