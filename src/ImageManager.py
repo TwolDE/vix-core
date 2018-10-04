@@ -20,11 +20,11 @@ from Screens.Screen import Screen
 from Screens.Setup import Setup
 from Components.Console import Console
 from Screens.Console import Console as ScreenConsole
-
 from Screens.TaskView import JobView
 from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
+from Tools.Directories import pathExists
 import Tools.CopyFiles
 from Tools.Multiboot import GetImagelist, GetCurrentImage
 
@@ -128,6 +128,7 @@ class VIXImageManager(Screen):
 		self["key_red"] = Button(_("Delete"))
 
 		self.BackupRunning = False
+		self.imagelist = {}
 		self.getImageList = None
 		self.onChangedEntry = []
 		self.oldlist = None
@@ -374,7 +375,11 @@ class VIXImageManager(Screen):
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
 		if SystemInfo["canMultiBoot"]:
-			self.getImageList = GetImagelist(self.keyRestore1)
+ 			if pathExists('/dev/sda1'):
+				self.getImageList = GetImagelist(self.keyRestore1)
+			else:
+				self.session.open(MessageBox, _("SDcard detected but not formatted for multiboot - please use ViX MultiBoot Manager to format"), MessageBox.TYPE_INFO, timeout=15)
+				self.close
 		elif config.imagemanager.autosettingsbackup.value:
 			self.doSettingsBackup()
 		else:
@@ -382,10 +387,13 @@ class VIXImageManager(Screen):
 
 
 	def keyRestore1(self, imagedict):
+		self.imagelist = imagedict
 		self.getImageList = None
 		choices = []
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
+		if SystemInfo["HasHiSi"] and currentimageslot > SystemInfo["canMultiBoot"][1]:
+			currentimageslot = 1
 		for x in range(1,HIslot):
 			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x)))
 		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
@@ -394,6 +402,12 @@ class VIXImageManager(Screen):
 		if retval:
 			if SystemInfo["canMultiBoot"]:
 				self.multibootslot = retval
+				if "sda" in self.imagelist[retval]['path'] and SystemInfo["HasHiSi"]:
+					self.MTDKERNEL = "sda%s" %retval
+					self.MTDROOTFS = "sda%s" %(retval*2)
+				else:
+					self.MTDKERNEL = getMachineMtdKernel()
+					self.MTDROOTFS = getMachineMtdRoot()					
 			if self.sel:
 				if config.imagemanager.autosettingsbackup.value:
 					self.doSettingsBackup()
@@ -440,7 +454,10 @@ class VIXImageManager(Screen):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		if ret == 0:
 			if SystemInfo["canMultiBoot"]:
-				CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
+ 				if SystemInfo["HasHiSi"] and pathExists('/dev/sda1'):
+					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
+				else:
+					CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
 			else:
 				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
 		else:
@@ -453,7 +470,7 @@ class VIXImageManager(Screen):
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
 		if retval == 0:
-			if SystemInfo["canMultiBoot"]:
+			if SystemInfo["canMultiBoot"] and pathExists('/dev/sda1'):
 				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
 				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
@@ -1208,6 +1225,7 @@ class ImageManagerDownload(Screen):
 				'sf138'           : 'OCTAGON-SF138',
 				'sf228'           : 'OCTAGON-SF228',
 				'sf4008'          : 'OCTAGON-SF4008',
+				'sf8008'          : 'OCTAGON-SF8008',
 				'spycat'          : 'Spycat',
 				'tiviaraplus'     : 'TiviarAlphaPlus',
 				'tm2t'            : 'TM-2T',
