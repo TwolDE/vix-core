@@ -163,4 +163,3 @@ def Plugins(**kwargs):
 	plist.append(PluginDescriptor(name=_("ViX Mount manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=MountManagerMenu))
 	plist.append(PluginDescriptor(name=_("IPTV Bouquet manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=IPTVcreateMenu))
 	return plist
-
