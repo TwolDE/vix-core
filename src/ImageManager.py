@@ -355,14 +355,13 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.keyRestore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
 
 
-#		#default layout for Multiboot Images:- Mut@nt HD51 & Giga4K
-#				for HD51								for GigaBlue 4K
-#BOOT				boot: mmcblk0p1								boot: mmcblk0p1	rescue: mmcblk0p3
-# STARTUP_1 			Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5 
-# STARTUP_2 			Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7
-# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9
+#		#default layout for 				Mut@nt HD51						 Giga4K						SF8008
+# boot								/dev/mmcblk0p1						/dev/mmcblk0p1				/dev/mmcblk0p3
+# STARTUP_1 			Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5		boot emmcflash0.kernel 'root=/dev/mmcblk0p13 
+# STARTUP_2 			Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7		boot usb0.sda1 'root=/dev/sda2
+# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9		boot usb0.sda3 'root=/dev/sda4
 # STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
-# 
+
 	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
@@ -375,11 +374,14 @@ class VIXImageManager(Screen):
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
 		if SystemInfo["canMultiBoot"]:
- 			if pathExists('/dev/sda1'):
-				self.getImageList = GetImagelist(self.keyRestore1)
+			if SystemInfo["HasHiSi"]:
+ 				if pathExists('/dev/sda1'):
+					self.getImageList = GetImagelist(self.keyRestore1)
+				else:
+					self.session.open(MessageBox, _("SDcard detected but not formatted for multiboot - please use ViX MultiBoot Manager to format"), MessageBox.TYPE_INFO, timeout=15)
+					self.close
 			else:
-				self.session.open(MessageBox, _("SDcard detected but not formatted for multiboot - please use ViX MultiBoot Manager to format"), MessageBox.TYPE_INFO, timeout=15)
-				self.close
+				self.getImageList = GetImagelist(self.keyRestore1)
 		elif config.imagemanager.autosettingsbackup.value:
 			self.doSettingsBackup()
 		else:
@@ -392,8 +394,12 @@ class VIXImageManager(Screen):
 		choices = []
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
-		if SystemInfo["HasHiSi"] and currentimageslot > SystemInfo["canMultiBoot"][1]:
-			currentimageslot = 1
+		if SystemInfo["HasHiSi"]:
+			if currentimageslot > SystemInfo["canMultiBoot"][1]:
+				currentimageslot = 1
+			else:
+				currentimageslot += 1
+		print "ImageManager", currentimageslot, self.imagelist
 		for x in range(1,HIslot):
 			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x)))
 		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
@@ -402,12 +408,14 @@ class VIXImageManager(Screen):
 		if retval:
 			if SystemInfo["canMultiBoot"]:
 				self.multibootslot = retval
-				if "sda" in self.imagelist[retval]['path'] and SystemInfo["HasHiSi"]:
-					self.MTDKERNEL = "sda%s" %retval
-					self.MTDROOTFS = "sda%s" %(retval*2)
-				else:
-					self.MTDKERNEL = getMachineMtdKernel()
-					self.MTDROOTFS = getMachineMtdRoot()					
+				print "ImageManager", retval, self.imagelist
+				if SystemInfo["HasHiSi"]:
+					if "sda" in self.imagelist[retval]['part']:
+						self.MTDKERNEL = "sda%s" %(int(self.imagelist[retval]['part'][3])-1)
+						self.MTDROOTFS = "%s" %(self.imagelist[retval]['part'])
+					else:
+						self.MTDKERNEL = getMachineMtdKernel()
+						self.MTDROOTFS = getMachineMtdRoot()					
 			if self.sel:
 				if config.imagemanager.autosettingsbackup.value:
 					self.doSettingsBackup()
