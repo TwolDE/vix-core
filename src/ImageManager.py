@@ -237,11 +237,7 @@ class VIXImageManager(Screen):
 				self.BackupDirectory = '/media/hdd/imagebackups/'
 				config.imagemanager.backuplocation.value = '/media/hdd/'
 				config.imagemanager.backuplocation.save()
-<<<<<<< HEAD
-				self['lab1'].setText(_("The chosen location does not exist, using /media/hdd") + "\n" + _("Select image to flash:"))
-=======
 				self['lab1'].setText(_("The chosen location does not exist, using /media/hdd.") + "\n" + _("Select an image to flash:"))
->>>>>>> upstream/master
 			else:
 				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions"],
 											  {
@@ -276,11 +272,7 @@ class VIXImageManager(Screen):
 				remove(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
 			self.refreshList()
 		except:
-<<<<<<< HEAD
-			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("there is a problem with this device, please reformat device and try again."))
-=======
 			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("there is a problem with this device. Please reformat it and try again."))
->>>>>>> upstream/master
 
 	def createSetup(self):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
@@ -320,20 +312,7 @@ class VIXImageManager(Screen):
 		if self.sel.endswith('.zip'):
 			remove(self.BackupDirectory + self.sel)
 		else:
-<<<<<<< HEAD
 			rmtree(self.BackupDirectory + self.sel)
-=======
-			self.session.open(MessageBox, _("There is no image to delete."), MessageBox.TYPE_INFO, timeout=10)
-
-	def doDelete(self, answer):
-		if answer is True:
-			self.sel = self['list'].getCurrent()
-			self["list"].instance.moveSelectionTo(0)
-			if self.sel.endswith('.zip'):
-				remove(self.BackupDirectory + self.sel)
-			else:
-				rmtree(self.BackupDirectory + self.sel)
->>>>>>> upstream/master
 		self.populate_List()
 
 	def GreenPressed(self):
@@ -1071,11 +1050,7 @@ class ImageBackup(Screen):
 				fileout.close()
 			if path.exists('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat'):
 				copy('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat', self.MAINDESTROOT + '/burn.bat')
-<<<<<<< HEAD
 		print '[ImageManager] Stage5: Removing Swap.'
-=======
-		print '[ImageManager] Stage4: Removing SWAP.'
->>>>>>> upstream/master
 		if path.exists(self.swapdevice + config.imagemanager.folderprefix.value + '-' + getImageType() + "-swapfile_backup"):
 			system('swapoff ' + self.swapdevice + config.imagemanager.folderprefix.value + '-' + getImageType() + "-swapfile_backup")
 			remove(self.swapdevice + config.imagemanager.folderprefix.value + '-' + getImageType() + "-swapfile_backup")
