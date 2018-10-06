@@ -395,10 +395,7 @@ class VIXImageManager(Screen):
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
 		if SystemInfo["HasHiSi"]:
-			if currentimageslot > SystemInfo["canMultiBoot"][1]:
-				currentimageslot = 1
-			else:
-				currentimageslot += 1
+			currentimageslot += 1
 		print "ImageManager", currentimageslot, self.imagelist
 		for x in range(1,HIslot):
 			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x)))
@@ -412,7 +409,7 @@ class VIXImageManager(Screen):
 				if SystemInfo["HasHiSi"]:
 					if "sda" in self.imagelist[retval]['part']:
 						self.MTDKERNEL = "sda%s" %(int(self.imagelist[retval]['part'][3])-1)
-						self.MTDROOTFS = "%s" %(self.imagelist[retval]['part'])
+						self.MTDROOTFS = "sda%s" %(self.imagelist[retval]['part'])
 					else:
 						self.MTDKERNEL = getMachineMtdKernel()
 						self.MTDROOTFS = getMachineMtdRoot()					
@@ -667,18 +664,28 @@ class ImageBackup(Screen):
 		self.MAINDEST = self.MAINDESTROOT + '/' + getImageFolder() + '/'
 		self.MODEL = getBoxType()
 		if SystemInfo["canMultiBoot"]:
-			self.addin = SystemInfo["canMultiBoot"][0]
-			self.MTDBOOT = SystemInfo["canMultiBoot"][2]
 			kernel = GetCurrentImage()
-			self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +self.addin -1)
-			self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +self.addin)
+			if SystemInfo["HasHiSi"]:
+				f = open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read()
+				if "sda" in f :
+					kern =  kernel*2
+					self.MTDKERNEL = "sda%s" %(kern-1)
+					self.MTDROOTFS = "sda%s" %(kern)
+				else:
+					self.MTDKERNEL = getMachineMtdKernel()
+					self.MTDROOTFS = getMachineMtdRoot()
+			else:					
+				self.addin = SystemInfo["canMultiBoot"][0]
+				self.MTDBOOT = "mmcblk0p1"		#HD51#
+				self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +self.addin -1)
+				self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +self.addin)
+				print '[ImageManager] MTD Boot:',self.MTDBOOT
 		else:
 			self.MTDKERNEL = getMachineMtdKernel()
 			self.MTDROOTFS = getMachineMtdRoot()
 		if self.MODEL in ("gbquad4k","gbue4k"):
 			self.GB4Kbin = 'boot.bin'
 			self.GB4Krescue = 'rescue.bin'
-		print '[ImageManager] MTD Boot:',self.MTDBOOT
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
 		print '[ImageManager] Type:',getImageFileSystem()
@@ -690,6 +697,10 @@ class ImageBackup(Screen):
 			self.ROOTFSTYPE = 'ubifs'
 			self.KERNELFSTYPE = 'gz'
 		elif getImageFileSystem().replace(' ','') == 'tar.bz2':
+			self.ROOTDEVTYPE = 'tar.bz2'
+			self.ROOTFSTYPE = 'tar.bz2'
+			self.KERNELFSTYPE = 'bin'
+		elif 'octagonemmc' in getImageFileSystem():
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'

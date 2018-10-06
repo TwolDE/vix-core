@@ -9,6 +9,7 @@ from Components.config import config
 from Components.Label import Label
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
+from Components.Harddisk import Harddisk
 from Tools.BoundFunction import boundFunction
 from Tools.Directories import pathExists
 from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentImageMode, EmptySlot
@@ -57,7 +58,7 @@ class MultiBoot(Screen):
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
 		self.title = screentitle
-		if SystemInfo["HasHiSi"]and not pathExists('/dev/sda1'):
+		if SystemInfo["HasHiSi"] and not pathExists('/dev/sda1'):
 			self["key_red"] = StaticText(_("Cancel"))
 			self["labe14"] = StaticText(_("Press Init to format SDcard."))
 			self["labe15"] = StaticText(_(" "))
@@ -117,6 +118,8 @@ class MultiBoot(Screen):
 		list = []
 		mode = GetCurrentImageMode() or 0
 		currentimageslot = GetCurrentImage()
+		if SystemInfo["HasHiSi"]:
+			currentimageslot += 1
 		for x in sorted(imagedict.keys()):
 			if imagedict[x]["imagename"] != _("Empty slot") and x != currentimageslot:
 				list.append(ChoiceEntryComponent('',((_("slot%s - %s ")) % (x, imagedict[x]['imagename']), x)))
@@ -135,18 +138,35 @@ class MultiBoot(Screen):
 
 	def format(self):
 		self.TITLE = _("Init SDCARD")
-		cmdlist = []
-		cmdlist.append("dd if=/dev/zero of=/dev/sda bs=512 count=1 conv=notrunc")
-		cmdlist.append("rm -f /tmp/init.sh")
-		cmdlist.append("echo -e 'sfdisk /dev/sda <<EOF' >> /tmp/init.sh")
-		cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
-		cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
-		cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
-		cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
-		cmdlist.append("echo -e 'EOF' >> /tmp/init.sh")
-		cmdlist.append("chmod +x /tmp/init.sh")
-		cmdlist.append("/tmp/init.sh")
-		self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
+		sda ="sda"
+		size = Harddisk(sda).diskSize()
+
+		if ((float(size) / 1024) / 1024) >= 1:
+			des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
+		elif (size / 1024) >= 1:
+			des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
+		if "GB" in des:
+			print "Multibootmgr1", des, "%s" %des[6], size
+			if size/1024 < 6:
+				print "Multibootmgr2", des, "%s" %des[6], size/1024 
+				self.session.open(MessageBox, _("Multiboot manager - The SDcard must be at least 8MB"), MessageBox.TYPE_INFO, timeout=10)
+				self.close
+			else:
+				self.session.open(MessageBox, _("Multiboot manager - SDcard initialisation run"), MessageBox.TYPE_INFO, timeout=10)
+				cmdlist = []
+				cmdlist.append("dd if=/dev/zero of=/dev/sda bs=512 count=1 conv=notrunc")
+				cmdlist.append("rm -f /tmp/init.sh")
+				cmdlist.append("echo -e 'sfdisk /dev/sda <<EOF' >> /tmp/init.sh")
+				cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
+				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
+				cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
+				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
+				cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
+				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
+				cmdlist.append("echo -e 'EOF' >> /tmp/init.sh")
+				cmdlist.append("chmod +x /tmp/init.sh")
+				cmdlist.append("/tmp/init.sh")
+				self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
 
 	def selectionChanged(self):
 		pass
