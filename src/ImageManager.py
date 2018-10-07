@@ -375,7 +375,7 @@ class VIXImageManager(Screen):
 			self.message = _("Do you want to flash image\n%s") % self.sel
 		if SystemInfo["canMultiBoot"]:
 			if SystemInfo["HasHiSi"]:
- 				if pathExists('/dev/sda1'):
+ 				if pathExists('/dev/%s1' %SystemInfo["canMultiBoot"][2]):
 					self.getImageList = GetImagelist(self.keyRestore1)
 				else:
 					self.session.open(MessageBox, _("SDcard detected but not formatted for multiboot - please use ViX MultiBoot Manager to format"), MessageBox.TYPE_INFO, timeout=15)
@@ -408,8 +408,8 @@ class VIXImageManager(Screen):
 				print "ImageManager", retval, self.imagelist
 				if SystemInfo["HasHiSi"]:
 					if "sda" in self.imagelist[retval]['part']:
-						self.MTDKERNEL = "sda%s" %(int(self.imagelist[retval]['part'][3])-1)
-						self.MTDROOTFS = "sda%s" %(self.imagelist[retval]['part'])
+						self.MTDKERNEL = "%s%s" %(SystemInfo["canMultiBoot"][2], int(self.imagelist[retval]['part'][3])-1)
+						self.MTDROOTFS = "%s" %(self.imagelist[retval]['part'])
 					else:
 						self.MTDKERNEL = getMachineMtdKernel()
 						self.MTDROOTFS = getMachineMtdRoot()					
