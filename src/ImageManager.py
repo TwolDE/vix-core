@@ -245,7 +245,7 @@ class VIXImageManager(Screen):
 											  "menu": self.createSetup,
 											  }, -1)
 
-				self['lab1'].setText(_("Device: None available") + "\n" + _("Select image to flash:"))
+				self['lab1'].setText(_("Device: None available") + "\n" + _("Select an image to flash:"))
 		else:
 			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 										  {
@@ -263,7 +263,7 @@ class VIXImageManager(Screen):
 			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
-			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Flash:Choose an image then Press Flash"))
+			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Select an image to flash:"))
 		try:
 			if not path.exists(self.BackupDirectory):
 				mkdir(self.BackupDirectory, 0755)
@@ -407,7 +407,7 @@ class VIXImageManager(Screen):
 				self.multibootslot = retval
 				print "ImageManager", retval, self.imagelist
 				if SystemInfo["HasHiSi"]:
-					if "sda" in self.imagelist[retval]['part']:
+					if "sd" in self.imagelist[retval]['part']:
 						self.MTDKERNEL = "%s%s" %(SystemInfo["canMultiBoot"][2], int(self.imagelist[retval]['part'][3])-1)
 						self.MTDROOTFS = "%s" %(self.imagelist[retval]['part'])
 					else:
@@ -459,7 +459,7 @@ class VIXImageManager(Screen):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		if ret == 0:
 			if SystemInfo["canMultiBoot"]:
- 				if SystemInfo["HasHiSi"] and pathExists('/dev/sda1'):
+ 				if SystemInfo["HasHiSi"]:
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 				else:
 					CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
@@ -475,7 +475,7 @@ class VIXImageManager(Screen):
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
 		if retval == 0:
-			if SystemInfo["canMultiBoot"] and pathExists('/dev/sda1'):
+			if SystemInfo["canMultiBoot"]:
 				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
 				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
