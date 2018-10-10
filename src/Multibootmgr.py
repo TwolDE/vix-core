@@ -161,8 +161,8 @@ class MultiBoot(Screen):
 				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
 				cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
 				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
-				cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
-				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
+#				cmdlist.append("echo -e ',8M' >> /tmp/init.sh")	Not possible to crate more than 4 primary partitions
+#				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
 				cmdlist.append("echo -e 'EOF' >> /tmp/init.sh")
 				cmdlist.append("chmod +x /tmp/init.sh")
 				cmdlist.append("/tmp/init.sh")
