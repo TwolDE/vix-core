@@ -666,6 +666,9 @@ class ImageBackup(Screen):
 		if SystemInfo["canMultiBoot"]:
 			kernel = GetCurrentImage()
 			if SystemInfo["HasHiSi"]:
+				self.MACHINEBUILD in ("cc1","sf8008","ustym4kpr"):
+				self.MTDBOOT = "none"
+				self.EMMCIMG = "usb_update.bin"
 				f = open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read()
 				if "sda" in f :
 					kern =  kernel*2
