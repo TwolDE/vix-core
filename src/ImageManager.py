@@ -364,6 +364,8 @@ class VIXImageManager(Screen):
 
 	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
+		self.MTDKERNEL = getMachineMtdKernel()
+		self.MTDROOTFS = getMachineMtdRoot()	
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
 			self.dualboot = self.dualBoot()
 		recordings = self.session.nav.getRecordings()
@@ -463,6 +465,8 @@ class VIXImageManager(Screen):
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 				else:
 					CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
+ 			elif SystemInfo["HasHiSi"]:
+				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 			else:
 				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
 		else:
@@ -1290,7 +1294,6 @@ class ImageManagerDownload(Screen):
 			except:
 				print "[ImageManager][populate_List] the %s is not currently supported by OpenViX." % getMachineMake()
 				self.boxtype = 'UNKNOWN'
-
 			url = 'http://192.168.0.171/openvix-builds/'+self.boxtype+'/'
 			conn = urllib2.urlopen(url)
 			html = conn.read()
