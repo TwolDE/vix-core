@@ -142,41 +142,42 @@ class MultiBoot(Screen):
 			sloterase = EmptySlot(self.currentSelected[0][1], self.startit)
 
 	def format(self):
-		self.TITLE = _("Init SDCARD")
-		f = open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read()
-		if "sda" in f:
-			self.session.open(MessageBox, _("Multiboot manager - Cannot initialise SDcard when running image on SDcard"), MessageBox.TYPE_INFO, timeout=10)
-			self.close
-		else:
-			sda ="sda"
-			size = Harddisk(sda).diskSize()
+		if SystemInfo["HasHiSi"]:
+			self.TITLE = _("Init SDCARD")
+			f = open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read()
+			if "sda" in f:
+				self.session.open(MessageBox, _("Multiboot manager - Cannot initialise SDcard when running image on SDcard"), MessageBox.TYPE_INFO, timeout=10)
+				self.close
+			else:
+				sda ="sda"
+				size = Harddisk(sda).diskSize()
 
-			if ((float(size) / 1024) / 1024) >= 1:
-				des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
-			elif (size / 1024) >= 1:
-				des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
-			if "GB" in des:
-				print "Multibootmgr1", des, "%s" %des[6], size
-				if size/1024 < 6:
-					print "Multibootmgr2", des, "%s" %des[6], size/1024 
-					self.session.open(MessageBox, _("Multiboot manager - The SDcard must be at least 8MB"), MessageBox.TYPE_INFO, timeout=10)
-					self.close
-				else:
-					self.session.open(MessageBox, _("Multiboot manager - SDcard initialisation run, please restart OpenViX"), MessageBox.TYPE_INFO, timeout=10)
-					cmdlist = []
-					cmdlist.append("dd if=/dev/zero of=/dev/sda bs=512 count=1 conv=notrunc")
-					cmdlist.append("rm -f /tmp/init.sh")
-					cmdlist.append("echo -e 'sfdisk /dev/sda <<EOF' >> /tmp/init.sh")
-					cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
-					cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
-					cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
-					cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
-	#				cmdlist.append("echo -e ',8M' >> /tmp/init.sh")	Not possible to crate more than 4 primary partitions
-	#				cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
-					cmdlist.append("echo -e 'EOF' >> /tmp/init.sh")
-					cmdlist.append("chmod +x /tmp/init.sh")
-					cmdlist.append("/tmp/init.sh")
-					self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
+				if ((float(size) / 1024) / 1024) >= 1:
+					des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
+				elif (size / 1024) >= 1:
+					des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
+				if "GB" in des:
+					print "Multibootmgr1", des, "%s" %des[6], size
+					if size/1024 < 6:
+						print "Multibootmgr2", des, "%s" %des[6], size/1024 
+						self.session.open(MessageBox, _("Multiboot manager - The SDcard must be at least 8MB"), MessageBox.TYPE_INFO, timeout=10)
+						self.close
+					else:
+						self.session.open(MessageBox, _("Multiboot manager - SDcard initialisation run, please restart OpenViX"), MessageBox.TYPE_INFO, timeout=10)
+						cmdlist = []
+						cmdlist.append("dd if=/dev/zero of=/dev/sda bs=512 count=1 conv=notrunc")
+						cmdlist.append("rm -f /tmp/init.sh")
+						cmdlist.append("echo -e 'sfdisk /dev/sda <<EOF' >> /tmp/init.sh")
+						cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
+						cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
+						cmdlist.append("echo -e ',8M' >> /tmp/init.sh")
+						cmdlist.append("echo -e ',2048M' >> /tmp/init.sh")
+						cmdlist.append("echo -e 'EOF' >> /tmp/init.sh")
+						cmdlist.append("chmod +x /tmp/init.sh")
+						cmdlist.append("/tmp/init.sh")
+						self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
+		else:
+			self.close()
 
 	def selectionChanged(self):
 		pass
