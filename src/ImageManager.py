@@ -763,11 +763,11 @@ class ImageBackup(Screen):
 		task.check = lambda: self.Stage2Completed
 		task.weighting = 15
 
-		task = Components.Task.PythonTask(job, _("Backing up eMMC ..."))
+		task = Components.Task.PythonTask(job, _("Backing up eMMC partitions for USB flash ..."))
 		task.work = self.doBackup3
 		task.weighting = 5
 
-		task = Components.Task.ConditionTask(job, _("Backing up eMMC..."), timeoutCount=900)
+		task = Components.Task.ConditionTask(job, _("Backing up eMMC partitions for USB flash..."), timeoutCount=900)
 		task.check = lambda: self.Stage3Completed
 		task.weighting = 15
 	
@@ -1043,8 +1043,7 @@ class ImageBackup(Screen):
 			self.commandOCT.append("dd if=/dev/mmcblk0p7 of=%s/deviceinfo.bin" % self.WORKDIR)
 			self.commandOCT.append('echo "Create: apploader dump"')
 			self.commandOCT.append("dd if=/dev/mmcblk0p8 of=%s/apploader.bin" % self.WORKDIR)
-			self.commandOCT.append('echo "Create: kernel dump"')
-			self.commandOCT.append("dd if=/dev/%s of=%s/vmlinux.bin" % (self.MTDKERNEL,self.WORKDIR))
+			self.commandOCT.append('echo "Pickup previous created: kernel dump"')
 			self.commandOCT.append('echo "Create: rootfs dump"')
 			self.commandOCT.append("dd if=/dev/zero of=%s/rootfs.ext4 seek=524288 count=0 bs=1024" % (self.WORKDIR))
 			self.commandOCT.append("mkfs.ext4 -F -i 4096 %s/rootfs.ext4 -d %s/root" %(self.WORKDIR, self.TMPDIR))
