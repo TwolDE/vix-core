@@ -483,6 +483,16 @@ class VIXImageManager(Screen):
 				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
 				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				self.session.open(TryQuitMainloop, 2)
+				if pathExists("/boot/STARTUP_%s" % self.multibootslot):
+					import shutil
+					shutil.copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
+					self.session.open(TryQuitMainloop, 2)
+				elif SystemInfo["canMode12"]:
+					print "[ImageManager - MultiBoot] No Boot/Startup - created Startup slot:\n", self.multibootslot
+					model = getMachineBuild()
+					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], slot * 2 + SystemInfo["canMultiBoot"][0], model)
+				else:
+					self.session.open(TryQuitMainloop, 2)				
 			else:
 				self.session.open(TryQuitMainloop, 2)
 		else:
