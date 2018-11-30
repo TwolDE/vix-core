@@ -1254,6 +1254,8 @@ class ImageManagerDownload(Screen):
 
 			supportedMachines = {
 				'axodinc'         : 'Opticum-AX-ODIN-DVBC-1',
+				'dinobot4kmini'   : 'dinobot4kmini',
+				'dinobot4kplus'   : 'dinobot4kplus',
 				'et10000'         : 'ET-10x00',
 				'et4x00'          : 'ET-4x00',
 				'et5x00'          : 'ET-5x00',
@@ -1326,6 +1328,7 @@ class ImageManagerDownload(Screen):
 				'tmsingle'        : 'TM-Single',
 				'tmtwin'          : 'TM-Twin-OE',
 				'tmtwin4k'        : 'TM-Twin-4K',
+#				'u53'   	  : 'dinobot4kmini',
 				'uniboxhde'       : 'Venton-Unibox-HDeco-PLUS',
 				'ventonhdx'       : 'Venton-Unibox-HDx',
 				'vipercombohdd'   : 'Amiko-Viper-Combo-HDD',				
@@ -1351,6 +1354,7 @@ class ImageManagerDownload(Screen):
 			try:
 				self.boxtype = supportedMachines[getMachineMake()]
 			except:
+#				self.session.open(MessageBox, _("%s" % getMachineMake()), MessageBox.TYPE_INFO, timeout=15)
 				print "[ImageManager][populate_List] the %s is not currently supported by OpenViX." % getMachineMake()
 				self.boxtype = 'UNKNOWN'
 			url = 'http://192.168.0.171/openvix-builds/'+self.boxtype+'/'
