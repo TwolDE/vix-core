@@ -481,11 +481,8 @@ class VIXImageManager(Screen):
 		if retval == 0:
 			if SystemInfo["canMultiBoot"]:
 				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
-				copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
-				self.session.open(TryQuitMainloop, 2)
 				if pathExists("/boot/STARTUP_%s" % self.multibootslot):
-					import shutil
-					shutil.copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
+					copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 					self.session.open(TryQuitMainloop, 2)
 				elif SystemInfo["canMode12"] and pathExists("/boot/STARTUP"):
 					print "[ImageManager - MultiBoot] No boot/STARTUP_%s - created STARTUP" %self.multibootslot
