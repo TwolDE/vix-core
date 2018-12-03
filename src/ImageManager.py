@@ -487,12 +487,14 @@ class VIXImageManager(Screen):
 					import shutil
 					shutil.copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 					self.session.open(TryQuitMainloop, 2)
-				elif SystemInfo["canMode12"]:
-					print "[ImageManager - MultiBoot] No Boot/Startup - created Startup slot:\n", self.multibootslot
+				elif SystemInfo["canMode12"] and pathExists("/boot/STARTUP"):
+					print "[ImageManager - MultiBoot] No boot/STARTUP_%s - created STARTUP" %self.multibootslot
 					model = getMachineBuild()
 					startupFileContents = "boot emmcflash0.kernel%s 'brcm_cma=%s root=/dev/mmcblk0p%s rw rootwait %s_4.boxmode=1'\n" % (slot, SystemInfo["canMode12"][0], slot * 2 + SystemInfo["canMultiBoot"][0], model)
+				elif pathExists("/boot/STARTUP"):		
+					self.session.open(MessageBox, _("Multiboot ERROR! - no STARTUP_%s in /boot - Image may need manual restart" % self.multibootslot), MessageBox.TYPE_INFO, timeout=20)
 				else:
-					self.session.open(TryQuitMainloop, 2)				
+					self.session.open(MessageBox, _("Multiboot ERROR! - no STARTUP in /boot -Please check /etc/fstab for correct boot partition"), MessageBox.TYPE_INFO, timeout=20)
 			else:
 				self.session.open(TryQuitMainloop, 2)
 		else:
@@ -715,6 +717,10 @@ class ImageBackup(Screen):
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
 		elif 'octagonemmc' in getImageFileSystem():
+			self.ROOTDEVTYPE = 'tar.bz2'
+			self.ROOTFSTYPE = 'tar.bz2'
+			self.KERNELFSTYPE = 'bin'
+		elif 'dinobotemmc' in getImageFileSystem():
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
