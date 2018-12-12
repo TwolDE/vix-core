@@ -355,12 +355,12 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.keyRestore3, JobView, job,  cancelable = False, backgroundable = False, afterEventChangeable = False, afterEvent="close")
 
 
-#		#default layout for 				Mut@nt HD51						 Giga4K						SF8008
+#		#default layout for 				Mut@nt HD51/Osmio4k x = 0,1						 Giga4K						SF8008
 # boot								/dev/mmcblk0p1						/dev/mmcblk0p1				/dev/mmcblk0p3
-# STARTUP_1 			Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblk0p3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5		boot emmcflash0.kernel 'root=/dev/mmcblk0p13 
-# STARTUP_2 			Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblk0p5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7		boot usb0.sda1 'root=/dev/sda2
-# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblk0p7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9		boot usb0.sda3 'root=/dev/sda4
-# STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblk0p9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
+# STARTUP_1 			Image 1: boot emmcflash0.kernel1 'root=/dev/mmcblkxp3 rw rootwait'	boot emmcflash0.kernel1: 'root=/dev/mmcblk0p5		boot emmcflash0.kernel 'root=/dev/mmcblk0p13 
+# STARTUP_2 			Image 2: boot emmcflash0.kernel2 'root=/dev/mmcblkxp5 rw rootwait'      boot emmcflash0.kernel2: 'root=/dev/mmcblk0p7		boot usb0.sda1 'root=/dev/sda2
+# STARTUP_3		        Image 3: boot emmcflash0.kernel3 'root=/dev/mmcblkxp7 rw rootwait'	boot emmcflash0.kernel3: 'root=/dev/mmcblk0p9		boot usb0.sda3 'root=/dev/sda4
+# STARTUP_4		        Image 4: boot emmcflash0.kernel4 'root=/dev/mmcblkxp9 rw rootwait'	NOT IN USE due to Rescue mode in mmcblk0p3
 
 	def keyRestore(self):
 		self.sel = self['list'].getCurrent()
@@ -689,9 +689,9 @@ class ImageBackup(Screen):
 					self.MTDROOTFS = getMachineMtdRoot()
 			else:					
 				self.addin = SystemInfo["canMultiBoot"][0]
-				self.MTDBOOT = "mmcblk0p1"		#HD51#
-				self.MTDKERNEL = "mmcblk0p%s" %(kernel*2 +self.addin -1)
-				self.MTDROOTFS = "mmcblk0p%s" %(kernel*2 +self.addin)
+				self.MTDBOOT = "%s1" %SystemInfo["canMultiBoot"][2]
+				self.MTDKERNEL = "%s%s" %(SystemInfo["canMultiBoot"][2], kernel*2 +self.addin -1)
+				self.MTDROOTFS = "%s%s" %(SystemInfo["canMultiBoot"][2], kernel*2 +self.addin)
 				print '[ImageManager] MTD Boot:',self.MTDBOOT
 		else:
 			self.MTDKERNEL = getMachineMtdKernel()
@@ -717,14 +717,22 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
+			self.MTDBOOT = "none"
+			self.EMMCIMG = "usb_update.bin"
 		elif 'dinobotemmc' in getImageFileSystem():
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
 		elif getImageFileSystem().replace(' ','') in ('hdemmc', 'hd-emmc'):	# handle new & old formats
-			self.ROOTDEVTYPE = 'hd-emmc'					# HD51 type receiver with multiple eMMC partitions in class
+			self.ROOTDEVTYPE = 'hd-emmc'					# HD51 receiver with multiple eMMC partitions in class
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
+			self.EMMCIMG = "disk.img"
+		elif 'emmcimg' in getImageFileSystem():	
+			self.ROOTDEVTYPE = 'emmcimg'					# osmio4k receiver with multiple eMMC partitions in class
+			self.ROOTFSTYPE = 'tar.bz2'
+			self.KERNELFSTYPE = 'bin'
+			self.EMMCIMG = "emmc.img"
 		else:
 			self.ROOTDEVTYPE = 'jffs2'
 			self.ROOTFSTYPE= 'jffs2'
@@ -965,11 +973,10 @@ class ImageBackup(Screen):
 			print '[ImageManager] Stage2: Complete.'
 
 	def doBackup3(self):
-		if SystemInfo["canMultiBoot"] and self.ROOTDEVTYPE == 'hd-emmc':
+		if SystemInfo["canMultiBoot"] and self.ROOTDEVTYPE in ('hdemmc', 'hd-emmc', 'emmcimg'):
 			print '[ImageManager] Stage3: Making eMMC Image.'
 			self.commandMB = []
 			print '[ImageManager] Stage3: EMMC Detected.'
-			self.EMMCIMG = "disk.img"
 			BLOCK_SIZE=512
 			BLOCK_SECTOR=2
 			IMAGE_ROOTFS_ALIGNMENT=1024
@@ -1018,8 +1025,6 @@ class ImageBackup(Screen):
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
 
 		if 'octagonemmc' in getImageFileSystem():
-			self.MTDBOOT = "none"
-			self.EMMCIMG = "usb_update.bin"
 			self.commandOCT = []
 			print '[ImageManager] sf8008: Making emmc_partitions.xml'
 			f = open("%s/emmc_partitions.xml" %self.WORKDIR, "w")
@@ -1306,6 +1311,7 @@ class ImageManagerDownload(Screen):
 				'osmini'          : 'OS-mini',
 				'osminiplus'      : 'OS-miniplus',
 				'osnino'          : 'OS-nino',
+				'osmio4k'         : 'OS-mio4k',
 				'osninoplus'      : 'OS-ninoplus',
 				'osninopro'       : 'OS-ninopro',				
 				'qb800solo'       : 'GiGaBlue-HD800Solo',
