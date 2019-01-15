@@ -723,8 +723,14 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
+		elif 'hdfastboot8gb' in getImageFileSystem():				# H9combo, HD60, HD61 receiver with multiple eMMC partitions in class
+			self.ROOTDEVTYPE = 'tar.bz2'
+			self.ROOTFSTYPE = 'tar.bz2'
+			self.KERNELFSTYPE = 'bin'
+			self.MTDBOOT = "none"
+			self.EMMCIMG = "rootfs.fastboot.gz"
 		elif getImageFileSystem().replace(' ','') in ('hdemmc', 'hd-emmc', 'airdigitalemmc'):	# handle new & old formats
-			self.ROOTDEVTYPE = 'hdemmc'					# HD51/H9 receiver with multiple eMMC partitions in class
+			self.ROOTDEVTYPE = 'hdemmc'					# HD51/H7 receiver with multiple eMMC partitions in class
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
 			self.EMMCIMG = "disk.img"
@@ -1128,6 +1134,27 @@ class ImageBackup(Screen):
 			self.commandMB.append('echo " "')
 			self.commandMB.append('/usr/sbin/mkupdate -s 00000003-00000001-01010101 -f %s/emmc_partitions.xml -d %s/%s' % (self.WORKDIR,self.WORKDIR,self.EMMCIMG))
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
+		elif 'hdfastboot8gb' in getImageFileSystem():
+			self.commandMB.append('echo " "')
+			self.commandMB.append('echo "' + _("Create:") + " fastboot dump" + '"')
+			self.commandMB.append("dd if=/dev/mmcblk0p1 of=%s/fastboot.bin" % self.WORKDIR)
+			self.commandMB.append('echo "' + _("Create:") + " bootargs dump" + '"')
+			self.commandMB.append("dd if=/dev/mmcblk0p2 of=%s/bootargs.bin" % self.WORKDIR)
+			self.commandMB.append('echo "' + _("Create:") + " bootoptions dump" + '"')
+			self.commandMB.append("dd if=/dev/mmcblk0p5 of=%s/bootoptions.bin" % self.WORKDIR)
+			self.commandMB.append('echo "' + _("Create:") + " baseparam dump" + '"')
+			self.commandMB.append("dd if=/dev/mmcblk0p6 of=%s/baseparam.bin" % self.WORKDIR)
+			self.commandMB.append('echo "' + _("Create:") + " pq_param dump" + '"')
+			self.commandMB.append("dd if=/dev/mmcblk0p7 of=%s/pq_param.bin" % self.WORKDIR)
+			self.commandMB.append('echo "' + _("Create:") + " logo dump" + '"')
+			self.commandMB.append("dd if=/dev/mmcblk0p8 of=%s/logo.bin" % self.WORKDIR)
+			self.commandMB.append('echo "' + _("Create:") + " rootfs dump" + '"')
+			self.commandMB.append("dd if=/dev/zero of=%s/rootfs.ext4 seek=1048576 count=0 bs=1024" % (self.WORKDIR))
+			self.commandMB.append("mkfs.ext4 -F -i 4096 %s/rootfs.ext4 -d /tmp/bi/root" % (self.WORKDIR))
+			self.commandMB.append('echo " "')
+			self.commandMB.append('echo "' + _("Create: Recovery Fullbackup %s")% (self.EMMCIMG) + '"')
+			self.commandMB.append('echo " "')
+			self.commandMB.append('%s -zv %s/rootfs.ext4 %s/%s' % (self.FASTBOOT,self.WORKDIR,self.WORKDIR,self.EMMCIMG))
 		else:
 			self.Stage3Completed = True
 			print '[ImageManager] Stage3 bypassed: Complete.'
@@ -1155,14 +1182,17 @@ class ImageBackup(Screen):
 		print '[ImageManager] Stage5: Moving from work to backup folders'
 		if self.ROOTDEVTYPE in ('hdemmc', 'emmcimg') and path.exists('%s/%s' % (self.WORKDIR, self.EMMCIMG)):
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST, self.EMMCIMG))
+
 		if 'octagonemmc' in getImageFileSystem():
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST, self.EMMCIMG))
 			move('%s/%s' %(self.WORKDIR, "emmc_partitions.xml"), '%s/%s' %(self.MAINDEST, "emmc_partitions.xml"))
 		move('%s/rootfs.%s' % (self.WORKDIR, self.ROOTFSTYPE), '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
+
 		if self.KERNELFSTYPE == 'bin' and path.exists('%s/vmlinux.bin' % self.WORKDIR):
 			move('%s/vmlinux.bin' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
 		else:
 			move('%s/vmlinux.gz' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
+
 		if getMachineBuild() in ("gb7252"):
 			move('%s/%s' % (self.WORKDIR, self.GB4Kbin), '%s/%s' % (self.MAINDEST, self.GB4Kbin))
 			move('%s/%s' % (self.WORKDIR, self.GB4Krescue), '%s/%s' % (self.MAINDEST, self.GB4Krescue))
@@ -1175,6 +1205,9 @@ class ImageBackup(Screen):
 			system('mv %s/bootargs.bin %s/bootargs.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/baseparam.bin %s/baseparam.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/logo.bin %s/logo.bin' %(self.WORKDIR, self.MAINDEST))
+
+		if 'hdfastboot8gb' in getImageFileSystem():
+			system('mv %s/baseparam.bin %s/bootoptions.bin' %(self.WORKDIR, self.MAINDEST))
 
 		fileout = open(self.MAINDEST + '/imageversion', 'w')
 		line = defaultprefix + '-' + getImageType() + '-backup-' + getImageVersion() + '.' + getImageBuild() + '-' + self.BackupDate
@@ -1404,7 +1437,6 @@ class ImageManagerDownload(Screen):
 				'tmsingle'        : 'TM-Single',
 				'tmtwin'          : 'TM-Twin-OE',
 				'tmtwin4k'        : 'TM-Twin-4K',
-#				'u53'   	  : 'dinobot4kmini',
 				'uniboxhde'       : 'Venton-Unibox-HDeco-PLUS',
 				'ventonhdx'       : 'Venton-Unibox-HDx',
 				'vipercombohdd'   : 'Amiko-Viper-Combo-HDD',				
