@@ -134,6 +134,8 @@ class VIXDevicesPanel(Screen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
+			if SystemInfo["HasSDmmc"] and re.search('sd[a][1-9]', device):
+				continue
 			if device in list2:
 				continue
 			self.buildMy_rec(device)
@@ -375,6 +377,8 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				continue
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
+				continue
+			if SystemInfo["HasSDmmc"] and re.search('sd[a][1-9]', device):
 				continue
 			if device in list2:
 				continue
