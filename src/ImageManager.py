@@ -129,8 +129,8 @@ class VIXImageManager(Screen):
 
 		self.BackupRunning = False
 		self.mtdboot = "%s1" % SystemInfo["canMultiBoot"][2]
- 		if SystemInfo["HasSDmmc"]:
-			self.mtdboot = "mmcblk0p3"
+ 		if SystemInfo["canMultiBoot"][2] == "sda":
+			self.mtdboot = "%s3" %getMachineMtdRoot()[0:8]
 		self.imagelist = {}
 		self.getImageList = None
 		self.onChangedEntry = []
