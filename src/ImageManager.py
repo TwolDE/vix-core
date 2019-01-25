@@ -128,6 +128,9 @@ class VIXImageManager(Screen):
 		self["key_red"] = Button(_("Delete"))
 
 		self.BackupRunning = False
+		self.mtdboot = "%s1" % SystemInfo["canMultiBoot"][2]
+ 		if SystemInfo["HasSDmmc"]:
+			self.mtdboot = "mmcblk0p3"
 		self.imagelist = {}
 		self.getImageList = None
 		self.onChangedEntry = []
@@ -486,7 +489,7 @@ class VIXImageManager(Screen):
 					self.ContainterFallback()
 				else:
 					mkdir('/tmp/startupmount')
-					self.container.ePopen('mount /dev/%s1 /tmp/startupmount' % SystemInfo["canMultiBoot"][2], self.ContainterFallback)
+					self.container.ePopen('mount /dev/%s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
 			else:
 				self.session.open(TryQuitMainloop, 2)
 		else:
