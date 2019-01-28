@@ -128,9 +128,10 @@ class VIXImageManager(Screen):
 		self["key_red"] = Button(_("Delete"))
 
 		self.BackupRunning = False
-		self.mtdboot = "%s1" % SystemInfo["canMultiBoot"][2]
- 		if SystemInfo["canMultiBoot"][2] == "sda":
-			self.mtdboot = "%s3" %getMachineMtdRoot()[0:8]
+		if SystemInfo["canMultiBoot"]:
+			self.mtdboot = "%s1" % SystemInfo["canMultiBoot"][2]
+	 		if SystemInfo["canMultiBoot"][2] == "sda":
+				self.mtdboot = "%s3" %getMachineMtdRoot()[0:8]
 		self.imagelist = {}
 		self.getImageList = None
 		self.onChangedEntry = []
@@ -369,6 +370,8 @@ class VIXImageManager(Screen):
 		self.sel = self['list'].getCurrent()
 		if not self.sel:
 			return
+		self.HasSDmmc = False
+		self.multibootslot = 1
 		self.MTDKERNEL = getMachineMtdKernel()
 		self.MTDROOTFS = getMachineMtdRoot()	
 		if getMachineMake() == 'et8500' and path.exists('/proc/mtd'):
@@ -383,10 +386,12 @@ class VIXImageManager(Screen):
 		if SystemInfo["canMultiBoot"]:
 			if SystemInfo["HasSDmmc"]:
  				if pathExists('/dev/%s4' %SystemInfo["canMultiBoot"][2]):
+					self.HasSDmmc = True
 					self.getImageList = GetImagelist(self.keyRestore1)
+				elif config.imagemanager.autosettingsbackup.value:
+					self.doSettingsBackup()
 				else:
-					self.session.open(MessageBox, _("SDcard detected but not formatted for multiboot - please use ViX MultiBoot Manager to format"), MessageBox.TYPE_INFO, timeout=15)
-					self.close
+					self.keyRestore3()
 			else:
 				self.getImageList = GetImagelist(self.keyRestore1)
 		elif config.imagemanager.autosettingsbackup.value:
@@ -485,6 +490,8 @@ class VIXImageManager(Screen):
 		fbClass.getInstance().unlock()
 		if retval == 0:
 			if SystemInfo["canMultiBoot"]:
+				if SystemInfo["HasSDmmc"] and self.HasSDmmc is False:
+					self.session.open(TryQuitMainloop, 2)
 				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
 				self.container = Console()
 				if pathExists('/tmp/startupmount'):

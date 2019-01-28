@@ -134,7 +134,8 @@ class VIXDevicesPanel(Screen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
-			if SystemInfo["HasSDmmc"] and re.search('sd[a][1-9]', device):
+			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):
+				print '[MountManager1] HasSDmmc %s:' %device
 				continue
 			if device in list2:
 				continue
@@ -155,7 +156,7 @@ class VIXDevicesPanel(Screen):
 		print 'DEVICETYPE:',devicetype
 		print 'TEST TYPE MMC:',devicetype.find('mmc')
 		print 'TEST TYPE SDHCI:',devicetype.find('rdb')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or devicetype.find('soc') != -1):
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and getMachineBuild() != 'h9')):	
 			return
 		d2 = device
 		name = _("HARD DISK: ")
@@ -378,7 +379,8 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
-			if SystemInfo["HasSDmmc"] and re.search('sd[a][1-9]', device):
+			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):
+				print '[MountManager2] HasSDmmc %s:' %device
 				continue
 			if device in list2:
 				continue
@@ -399,7 +401,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		else:
 			device2 = re.sub('[0-9]', '', device)
 		devicetype = path.realpath('/sys/block/' + device2 + '/device')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or devicetype.find('soc') != -1):
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and getMachineBuild() != 'h9')):
 			return
 		d2 = device
 		name = _("HARD DISK: ")
