@@ -455,7 +455,13 @@ class VIXImageManager(Screen):
 				ybox = self.session.openWithCallback(self.keyRestore5_ET8500, MessageBox, message, MessageBox.TYPE_YESNO)
 				ybox.setTitle(_("ET8500 Image Restore"))
 			else:
-				self.keyRestore6(0)
+				MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+				if pathExists("%s/SDAbackup" %MAINDEST) and self.multibootslot !=1:
+						self.session.open(MessageBox, _("Multiboot only able to restore this backup to mmc slot1"), MessageBox.TYPE_INFO, timeout=20)
+						print "[ImageManager] SF8008 mmc restore to SDcard failed:\n",
+						self.close()
+				else:
+					self.keyRestore6(0)
 		else:
 			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("Unzip error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] unzip failed:\n", result
@@ -476,7 +482,10 @@ class VIXImageManager(Screen):
 				else:
 					CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
  			elif SystemInfo["HasHiSi"]:
-				CMD = "/usr/bin/ofgwrite -f -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
+				if getMachineBuild() in ("h9","i55plus","u55"):
+					CMD = "/usr/bin/ofgwrite -f -k -r '%s'" % MAINDEST
+				else:
+					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 			else:
 				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
 		else:
@@ -688,11 +697,13 @@ class ImageBackup(Screen):
 		self.ROOTFSFILE = getMachineRootFile()
 		self.MAINDEST = self.MAINDESTROOT + '/' + getImageFolder() + '/'
 		self.MODEL = getBoxType()
+		self.KERN = "mmc"
 		if SystemInfo["canMultiBoot"]:
 			kernel = GetCurrentImage()
 			if SystemInfo["HasSDmmc"]:
 				f = open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read()
 				if "sda" in f :
+					self.KERN = "sda"
 					kern =  kernel*2
 					self.MTDKERNEL = "sda%s" %(kern-1)
 					self.MTDROOTFS = "sda%s" %(kern)
@@ -731,6 +742,7 @@ class ImageBackup(Screen):
 			self.KERNELFSTYPE = 'bin'
 			self.MTDBOOT = "none"
 			self.EMMCIMG = "usb_update.bin"
+			self.MAINDEST2 = self.MAINDESTROOT + '/'
 		elif 'dinobotemmc' in getImageFileSystem():
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
@@ -1196,7 +1208,7 @@ class ImageBackup(Screen):
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST, self.EMMCIMG))
 
 		if 'octagonemmc' in getImageFileSystem():
-			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST, self.EMMCIMG))
+			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST2, self.EMMCIMG))
 			move('%s/%s' %(self.WORKDIR, "emmc_partitions.xml"), '%s/%s' %(self.MAINDEST, "emmc_partitions.xml"))
 		move('%s/rootfs.%s' % (self.WORKDIR, self.ROOTFSTYPE), '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
 
@@ -1243,8 +1255,14 @@ class ImageBackup(Screen):
 				line = "rename this file to 'force' to force an update without confirmation"
 				fileout.write(line)
 				fileout.close()
+			if getBrandOEM() in ('octagon') and SystemInfo["HasSDmmc"] and self.KERN == "mmc":
+				fileout = open(self.MAINDEST + '/SDAbackup', 'w')
+				line = "SF8008 indicate type of backup %s" %self.KERN
+				fileout.write(line)
+				fileout.close()
 			if path.exists('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat'):
 				copy('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat', self.MAINDESTROOT + '/burn.bat')
+
 		print '[ImageManager] Stage5: Removing Swap.'
 		if path.exists(self.swapdevice + config.imagemanager.folderprefix.value + '-' + getImageType() + "-swapfile_backup"):
 			system('swapoff ' + self.swapdevice + config.imagemanager.folderprefix.value + '-' + getImageType() + "-swapfile_backup")
@@ -1470,7 +1488,11 @@ class ImageManagerDownload(Screen):
 				'xp1000plus'      : 'OCTAGON-XP1000PLUS',
 				'xpeedlx'         : 'GI-Xpeed-LX',
 				'xpeedlx3'        : 'GI-Xpeed-LX3',
-				'zgemmah7'        : 'Zgemma-H7'				
+				'zgemmah7'        : 'Zgemma-H7',
+				'zgemmah9s'       : 'Zgemma-H9S',
+				'zgemmah92s'      : 'Zgemma-H92S',
+				'zgemmah92h'      : 'Zgemma-H92H',				
+				'zgemmah9t'       : 'Zgemma-H9T'				
 			}
 
 			try:

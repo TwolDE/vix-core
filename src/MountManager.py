@@ -156,7 +156,7 @@ class VIXDevicesPanel(Screen):
 		print 'DEVICETYPE:',devicetype
 		print 'TEST TYPE MMC:',devicetype.find('mmc')
 		print 'TEST TYPE SDHCI:',devicetype.find('rdb')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and getMachineBuild() != 'h9')):	
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and getMachineBuild() != 'h9')):
 			return
 		d2 = device
 		name = _("HARD DISK: ")
