@@ -1260,6 +1260,7 @@ class ImageBackup(Screen):
 				line = "SF8008 indicate type of backup %s" %self.KERN
 				fileout.write(line)
 				fileout.close()
+				self.session.open(MessageBox, _("Multiboot only able to restore this backup to mmc slot1"), MessageBox.TYPE_INFO, timeout=20)
 			if path.exists('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat'):
 				copy('/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/burn.bat', self.MAINDESTROOT + '/burn.bat')
 
