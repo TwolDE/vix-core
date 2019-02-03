@@ -482,10 +482,7 @@ class VIXImageManager(Screen):
 				else:
 					CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
  			elif SystemInfo["HasHiSi"]:
-				if getMachineBuild() in ("h9","i55plus","u55"):
-					CMD = "/usr/bin/ofgwrite -f -k -r '%s'" % MAINDEST
-				else:
-					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
+				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 			else:
 				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
 		else:
@@ -696,7 +693,9 @@ class ImageBackup(Screen):
 		self.KERNELFILE = getMachineKernelFile()
 		self.ROOTFSFILE = getMachineRootFile()
 		self.MAINDEST = self.MAINDESTROOT + '/' + getImageFolder() + '/'
+		self.MAINDEST2 = self.MAINDESTROOT + '/'
 		self.MODEL = getBoxType()
+		self.MCBUILD = getMachineBuild()
 		self.KERN = "mmc"
 		if SystemInfo["canMultiBoot"]:
 			kernel = GetCurrentImage()
@@ -722,6 +721,10 @@ class ImageBackup(Screen):
 		if getMachineBuild() in ("gb7252"):
 			self.GB4Kbin = 'boot.bin'
 			self.GB4Krescue = 'rescue.bin'
+		print '[ImageManager] Model:',self.MODEL
+		print '[ImageManager] Machine Build:',self.MCBUILD
+		print '[ImageManager] Kernel File:',self.KERNELFILE
+		print '[ImageManager] Root File:',self.ROOTFSFILE
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
 		print '[ImageManager] Type:',getImageFileSystem()
@@ -742,7 +745,6 @@ class ImageBackup(Screen):
 			self.KERNELFSTYPE = 'bin'
 			self.MTDBOOT = "none"
 			self.EMMCIMG = "usb_update.bin"
-			self.MAINDEST2 = self.MAINDESTROOT + '/'
 		elif 'dinobotemmc' in getImageFileSystem():
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
@@ -999,8 +1001,10 @@ class ImageBackup(Screen):
 				self.commands.append('echo " "')
 				self.commands.append('echo "' + _("Create:") + " fastboot dump" + '"')
 				self.commands.append("dd if=/dev/mtd0 of=%s/fastboot.bin" % self.WORKDIR)
+				self.commands.append("dd if=/dev/mtd0 of=%s/fastboot.bin" % self.MAINDEST2)
 				self.commands.append('echo "' + _("Create:") + " bootargs dump" + '"')
 				self.commands.append("dd if=/dev/mtd1 of=%s/bootargs.bin" % self.WORKDIR)
+				self.commands.append("dd if=/dev/mtd1 of=%s/bootargs.bin" % self.MAINDEST2)
 				self.commands.append('echo "' + _("Create:") + " baseparam dump" + '"')
 				self.commands.append("dd if=/dev/mtd2 of=%s/baseparam.bin" % self.WORKDIR)
 				self.commands.append('echo "' + _("Create:") + " pq_param dump" + '"')
@@ -1499,10 +1503,11 @@ class ImageManagerDownload(Screen):
 			try:
 				self.boxtype = supportedMachines[getMachineMake()]
 			except:
-#				self.session.open(MessageBox, _("%s" % getMachineMake()), MessageBox.TYPE_INFO, timeout=15)
+				self.session.open(MessageBox, _("%s" % getMachineMake()), MessageBox.TYPE_INFO, timeout=15)
 				print "[ImageManager][populate_List] the %s is not currently supported by OpenViX." % getMachineMake()
 				self.boxtype = 'UNKNOWN'
 			url = 'http://192.168.0.171/openvix-builds/'+self.boxtype+'/'
+#			print "[ImageManager][populate_List] the %s %sis not currently supported by OpenViX." % (getMachineMake(), url)
 			conn = urllib2.urlopen(url)
 			html = conn.read()
 
