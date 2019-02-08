@@ -122,10 +122,10 @@ class VIXImageManager(Screen):
 
 		self['lab1'] = Label()
 		self["backupstatus"] = Label()
-		self["key_blue"] = Button(_("Flash"))
+		self["key_red"] = Button(_("Delete"))
 		self["key_green"] = Button("New backup")
 		self["key_yellow"] = Button(_("Downloads"))
-		self["key_red"] = Button(_("Delete"))
+		self["key_blue"] = Button(_("Flash"))
 
 		self.BackupRunning = False
 		if SystemInfo["canMultiBoot"]:
@@ -480,11 +480,18 @@ class VIXImageManager(Screen):
  				if SystemInfo["HasSDmmc"]:
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 				else:
-					CMD = "/usr/bin/ofgwrite -k -r -m%s '%s'" % (self.multibootslot, MAINDEST)
+					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
  			elif SystemInfo["HasHiSi"]:
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
+			elif getMachineBuild() in ("h9"):
+				z = open('/proc/cmdline', 'r').read()
+				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
+					print '[ImageManager] H9 root kernel %s %s:' %(self.MTDROOTFS, self.MTDKERNEL)
+					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % MAINDEST
+				else:
+					CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
 			else:
-				CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
+				CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST
 		else:
 			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)
 		config.imagemanager.restoreimage.setValue(self.sel)
