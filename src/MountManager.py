@@ -136,9 +136,12 @@ class VIXDevicesPanel(Screen):
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
 			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):
+<<<<<<< HEAD
 				print '[MountManager1] HasSDmmc %s:' %device
 				continue
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
+=======
+>>>>>>> upstream/master
 				continue
 			if device in list2:
 				continue
@@ -383,7 +386,10 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
 			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):
+<<<<<<< HEAD
 				print '[MountManager2] HasSDmmc %s:' %device
+=======
+>>>>>>> upstream/master
 				continue
 			if device in list2:
 				continue
