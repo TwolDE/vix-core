@@ -58,17 +58,17 @@ class H9SDmanager(Screen):
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
 		self.title = screentitle
-			self["labe14"] = StaticText(_("Press Init to move Nand root to SDcard."))
-			self["labe15"] = StaticText("")
-			self["key_red"] = StaticText(_("Cancel"))
-			self["key_green"] = StaticText(_("Init Zgemma H9 SDcard"))
-			self["config"] = ChoiceList(list=[ChoiceEntryComponent('',((""), "Queued"))])
-			self["actions"] = ActionMap(["ColorActions", "MenuActions"],
-			{
-				"red": boundFunction(self.close, None),
-				"green": self.H9SDInit,
-				"menu": boundFunction(self.close, True),
-			}, -1)
+		self["labe14"] = StaticText(_("Press Init to move Nand root to SDcard."))
+		self["labe15"] = StaticText("")
+		self["key_red"] = StaticText(_("Cancel"))
+		self["key_green"] = StaticText(_("Init Zgemma H9 SDcard"))
+		self["config"] = ChoiceList(list=[ChoiceEntryComponent('',((""), "Queued"))])
+		self["actions"] = ActionMap(["ColorActions", "MenuActions"],
+		{
+			"red": boundFunction(self.close, None),
+			"green": self.H9SDInit,
+			"menu": boundFunction(self.close, True),
+		}, -1)
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
@@ -78,7 +78,6 @@ class H9SDmanager(Screen):
 		if SystemInfo["HasH9SD"]:
 			self.TITLE = _("Init Zgemma H9 SDCARD")
 			cmdlist = []
-			cmdlist.append("dd if=/dev/zero of=/dev/sda bs=512 count=1 conv=notrunc")
 			cmdlist.append("opkg update")
 			cmdlist.append("opkg install rsync")
 			cmdlist.append("umount /dev/mmcblk0p1")

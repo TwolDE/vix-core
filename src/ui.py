@@ -69,7 +69,6 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
 			self.list.append(("IPTV-manager", _("IPTV Bouquet manager"), _("Manage your IPTV Bouquets"), None))
-			self.list.append(("script-runner", _("Script runner"), _("Run your shell scripts."), None))			
 			if SystemInfo["canMultiBoot"]:
 				self.list.append(("multiboot manager", _("MultiBoot Manager"), _("Create empty slot"), None))
  			if SystemInfo["HasH9SD"]:
@@ -143,7 +142,7 @@ class VIXMenu(Screen, ProtectedScreen):
 					self.session.open(MultiBoot, self.menu_path)
 				elif currentEntry == "H9SDcard manager":
 					from H9SDmanager import H9SDmanager
-					self.session.open(H9SDmanager self.menu_path)
+					self.session.open(H9SDmanager, self.menu_path)
 				elif currentEntry == "ipkg-install":
 					from IPKInstaller import VIXIPKInstaller
 					self.session.open(VIXIPKInstaller, self.menu_path)
