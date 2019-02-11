@@ -24,8 +24,6 @@ Makefile
 etc/Makefile
 etc/cron/Makefile
 etc/cron/crontabs/Makefile
-H9/Makefile
-H9/H9script/Makefile
 po/Makefile
 src/Makefile
 src/images/Makefile
