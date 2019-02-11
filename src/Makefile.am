@@ -5,6 +5,5 @@ install_PYTHON = *.py
 
 install_DATA = *.png \
 		*.xml \
-		*.bin \
 		LICENSE \
 		maintainer.info
