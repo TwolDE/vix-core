@@ -1001,10 +1001,15 @@ class ImageBackup(Screen):
 			output.write('vol_flags=autoresize\n')
 			output.close()
 			self.commands.append('mount --bind / %s/root' % self.TMPDIR)
-			self.commands.append('touch %s/root.ubi' % self.WORKDIR)
-			self.commands.append('mkfs.ubifs -r %s/root -o %s/root.ubi %s' % (self.TMPDIR, self.WORKDIR, MKUBIFS_ARGS))
-			self.commands.append('ubinize -o %s/rootfs.ubifs %s %s/ubinize.cfg' % (self.WORKDIR, UBINIZE_ARGS, self.WORKDIR))
-			if getMachineBuild()  in ("h9","i55plus"):
+			if getMachineBuild() in ("h9"):
+				z = open('/proc/cmdline', 'r').read()
+				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
+					self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root --exclude=/var/nmbd/* ." % (self.WORKDIR, self.TMPDIR))
+					self.commands.append("/usr/bin/bzip2 %s/rootfs.tar" % self.WORKDIR)
+				else:
+					self.commands.append('touch %s/root.ubi' % self.WORKDIR)
+					self.commands.append('mkfs.ubifs -r %s/root -o %s/root.ubi %s' % (self.TMPDIR, self.WORKDIR, MKUBIFS_ARGS))
+					self.commands.append('ubinize -o %s/rootfs.ubifs %s %s/ubinize.cfg' % (self.WORKDIR, UBINIZE_ARGS, self.WORKDIR))
 				self.commands.append('echo " "')
 				self.commands.append('echo "' + _("Create:") + " fastboot dump" + '"')
 				self.commands.append("dd if=/dev/mtd0 of=%s/fastboot.bin" % self.WORKDIR)
@@ -1221,12 +1226,20 @@ class ImageBackup(Screen):
 		if 'octagonemmc' in getImageFileSystem():
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST2, self.EMMCIMG))
 			move('%s/%s' %(self.WORKDIR, "emmc_partitions.xml"), '%s/%s' %(self.MAINDEST, "emmc_partitions.xml"))
-		move('%s/rootfs.%s' % (self.WORKDIR, self.ROOTFSTYPE), '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
 
 		if self.KERNELFSTYPE == 'bin' and path.exists('%s/vmlinux.bin' % self.WORKDIR):
 			move('%s/vmlinux.bin' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
 		else:
 			move('%s/vmlinux.gz' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
+
+		if getMachineBuild() in ("h9"):
+			z = open('/proc/cmdline', 'r').read()
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
+				move('%s/rootfs.tar.bz2' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
+			else:
+				move('%s/rootfs.%s' % (self.WORKDIR, self.ROOTFSTYPE), '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
+		else:
+			move('%s/rootfs.%s' % (self.WORKDIR, self.ROOTFSTYPE), '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
 
 		if getMachineBuild() in ("gb7252"):
 			move('%s/%s' % (self.WORKDIR, self.GB4Kbin), '%s/%s' % (self.MAINDEST, self.GB4Kbin))
@@ -1234,7 +1247,7 @@ class ImageBackup(Screen):
 			system('cp -f /usr/share/gpt.bin %s/gpt.bin' %(self.MAINDEST))
 			print '[ImageManager] Stage5: Create: gpt.bin:',self.MODEL
 
-		if getMachineBuild() in ("h9","i55plus"):
+		if getMachineBuild() in ("h9"):
 			system('mv %s/fastboot.bin %s/fastboot.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/pq_param.bin %s/pq_param.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/bootargs.bin %s/bootargs.bin' %(self.WORKDIR, self.MAINDEST))
