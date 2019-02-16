@@ -746,7 +746,7 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
-		elif 'octagonemmc' in getImageFileSystem():				# SF8008, GB trio 4K
+		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc'):		# SF8008, GB trio 4K
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
@@ -1130,8 +1130,8 @@ class ImageBackup(Screen):
 			self.commandMB.append('dd if=/dev/%s of=%s seek=1 bs=%s' % (self.MTDROOTFS, EMMC_IMAGE, ROOTFS_IMAGE_BS ))
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
 
-		elif 'octagonemmc' in getImageFileSystem():
-			print '[ImageManager] sf8008: Making emmc_partitions.xml'
+		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc'):
+			print '[ImageManager] /Trio4K sf8008: Making emmc_partitions.xml'
 			f = open("%s/emmc_partitions.xml" %self.WORKDIR, "w")
 			f.write('<?xml version="1.0" encoding="GB2312" ?>\n')
 			f.write('<Partition_Info>\n')
@@ -1147,7 +1147,7 @@ class ImageBackup(Screen):
 			f.write('<Part Sel="1" PartitionName="rootfs" FlashType="emmc" FileSystem="ext3/4" Start="98M" Length="7000M" SelectFile="rootfs.ext4"/>\n')
 			f.write('</Partition_Info>\n')
 			f.close()
-			print '[ImageManager] sf8008: Executing', '/usr/bin/mkupdate -s 00000003-00000001-01010101 -f %s/emmc_partitions.xml -d %s/%s' % (self.WORKDIR,self.WORKDIR,self.EMMCIMG) 
+			print '[ImageManager] Trio4K sf8008: Executing', '/usr/bin/mkupdate -s 00000003-00000001-01010101 -f %s/emmc_partitions.xml -d %s/%s' % (self.WORKDIR,self.WORKDIR,self.EMMCIMG) 
 			self.commandMB.append('echo " "')
 			self.commandMB.append('echo "Create: fastboot dump"')
 			self.commandMB.append("dd if=/dev/mmcblk0p1 of=%s/fastboot.bin" % self.WORKDIR)
@@ -1170,7 +1170,7 @@ class ImageBackup(Screen):
 			self.commandMB.append("dd if=/dev/zero of=%s/rootfs.ext4 seek=524288 count=0 bs=1024" % (self.WORKDIR))
 			self.commandMB.append("mkfs.ext4 -F -i 4096 %s/rootfs.ext4 -d %s/root" %(self.WORKDIR, self.TMPDIR))
 			self.commandMB.append('echo " "')
-			self.commandMB.append('echo "Create: Sf8008 Recovery Fullbackup %s"'% (self.EMMCIMG))
+			self.commandMB.append('echo "Create: Trio4K Sf8008 Recovery Fullbackup %s"'% (self.EMMCIMG))
 			self.commandMB.append('echo " "')
 			self.commandMB.append('/usr/sbin/mkupdate -s 00000003-00000001-01010101 -f %s/emmc_partitions.xml -d %s/%s' % (self.WORKDIR,self.WORKDIR,self.EMMCIMG))
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
@@ -1223,7 +1223,7 @@ class ImageBackup(Screen):
 		if self.ROOTDEVTYPE in ('hdemmc', 'emmcimg') and path.exists('%s/%s' % (self.WORKDIR, self.EMMCIMG)):
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST, self.EMMCIMG))
 
-		if 'octagonemmc' in getImageFileSystem():
+		if getImageFileSystem() in ('octagonemmc', 'gigablueemmc'):
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST2, self.EMMCIMG))
 			move('%s/%s' %(self.WORKDIR, "emmc_partitions.xml"), '%s/%s' %(self.MAINDEST, "emmc_partitions.xml"))
 
@@ -1437,7 +1437,8 @@ class ImageManagerDownload(Screen):
 				'gbquad'          : 'GiGaBlue-HD-QUAD',
 				'gbquadplus'      : 'GiGaBlue-HD-QUAD-PLUS',
 				'gbquad4k'	  : 'gbquad4k',	
-				'gbue4k'          : 'gbue4k',				
+				'gbue4k'          : 'gbue4k',
+				'gbmv200' 	  : 'GiGaBlue-Trio-4K',				
 				'gbultraue'       : 'GiGaBlue-HD-ULTRA-UE',
 				'gbx1'            : 'GiGaBlue-HD-X1',
 				'gbx2'            : 'GiGaBlue-HD-X2',
