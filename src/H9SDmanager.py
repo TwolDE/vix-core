@@ -56,16 +56,17 @@ class H9SDmanager(Screen):
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
 		self.title = screentitle
-		self["labe14"] = StaticText(_("Press Init to move Nand root to SDcard/USB."))
-		self["labe15"] = StaticText("")
-		self["key_red"] = StaticText(_("Cancel"))
+		self["labe14"] = StaticText(_("Press appropiate Init to move Nand root to SDcard or USB."))
+		self["key_red"] = StaticText(_("Reboot"))
 		self["key_green"] = StaticText(_("Init SDcard"))
 		self["key_yellow"] = StaticText(_("Init USB/SDA1"))
-		self["actions"] = ActionMap(["ColorActions"],
+		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"],
 		{
-			"red": boundFunction(self.close, None),
+			"red": self.reboot,
 			"green": self.SDInit,
 			"yellow": self.USBInit,
+			"ok": boundFunction(self.close, None),
+			"cancel": boundFunction(self.close, None),
 		}, -1)
 		self.onLayoutFinish.append(self.layoutFinished)
 
@@ -93,6 +94,9 @@ class H9SDmanager(Screen):
 			self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
 		else:
 			self.close()
+
+	def reboot(self):
+		self.session.open(TryQuitMainloop, 2)
 
 	def USBInit(self):
 			self.TITLE = _("Init Zgemma H9 USB/SDA1 - please reboot after use.")
