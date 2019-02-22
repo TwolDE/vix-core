@@ -7,6 +7,7 @@ from time import localtime, time, strftime, mktime
 from enigma import eTimer, fbClass
 
 from . import _, PluginLanguageDomain
+import Tools.CopyFiles
 import Components.Task
 from Components.ActionMap import ActionMap
 from Components.Label import Label
@@ -25,7 +26,6 @@ from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
 from Tools.Directories import pathExists
-import Tools.CopyFiles
 from Tools.Multiboot import GetImagelist, GetCurrentImage
 
 import urllib
@@ -53,6 +53,9 @@ config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
 config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
+config.imagemanager.imagefeed_twol = ConfigText(default="http://192.168.0.171/openvix-builds/", fixed_size=False)
+config.imagemanager.imagefeed_ViX = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
+config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/6.2/", fixed_size=False)
 
 autoImageManagerTimer = None
 
@@ -282,7 +285,19 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
 
 	def doDownload(self):
-		self.session.openWithCallback(self.populate_List, ImageManagerDownload, self.menu_path, self.BackupDirectory)
+		self.urli = 'http://192.168.0.171/openvix-builds/'
+		choices = [("OpenTwol", 1), ("OpenViX", 2), ("OpenATV", 3)]
+		self.message = _("Do you want to change download url")
+		self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=choices, default=1, simple=True)
+
+	def doDownload2(self, retval):
+		if retval:
+			print "[ImageManager][retval] %s is retval" % retval
+			retvalx = int(retval) 
+			urlchoices = [config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value]
+			self.urli = urlchoices[retvalx]
+			print "[ImageManager][download urli choice] %s is download passed url for image." % self.urli
+			self.session.openWithCallback(self.populate_List, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
 
 	def setupDone(self, test=None):
 		if config.imagemanager.folderprefix.value == '':
@@ -1367,7 +1382,7 @@ class ImageManagerDownload(Screen):
 		</applet>
 	</screen>"""
 
-	def __init__(self, session, menu_path, BackupDirectory):
+	def __init__(self, session, menu_path, BackupDirectory, url):
 		Screen.__init__(self, session)
 		screentitle = _("Downloads")
 		if config.usage.show_menupath.value == 'large':
@@ -1381,6 +1396,7 @@ class ImageManagerDownload(Screen):
 			title = screentitle
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
+		self.urli = url
 
 		self.BackupDirectory = BackupDirectory
 		self['lab1'] = Label(_("Select an image to download:"))
@@ -1521,15 +1537,19 @@ class ImageManagerDownload(Screen):
 				'zgemmah9t'       : 'Zgemma-H9T'				
 			}
 
-			try:
-				self.boxtype = supportedMachines[getMachineMake()]
-			except:
-				self.session.open(MessageBox, _("%s" % getMachineMake()), MessageBox.TYPE_INFO, timeout=15)
-				print "[ImageManager][populate_List] the %s is not currently supported by OpenViX." % getMachineMake()
-				self.boxtype = 'UNKNOWN'
-			url = 'http://192.168.0.171/openvix-builds/'+self.boxtype+'/'
-#			print "[ImageManager][populate_List] the %s %sis not currently supported by OpenViX." % (getMachineMake(), url)
-			conn = urllib2.urlopen(url)
+			if "openatv" in self.urli:
+				self.urlb = '%s/index.php?open=%s' % (self.urli, getMachineMake())
+				print "[ImageManager][OpenATV detected 1 urlb  %s is passed url for list image." % self.urlb
+			else:
+				try:
+					self.boxtype = supportedMachines[getMachineMake()]
+				except:
+					self.session.open(MessageBox, _("%s" % getMachineMake()), MessageBox.TYPE_INFO, timeout=15)
+					print "[ImageManager][populate_List] the %s is not currently supported by OpenViX." % getMachineMake()
+					self.boxtype = 'UNKNOWN'
+				self.urlb = self.urli+self.boxtype+'/'
+
+			conn = urllib2.urlopen(self.urlb)
 			html = conn.read()
 
 			soup = BeautifulSoup(html)
@@ -1564,9 +1584,19 @@ class ImageManagerDownload(Screen):
 
 	def doDownload(self, answer):
 		if answer is True:
+			import urllib2
 			selectedimage = self['list'].getCurrent()
-			fileurl = 'http://192.168.0.171/openvix-builds/%s/%s' % (self.boxtype, selectedimage)
-			fileloc = self.BackupDirectory + selectedimage
+			if "openatv" in self.urli:
+				self.urlb = self.urli
+				print "[ImageManager][OpenATV detected 2 urlb  %s is passed url for list image." % self.urlb
+				url = self.urlb + selectedimage
+				selimage = selectedimage.split("/")[1]
+				fileloc = self.BackupDirectory + selimage
+				fileurl = url
+			else:
+				fileurl = self.urlb + selectedimage
+				print "[ImageManager][url plus boxtype] %s is passed url for image." % fileurl
+				fileloc = self.BackupDirectory + selectedimage
 			Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
 			for job in Components.Task.job_manager.getPendingJobs():
 				if job.name.startswith(_("Downloading")):
