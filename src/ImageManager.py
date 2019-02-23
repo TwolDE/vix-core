@@ -25,7 +25,7 @@ from Screens.TaskView import JobView
 from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
 from Tools.Notifications import AddPopupWithCallback
-from Tools.Directories import pathExists, fileHas
+from Tools.Directories import pathExists, fileHas, fileExists
 from Tools.Multiboot import GetImagelist, GetCurrentImage
 
 import urllib
@@ -247,8 +247,6 @@ class VIXImageManager(Screen):
 										  }, -1)
 
 			if SystemInfo["HasH9SD"]:
-				x = fileHas("/proc/cmdline", "root=/dev/mmcblk0p1")
-				print "[ImageManager] HasH9Sd FileHas %s" %x 
  				if fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True:
 					print "[ImageManager] HasH9Sd and mmc in boot" 
 					self["key_blue"].setText("")
@@ -500,13 +498,11 @@ class VIXImageManager(Screen):
 					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
  			elif SystemInfo["HasHiSi"]:
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
-			elif getMachineBuild() in ("h9"):
-				z = open('/proc/cmdline', 'r').read()
-				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
-					print '[ImageManager] H9 root kernel %s %s:' %(self.MTDROOTFS, self.MTDKERNEL)
+			elif SystemInfo["HasH9SD"] and fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True: 
+				if fileExists("%s/H9/rootfs.ubi" %MAINDEST):
 					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % MAINDEST
 				else:
-					CMD = "/usr/bin/ofgwrite -k -r '%s'" % MAINDEST
+					self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("Zgemma H9 unable to restore H9 ubi root to SDcard"), MessageBox.TYPE_INFO, timeout=20)
 			else:
 				CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST
 		else:
