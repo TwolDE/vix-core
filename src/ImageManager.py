@@ -247,7 +247,7 @@ class VIXImageManager(Screen):
 										  }, -1)
 
 			if SystemInfo["HasH9SD"]:
- 				if fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True:
+ 				if fileHas("/proc/cmdline", "root=/dev/mmcblk0px") is True:		# dummy this for my system
 					print "[ImageManager] HasH9Sd and mmc in boot" 
 					self["key_blue"].setText("")
 					self["key_blue"].show()
@@ -490,6 +490,7 @@ class VIXImageManager(Screen):
 
 	def keyRestore6(self,ret):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
+		CMD = " "
 		if ret == 0:
 			if SystemInfo["canMultiBoot"]:
  				if SystemInfo["HasSDmmc"]:
@@ -499,7 +500,7 @@ class VIXImageManager(Screen):
  			elif SystemInfo["HasHiSi"]:
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 			elif SystemInfo["HasH9SD"] and fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True: 
-				if fileExists("%s/H9/rootfs.ubi" %MAINDEST):
+				if fileExists("%s/rootfs.tar.bz2" %MAINDEST):
 					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % MAINDEST
 				else:
 					self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("Zgemma H9 unable to restore H9 ubi root to SDcard"), MessageBox.TYPE_INFO, timeout=20)
@@ -508,9 +509,12 @@ class VIXImageManager(Screen):
 		else:
 			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)
 		config.imagemanager.restoreimage.setValue(self.sel)
-		print '[ImageManager] running commnd:',CMD
-		self.Console.ePopen(CMD, self.ofgwriteResult)
-		fbClass.getInstance().lock()
+		if CMD == " ":
+			self.close()
+		else:
+			print '[ImageManager] running commnd:',CMD
+			self.Console.ePopen(CMD, self.ofgwriteResult)
+			fbClass.getInstance().lock()
 
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
