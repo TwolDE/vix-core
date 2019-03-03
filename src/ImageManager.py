@@ -3,6 +3,7 @@ from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersio
 from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
 from shutil import rmtree, move, copy, copyfile
 from time import localtime, time, strftime, mktime
+import urllib
 
 from enigma import eTimer, fbClass
 
@@ -10,25 +11,27 @@ from . import _, PluginLanguageDomain
 import Tools.CopyFiles
 import Components.Task
 from Components.ActionMap import ActionMap
-from Components.Label import Label
 from Components.Button import Button
-from Components.MenuList import MenuList
+from Components.ChoiceList import ChoiceList, ChoiceEntryComponent
 from Components.config import config, ConfigSubsection, ConfigYesNo, ConfigSelection, ConfigText, ConfigNumber, NoSave, ConfigClock
+from Components.Console import Console
 from Components.Harddisk import harddiskmanager, getProcMounts
+from Components.Label import Label
+from Components.MenuList import MenuList
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
+from Screens.Console import Console as ScreenConsole
+from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Screens.Setup import Setup
-from Components.Console import Console
-from Screens.Console import Console as ScreenConsole
-from Screens.TaskView import JobView
-from Screens.MessageBox import MessageBox
 from Screens.Standby import TryQuitMainloop
-from Tools.Notifications import AddPopupWithCallback
+from Screens.TaskView import JobView
+from Tools.BoundFunction import boundFunction
 from Tools.Directories import pathExists, fileHas, fileExists
+from Tools.HardwareInfo import HardwareInfo
 from Tools.Multiboot import GetImagelist, GetCurrentImage
-
-import urllib
+from Tools.Notifications import AddPopupWithCallback
+from Tools.HardwareInfo import HardwareInfo
 
 RAMCHEKFAILEDID = 'RamCheckFailedNotification'
 
@@ -56,6 +59,7 @@ config.imagemanager.number_to_keep = ConfigNumber(default=0)
 config.imagemanager.imagefeed_twol = ConfigText(default="http://192.168.0.171/openvix-builds/", fixed_size=False)
 config.imagemanager.imagefeed_ViX = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
 config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/6.2/", fixed_size=False)
+config.imagemanager.imagefeed_Pli = ConfigText(default="https://openpli.org/download/", fixed_size=False)
 
 autoImageManagerTimer = None
 
@@ -239,11 +243,11 @@ class VIXImageManager(Screen):
 										  'cancel': self.close,
 										  'red': self.keyDelete,
 										  'green': self.GreenPressed,
-										  'yellow': self.doDownload,
+										  'yellow': self.doDownLoad,
 										  "menu": self.createSetup,
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
-										  "displayHelp": self.doDownload,
+										  "displayHelp": self.doDownLoad,
 										  }, -1)
 
 			if SystemInfo["HasH9SD"]:
@@ -284,9 +288,9 @@ class VIXImageManager(Screen):
 	def createSetup(self):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
 
-	def doDownload(self):
+	def doDownLoad(self):
 		self.urli = 'http://192.168.0.171/openvix-builds/'
-		choices = [("OpenTwol", 1), ("OpenViX", 2), ("OpenATV", 3)]
+		choices = [("OpenTwol", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4)]
 		self.message = _("Do you want to change download url")
 		self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=choices, default=1, simple=True)
 
@@ -294,10 +298,9 @@ class VIXImageManager(Screen):
 		if retval:
 			print "[ImageManager][retval] %s is retval" % retval
 			retvalx = int(retval) 
-			urlchoices = [config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value]
+			urlchoices = [config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value]
 			self.urli = urlchoices[retvalx]
-			print "[ImageManager][download urli choice] %s is download passed url for image." % self.urli
-			self.session.openWithCallback(self.populate_List, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
+			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
 
 	def setupDone(self, test=None):
 		if config.imagemanager.folderprefix.value == '':
@@ -1398,41 +1401,52 @@ class ImageManagerDownload(Screen):
 			title = screentitle
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
+		self.Pli = False
 		self.urli = url
-
+		import urllib2, json
 		self.BackupDirectory = BackupDirectory
 		self['lab1'] = Label(_("Select an image to download:"))
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Download"))
+		self.Downlist = []
+		self.jsonlist = {}
+		self.imagesList = {}
+		self.setIndex = 0
+		self.expanded = []
+		if "pli" in self.urli:
+			self.Pli = True
+			self["list"] = ChoiceList(list=[ChoiceEntryComponent('',((_("Retrieving image list - Please wait...")), "Waiter"))])
+		else:
+			self['list'] = MenuList(self.Downlist)
+		self['ImageDown'] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "KeyboardInputActions", "MenuActions"],
+									  {
+										'cancel': self.close,
+										'red': self.close,
+										'green': self.keyDownload,
+										'ok': self.keyDownload,
+										"up": self.keyUp,
+										"down": self.keyDown,
+										"left": self.keyLeft,
+										"right": self.keyRight,
+										"upRepeated": self.keyUp,
+										"downRepeated": self.keyDown,
+										"leftRepeated": self.keyLeft,
+										"rightRepeated": self.keyRight,
+										"menu": self.close,
+									  }, -1)
+		if self.Pli:
+			self.delay = eTimer()
+			self.delay.callback.append(self.getImagesList)
+			self.delay.start(0, True)
+		else:
+			self.populate_DownList()
 
-		self.onChangedEntry = []
-		self.emlist = []
-		self['list'] = MenuList(self.emlist)
-		self.populate_List()
 
-		if not self.selectionChanged in self["list"].onSelectionChanged:
-			self["list"].onSelectionChanged.append(self.selectionChanged)
-
-	def selectionChanged(self):
-		for x in self.onChangedEntry:
-			x()
-
-	def populate_List(self):
+	def populate_DownList(self):
 		try:
-			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
-										  {
-										  'cancel': self.close,
-										  'red': self.close,
-										  'green': self.keyDownload,
-										  'ok': self.keyDownload,
-										  }, -1)
-
 			if not path.exists(self.BackupDirectory):
 				mkdir(self.BackupDirectory, 0755)
-
-			import urllib2
 			from bs4 import BeautifulSoup
-
 			supportedMachines = {
 				'axodinc'         : 'Opticum-AX-ODIN-DVBC-1',
 				'dinobot4kmini'   : 'dinobot4kmini',
@@ -1539,9 +1553,8 @@ class ImageManagerDownload(Screen):
 				'zgemmah9t'       : 'Zgemma-H9T'				
 			}
 
-			if "openatv" in self.urli:
+			if "atv" in self.urli:
 				self.urlb = '%s/index.php?open=%s' % (self.urli, getMachineMake())
-				print "[ImageManager][OpenATV detected 1 urlb  %s is passed url for list image." % self.urlb
 			else:
 				try:
 					self.boxtype = supportedMachines[getMachineMake()]
@@ -1557,48 +1570,127 @@ class ImageManagerDownload(Screen):
 			soup = BeautifulSoup(html)
 			links = soup.find_all('a')
 
-			del self.emlist[:]
+			del self.Downlist[:]
 			for tag in links:
 				link = tag.get('href',None)
 				if link != None and link.endswith('zip') and link.find(getMachineMake()) != -1:
-					self.emlist.append(str(link))
+					self.Downlist.append(str(link))
 
-			self.emlist.sort()
-			self.emlist.reverse()
+			self.Downlist.sort()
+			self.Downlist.reverse()
 		except:
-			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
+			self['ImageDown'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
 										  {
 										  'cancel': self.close,
 										  'red': self.close,
 										  }, -1)
-			self.emlist.append(" ")
-			self["list"].setList(self.emlist)
+			self.Downlist.append(" ")
+			self["list"].setList(self.Downlist)
 			self["list"].show()
 
-	def keyDownload(self):
-		self.sel = self['list'].getCurrent()
-		if self.sel:
-			message = _("Are you sure you want to download this image:\n ") + self.sel
-			ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_("Download confirmation"))
+	def getImagesList(self):
+		model = HardwareInfo().get_device_name()
+		print "[ImageManager][imagelist] model %s " %model
+		list = []
+		if not self.imagesList:
+			if not self.jsonlist:
+				try:
+					self.jsonlist = dict(json.load(urllib2.urlopen('http://downloads.openpli.org/json/%s' % model)))
+				except:
+					pass
+			self.imagesList = self.jsonlist
+		for catagorie in reversed(sorted(self.imagesList.keys())):
+			if catagorie in self.expanded:
+				list.append(ChoiceEntryComponent('expanded',((str(catagorie)), "Expander")))
+				for image in reversed(sorted(self.imagesList[catagorie].keys())):
+					list.append(ChoiceEntryComponent('verticalline',((str(self.imagesList[catagorie][image]['name'])), str(self.imagesList[catagorie][image]['link']))))
+			else:
+				for image in self.imagesList[catagorie].keys():
+					list.append(ChoiceEntryComponent('expandable',((str(catagorie)), "Expander")))
+					break
+		if list:
+			self["list"].setList(list)
+			if self.setIndex:
+				self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
+				if self["list"].l.getCurrentSelection()[0][1] == "Expander":
+					self.setIndex -= 1
+					if self.setIndex:
+						self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
+				self.setIndex = 0
+			self.selectionChanged()
 		else:
-			self.session.open(MessageBox, _("There is no image to download."), MessageBox.TYPE_INFO, timeout=10)
+			self.session.openWithCallback(self.close, MessageBox, _("Cannot find images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
+
+	def selectionChanged(self):
+		currentSelected = self["list"].l.getCurrentSelection()
+		if self.Pli:
+			if currentSelected[0][1] == "Waiter":
+				self["key_green"].setText("")
+			else:
+				if currentSelected[0][1] == "Expander":
+					self["key_green"].setText(_("Compress") if currentSelected[0][0] in self.expanded else _("Expand"))
+				else:
+					self["key_green"].setText(_("DownLoad"))
+
+	def keyLeft(self):
+		self["list"].instance.moveSelection(self["list"].instance.pageUp)
+		self.selectionChanged()
+
+	def keyRight(self):
+		self["list"].instance.moveSelection(self["list"].instance.pageDown)
+		self.selectionChanged()
+
+	def keyUp(self):
+		self["list"].instance.moveSelection(self["list"].instance.moveUp)
+		self.selectionChanged()
+
+	def keyDown(self):
+		self["list"].instance.moveSelection(self["list"].instance.moveDown)
+		self.selectionChanged()
+
+	def keyDownload(self):
+		if self.Pli:
+			currentSelected = self["list"].l.getCurrentSelection()
+			if currentSelected[0][1] == "Expander":
+				if currentSelected[0][0] in self.expanded:
+					self.expanded.remove(currentSelected[0][0])
+				else:
+					self.expanded.append(currentSelected[0][0])
+				self.getImagesList()
+			elif currentSelected[0][1] != "Waiter":
+				self.sel = currentSelected[0][0]
+				if self.sel:
+					message = _("Are you sure you want to download this image:\n ") + self.sel
+					ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
+					ybox.setTitle(_("Download confirmation"))
+				else:
+					self.session.open(MessageBox, _("There is no image to download."), MessageBox.TYPE_INFO, timeout=10)
+		else:
+			self.sel = self['list'].getCurrent()
+			if self.sel:
+				message = _("Are you sure you want to download this image:\n ") + self.sel
+				ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
+				ybox.setTitle(_("Download confirmation"))
+			else:
+				self.session.open(MessageBox, _("There is no image to download."), MessageBox.TYPE_INFO, timeout=10)
 
 	def doDownload(self, answer):
 		if answer is True:
-			import urllib2
 			selectedimage = self['list'].getCurrent()
-			if "openatv" in self.urli:
-				self.urlb = self.urli
-				print "[ImageManager][OpenATV detected 2 urlb  %s is passed url for list image." % self.urlb
-				url = self.urlb + selectedimage
-				selimage = selectedimage.split("/")[1]
-				fileloc = self.BackupDirectory + selimage
-				fileurl = url
+			if self.Pli:
+				currentSelected = self["list"].l.getCurrentSelection()
+				selectedimage = currentSelected[0][0]
+				fileurl = currentSelected[0][1]
+				fileloc = self.BackupDirectory + selectedimage
+				print "[ImageManager][OpenPli] detected %s is passed url for list image." % fileurl
+			elif "atv" in self.urli:
+				fileloc = self.BackupDirectory + selectedimage.split("/")[1]
+				fileurl = self.urli + selectedimage
+				print "[ImageManager][OpenATV] detected %s is passed url for list image." % fileurl
 			else:
+				fileloc = self.BackupDirectory + selectedimage
 				fileurl = self.urlb + selectedimage
 				print "[ImageManager][url plus boxtype] %s is passed url for image." % fileurl
-				fileloc = self.BackupDirectory + selectedimage
 			Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
 			for job in Components.Task.job_manager.getPendingJobs():
 				if job.name.startswith(_("Downloading")):
@@ -1611,7 +1703,3 @@ class ImageManagerDownload(Screen):
 
 	def JobViewCB(self, in_background):
 		Components.Task.job_manager.in_background = in_background
-
-	def myclose(self, result, retval, extra_args):
-		remove(self.BackupDirectory + self.selectedimage)
-		self.close()
