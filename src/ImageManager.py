@@ -766,7 +766,7 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
-		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc'):		# SF8008, GB trio 4K
+		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc', 'beyonwizemmc'):		# SF8008, GB trio 4K
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
@@ -1150,8 +1150,8 @@ class ImageBackup(Screen):
 			self.commandMB.append('dd if=/dev/%s of=%s seek=1 bs=%s' % (self.MTDROOTFS, EMMC_IMAGE, ROOTFS_IMAGE_BS ))
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
 
-		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc'):
-			print '[ImageManager] /Trio4K sf8008: Making emmc_partitions.xml'
+		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc', 'beyonwizemmc'):
+			print '[ImageManager] Trio4K sf8008 bewonwiz: Making emmc_partitions.xml'
 			f = open("%s/emmc_partitions.xml" %self.WORKDIR, "w")
 			f.write('<?xml version="1.0" encoding="GB2312" ?>\n')
 			f.write('<Partition_Info>\n')
@@ -1190,7 +1190,7 @@ class ImageBackup(Screen):
 			self.commandMB.append("dd if=/dev/zero of=%s/rootfs.ext4 seek=524288 count=0 bs=1024" % (self.WORKDIR))
 			self.commandMB.append("mkfs.ext4 -F -i 4096 %s/rootfs.ext4 -d %s/root" %(self.WORKDIR, self.TMPDIR))
 			self.commandMB.append('echo " "')
-			self.commandMB.append('echo "Create: Trio4K Sf8008 Recovery Fullbackup %s"'% (self.EMMCIMG))
+			self.commandMB.append('echo "Create: Trio4K Sf8008 Bewonwiz Recovery Fullbackup %s"'% (self.EMMCIMG))
 			self.commandMB.append('echo " "')
 			self.commandMB.append('/usr/sbin/mkupdate -s 00000003-00000001-01010101 -f %s/emmc_partitions.xml -d %s/%s' % (self.WORKDIR,self.WORKDIR,self.EMMCIMG))
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
@@ -1299,7 +1299,7 @@ class ImageBackup(Screen):
 				line = "rename this file to 'force' to force an update without confirmation"
 				fileout.write(line)
 				fileout.close()
-			if getBrandOEM() in ('octagon') and SystemInfo["HasSDmmc"] and self.KERN == "mmc":
+			if getBrandOEM() in ('octagon', 'gigablue', 'beyonwiz') and SystemInfo["HasSDmmc"] and self.KERN == "mmc":
 				fileout = open(self.MAINDEST + '/SDAbackup', 'w')
 				line = "SF8008 indicate type of backup %s" %self.KERN
 				fileout.write(line)
