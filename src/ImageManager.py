@@ -258,14 +258,14 @@ class VIXImageManager(Screen):
 					pass
 				else:
 					print "[ImageManager] HasH9Sd and not MMC in boot" 
-					self['restoreaction'] = ActionMap(['ColorActions', 'OkCancelActions'],
+					self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions'],
 												  {
 												  "ok": self.keyRestore,
 												  'blue': self.keyRestore,
 												  }, -1)
 			else:
 				print "[ImageManager] Not HasH9Sd" 
-				self['restoreaction'] = ActionMap(['ColorActions', 'OkCancelActions'],
+				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions'],
 										  {
 										  "ok": self.keyRestore,
 										  'blue': self.keyRestore,
