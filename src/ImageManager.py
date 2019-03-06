@@ -3,7 +3,7 @@ from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersio
 from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
 from shutil import rmtree, move, copy, copyfile
 from time import localtime, time, strftime, mktime
-import urllib
+import urllib, urllib2, json
 
 from enigma import eTimer, fbClass
 
@@ -258,14 +258,14 @@ class VIXImageManager(Screen):
 					pass
 				else:
 					print "[ImageManager] HasH9Sd and not MMC in boot" 
-					self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions'],
+					self['restoreaction'] = ActionMap(['ColorActions', 'OkCancelActions'],
 												  {
 												  "ok": self.keyRestore,
 												  'blue': self.keyRestore,
 												  }, -1)
 			else:
 				print "[ImageManager] Not HasH9Sd" 
-				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions'],
+				self['restoreaction'] = ActionMap(['ColorActions', 'OkCancelActions'],
 										  {
 										  "ok": self.keyRestore,
 										  'blue': self.keyRestore,
@@ -1403,7 +1403,6 @@ class ImageManagerDownload(Screen):
 		Screen.setTitle(self, title)
 		self.Pli = False
 		self.urli = url
-		import urllib2, json
 		self.BackupDirectory = BackupDirectory
 		self['lab1'] = Label(_("Select an image to download:"))
 		self["key_red"] = Button(_("Close"))
