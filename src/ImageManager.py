@@ -185,7 +185,7 @@ class VIXImageManager(Screen):
 		else:
 			self["key_green"].setText(_("New backup"))
 		self.activityTimer.startLongTimer(5)
-		self.populate_List()
+		self.refreshList()
 
 	def refreshUp(self):
 		self["list"].instance.moveSelection(self["list"].instance.moveUp)
@@ -236,7 +236,7 @@ class VIXImageManager(Screen):
 											  'cancel': self.close,
 											  "menu": self.createSetup,
 											  }, -1)
-			self['lab1'].setText(_("Device: None available") + "\n" + _("Select an image to flash:"))
+			self['lab1'].setText(_("Device: None available") + "\n" + _("Select a storage device:"))
 		else:
 			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 										  {
@@ -274,16 +274,6 @@ class VIXImageManager(Screen):
 			s = statvfs(config.imagemanager.backuplocation.value)
 			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
 			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Select an image to flash:"))
-
-			try:
-				if not path.exists(self.BackupDirectory):
-					mkdir(self.BackupDirectory, 0755)
-				if path.exists(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup'):
-					system('swapoff ' + self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
-					remove(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
-				self.refreshList()
-			except:
-				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("There is a problem with this device. Please reformat it and try again."))
 
 	def createSetup(self):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
@@ -335,7 +325,7 @@ class VIXImageManager(Screen):
 			remove(self.BackupDirectory + self.sel)
 		else:
 			rmtree(self.BackupDirectory + self.sel)
-		self.populate_List()
+		self.refreshList()
 
 	def GreenPressed(self):
 		backup = None
@@ -1467,8 +1457,8 @@ class ImageManagerDownload(Screen):
 				'gb800ueplus'     : 'GiGaBlue-HD800UE-PLUS',
 				'gbquad'          : 'GiGaBlue-HD-QUAD',
 				'gbquadplus'      : 'GiGaBlue-HD-QUAD-PLUS',
-				'gbquad4k'	  : 'gbquad4k',	
-				'gbue4k'          : 'gbue4k',
+				'gbquad4k'        : 'GiGaBlue-UHD-QUAD-4K',
+				'gbue4k'          : 'GiGaBlue-UHD-UE-4K',
 				'gbmv200' 	  : 'GiGaBlue-Trio-4K',				
 				'gbultraue'       : 'GiGaBlue-HD-ULTRA-UE',
 				'gbx1'            : 'GiGaBlue-HD-X1',
@@ -1616,11 +1606,11 @@ class ImageManagerDownload(Screen):
 					if self.setIndex:
 						self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
 				self.setIndex = 0
-			self.selectionChanged()
+			self.SelectionChanged()
 		else:
 			self.session.openWithCallback(self.close, MessageBox, _("Cannot find images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
 
-	def selectionChanged(self):
+	def SelectionChanged(self):
 		currentSelected = self["list"].l.getCurrentSelection()
 		if self.Pli:
 			if currentSelected[0][1] == "Waiter":
@@ -1633,19 +1623,19 @@ class ImageManagerDownload(Screen):
 
 	def keyLeft(self):
 		self["list"].instance.moveSelection(self["list"].instance.pageUp)
-		self.selectionChanged()
+		self.SelectionChanged()
 
 	def keyRight(self):
 		self["list"].instance.moveSelection(self["list"].instance.pageDown)
-		self.selectionChanged()
+		self.SelectionChanged()
 
 	def keyUp(self):
 		self["list"].instance.moveSelection(self["list"].instance.moveUp)
-		self.selectionChanged()
+		self.SelectionChanged()
 
 	def keyDown(self):
 		self["list"].instance.moveSelection(self["list"].instance.moveDown)
-		self.selectionChanged()
+		self.SelectionChanged()
 
 	def keyDownload(self):
 		if self.Pli:
