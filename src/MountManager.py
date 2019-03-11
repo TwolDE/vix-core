@@ -140,6 +140,8 @@ class VIXDevicesPanel(Screen):
 				continue
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
 				continue
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
+				continue
 			if device in list2:
 				continue
 			self.buildMy_rec(device)
@@ -385,6 +387,8 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				continue
 			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):
 				print '[MountManager2] HasSDmmc %s:' %device
+				continue
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
 				continue
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
 				continue
