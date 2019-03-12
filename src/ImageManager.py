@@ -1456,7 +1456,6 @@ class ImageManagerDownload(Screen):
 
 			self.Downlist.sort()
 			self.Downlist.reverse()
-			self["list"].show()
 		except:
 			self['ImageDown'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
 										  {
