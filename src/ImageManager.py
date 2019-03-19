@@ -279,14 +279,12 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
 
 	def doDownLoad(self):
-		self.urli = 'http://192.168.0.171/openvix-builds/'
 		choices = [("OpenTwol", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4)]
 		self.message = _("Do you want to change download url")
 		self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=choices, default=1, simple=True)
 
 	def doDownload2(self, retval):
 		if retval:
-			print "[ImageManager][retval] %s is retval" % retval
 			retvalx = int(retval) 
 			urlchoices = [config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value]
 			self.urli = urlchoices[retvalx]
