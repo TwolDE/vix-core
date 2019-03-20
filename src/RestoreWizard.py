@@ -128,7 +128,10 @@ class RestoreWizard(WizardLanguage, Rc):
 
 	def buildList(self, action):
 		if self.NextStep is 'reboot':
-			quitMainloop(3)
+			print "[restorewizard.py] DEBUG 4"
+			import os
+			os.system("reboot")
+			#quitMainloop(2)
 		elif self.NextStep is 'settingsquestion' or self.NextStep is 'settingsrestore' or self.NextStep is 'pluginsquestion' or self.NextStep is 'pluginsrestoredevice' or self.NextStep is 'end' or self.NextStep is 'noplugins':
 			self.buildListfinishedCB(False)
 		elif self.NextStep is 'settingrestorestarted':
@@ -149,6 +152,7 @@ class RestoreWizard(WizardLanguage, Rc):
 				self.buildListRef.setTitle(_("Restore wizard"))
 			elif self.feeds == 'DOWN':
 				print '[RestoreWizard] Stage 6: Feeds Down'
+				print "[restorewizard.py] DEBUG 1"
 				config.misc.restorewizardrun.setValue(True)
 				config.misc.restorewizardrun.save()
 				configfile.save()
@@ -158,6 +162,7 @@ class RestoreWizard(WizardLanguage, Rc):
 				self.buildListRef.setTitle(_("Restore wizard"))
 			elif self.feeds == 'BAD':
 				print '[RestoreWizard] Stage 6: No Network'
+				print "[restorewizard.py] DEBUG 2"
 				config.misc.restorewizardrun.setValue(True)
 				config.misc.restorewizardrun.save()
 				configfile.save()
@@ -229,6 +234,7 @@ class RestoreWizard(WizardLanguage, Rc):
 	def pluginsRestore_Finished(self, result, retval, extra_args=None):
 		if result:
 			print "[RestoreWizard] opkg install result:\n", result
+		print "[restorewizard.py] DEBUG 3"
 		config.misc.restorewizardrun.setValue(True)
 		config.misc.restorewizardrun.save()
 		configfile.save()
