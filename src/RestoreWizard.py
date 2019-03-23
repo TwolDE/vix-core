@@ -128,9 +128,8 @@ class RestoreWizard(WizardLanguage, Rc):
 
 	def buildList(self, action):
 		if self.NextStep is 'reboot':
-			self.TITLE = "kill"
+			self.TITLE = "RestoreWiz kill all & reboot"
 			from Screens.Console import Console
-			print "[restorewizard.py] DEBUG 4"
 			cmdlist = ["killall -9 enigma2"]
 			exec "self.session.open(Console, title = self.TITLE, cmdlist = cmdlist)"
 		elif self.NextStep is 'settingsquestion' or self.NextStep is 'settingsrestore' or self.NextStep is 'pluginsquestion' or self.NextStep is 'pluginsrestoredevice' or self.NextStep is 'end' or self.NextStep is 'noplugins':
@@ -153,14 +152,12 @@ class RestoreWizard(WizardLanguage, Rc):
 				self.buildListRef.setTitle(_("Restore wizard"))
 			elif self.feeds == 'DOWN':
 				print '[RestoreWizard] Stage 6: Feeds Down'
-				print "[restorewizard.py] DEBUG 1"
 				self.didPluginRestore = True
 				self.NextStep = 'reboot'
 				self.buildListRef = self.session.openWithCallback(self.buildListfinishedCB, MessageBox, _("Sorry the feeds are down for maintenance. Please try using Backup manager to restore plugins later."), type=MessageBox.TYPE_INFO, timeout=30, wizard=True)
 				self.buildListRef.setTitle(_("Restore wizard"))
 			elif self.feeds == 'BAD':
 				print '[RestoreWizard] Stage 6: No Network'
-				print "[restorewizard.py] DEBUG 2"
 				self.didPluginRestore = True
 				self.NextStep = 'reboot'
 				self.buildListRef = self.session.openWithCallback(self.buildListfinishedCB, MessageBox, _("Your %s %s is not connected to the Internet. Please try using Backup manager to restore plugins later.") % (getMachineBrand(), getMachineName()), type=MessageBox.TYPE_INFO, timeout=30, wizard=True)
@@ -211,14 +208,14 @@ class RestoreWizard(WizardLanguage, Rc):
 
 	def settingRestore_Finished(self, result, retval, extra_args=None):
 		self.didSettingsRestore = True
-		eDVBDB.getInstance().reloadServicelist()
-		eDVBDB.getInstance().reloadBouquets()
-		self.session.nav.PowerTimer.loadTimer()
+#		eDVBDB.getInstance().reloadServicelist()
+#		eDVBDB.getInstance().reloadBouquets()
+#		self.session.nav.PowerTimer.loadTimer()
 # Don't check RecordTimers for conflicts. On a restore we may
 # not have the correct tuner configuration (and no USB tuners)...
-#
-		self.session.nav.RecordTimer.loadTimer(justLoad=True)
-		configfile.load()
+# So why are we restarting these and reload everything when we are just about to kill everything?
+#		self.session.nav.RecordTimer.loadTimer(justLoad=True)
+#		configfile.load()
 		# self.NextStep = 'plugindetection'
 		self.pleaseWait.close()
 		self.doRestorePlugins1()
@@ -229,7 +226,6 @@ class RestoreWizard(WizardLanguage, Rc):
 	def pluginsRestore_Finished(self, result, retval, extra_args=None):
 		if result:
 			print "[RestoreWizard] opkg install result:\n", result
-		print "[restorewizard.py] DEBUG 3"
 		self.didPluginRestore = True
 		self.NextStep = 'reboot'
 		self.buildListRef.close(True)

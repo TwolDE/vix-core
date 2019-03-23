@@ -19,10 +19,10 @@
         <item level="1" text="Automatic settings backup" description="Create a settings backup before updating.">config.imagemanager.autosettingsbackup</item>
         <item level="2" text="Backup location" description="Location of where the image backup should be saved.">config.imagemanager.backuplocation</item>
         <item level="2" text="Backup prefix" description="Allows you to tag your image backup to a box. (default is box name/type)">config.imagemanager.folderprefix</item>
-        <item level="2" text="Feed_Mine" description="Http url for my Image feeds">config.imagemanager.imagefeed.twol</item>
+        <item level="2" text="Feed_Twol" description="Http url for my Image feeds">config.imagemanager.imagefeed.twol</item>
         <item level="2" text="Feed_ViX" description="Http url for OpenViX IMage feeds">config.imagemanager.imagefeed.ViX</item>
         <item level="2" text="Feed_ATV" description="Http url for OpenATV Image feeds">config.imagemanager.imagefeed.ATV</item>
-        <item level="2" text="Feed_ATV" description="Http url for OpenATV Image feeds">config.imagemanager.imagefeed.Pli</item>
+        <item level="2" text="Feed_Pli" description="Http url for OpenPli Image feeds">config.imagemanager.imagefeed.Pli</item>
         <item level="2" text="Schedule backups" description="Allows you to schedule your image backups.">config.imagemanager.schedule</item>
         <item level="2" text="Time of backup to start" requires="config.imagemanager.schedule" description="Set the time of backup to start.">config.imagemanager.scheduletime</item>
         <item level="2" text="Repeat how often" requires="config.imagemanager.schedule" description="Set the repeat interval of backup schedule.">config.imagemanager.repeattype</item>

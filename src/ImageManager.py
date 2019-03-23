@@ -1392,7 +1392,7 @@ class ImageManagerDownload(Screen):
 		self.Pli = False
 		self.urli = url
 		self.BackupDirectory = BackupDirectory
-		self['lab1'] = Label(_("Select an image to download:"))
+		self['lab1'] = Label(_("Select an image to download for %s:" %getMachineMake()))
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Download"))
 		self.Downlist = []

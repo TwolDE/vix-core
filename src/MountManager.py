@@ -140,8 +140,6 @@ class VIXDevicesPanel(Screen):
 				continue
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
 				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
-				continue
 			if device in list2:
 				continue
 			self.buildMy_rec(device)
@@ -390,7 +388,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				continue
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
 				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p" in z and re.search('mmcblk1p1', device):
 				continue
 			if device in list2:
 				continue
@@ -411,7 +409,9 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		else:
 			device2 = re.sub('[0-9]', '', device)
 		devicetype = path.realpath('/sys/block/' + device2 + '/device')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and getMachineBuild() != 'h9')):
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  'h9' not in getMachineBuild())):
+			return
+		if  getMachineBuild() == 'h9combo' and "mmcblk0" in device:
 			return
 		d2 = device
 		name = _("HARD DISK: ")
