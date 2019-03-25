@@ -1,5 +1,5 @@
 # for localized messages
-from os import listdir, path, walk, stat, system
+from os import listdir, path, walk, stat
 from enigma import eDVBDB, quitMainloop
 from boxbranding import getMachineBrand, getMachineName, getImageDistro
 
@@ -13,6 +13,7 @@ from Screens.WizardLanguage import WizardLanguage
 from Screens.Rc import Rc
 from Screens.MessageBox import MessageBox
 from Tools.Directories import fileExists, resolveFilename, SCOPE_PLUGINS
+
 from BackupManager import isRestorableSettings, isRestorablePlugins, isRestorableKernel
 
 class RestoreWizard(WizardLanguage, Rc):
@@ -127,7 +128,10 @@ class RestoreWizard(WizardLanguage, Rc):
 
 	def buildList(self, action):
 		if self.NextStep is 'reboot':
-			system("reboot")
+			self.TITLE = "RestoreWiz kill all & reboot"
+			from Screens.Console import Console
+			cmdlist = ["killall -9 enigma2"]
+			exec "self.session.open(Console, title = self.TITLE, cmdlist = cmdlist)"
 		elif self.NextStep is 'settingsquestion' or self.NextStep is 'settingsrestore' or self.NextStep is 'pluginsquestion' or self.NextStep is 'pluginsrestoredevice' or self.NextStep is 'end' or self.NextStep is 'noplugins':
 			self.buildListfinishedCB(False)
 		elif self.NextStep is 'settingrestorestarted':
@@ -148,16 +152,12 @@ class RestoreWizard(WizardLanguage, Rc):
 				self.buildListRef.setTitle(_("Restore wizard"))
 			elif self.feeds == 'DOWN':
 				print '[RestoreWizard] Stage 6: Feeds Down'
-				config.misc.restorewizardrun.setValue(True)
-				config.misc.restorewizardrun.save()
 				self.didPluginRestore = True
 				self.NextStep = 'reboot'
 				self.buildListRef = self.session.openWithCallback(self.buildListfinishedCB, MessageBox, _("Sorry the feeds are down for maintenance. Please try using Backup manager to restore plugins later."), type=MessageBox.TYPE_INFO, timeout=30, wizard=True)
 				self.buildListRef.setTitle(_("Restore wizard"))
 			elif self.feeds == 'BAD':
 				print '[RestoreWizard] Stage 6: No Network'
-				config.misc.restorewizardrun.setValue(True)
-				config.misc.restorewizardrun.save()
 				self.didPluginRestore = True
 				self.NextStep = 'reboot'
 				self.buildListRef = self.session.openWithCallback(self.buildListfinishedCB, MessageBox, _("Your %s %s is not connected to the Internet. Please try using Backup manager to restore plugins later.") % (getMachineBrand(), getMachineName()), type=MessageBox.TYPE_INFO, timeout=30, wizard=True)
@@ -226,8 +226,6 @@ class RestoreWizard(WizardLanguage, Rc):
 	def pluginsRestore_Finished(self, result, retval, extra_args=None):
 		if result:
 			print "[RestoreWizard] opkg install result:\n", result
-		config.misc.restorewizardrun.setValue(True)
-		config.misc.restorewizardrun.save()
 		self.didPluginRestore = True
 		self.NextStep = 'reboot'
 		self.buildListRef.close(True)
