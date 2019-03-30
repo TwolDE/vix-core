@@ -754,7 +754,7 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
-		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc', 'beyonwizemmc'):		# SF8008, GB trio 4K
+		elif getImageFileSystem().replace(' ','') in ('octagonemmc', 'gigablueemmc', 'beyonwizemmc'):		# SF8008, GB trio 4K
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
@@ -764,7 +764,7 @@ class ImageBackup(Screen):
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
-		elif 'hdfastboot8gb' in getImageFileSystem():				# H9combo, HD60, HD61 receiver with multiple eMMC partitions in class
+		elif getImageFileSystem().replace(' ','') in ('hdfastboot8gb', 'fastboot8gb'):				# H9combo, HD60, HD61 receiver with multiple eMMC partitions in class
 			self.ROOTDEVTYPE = 'tar.bz2'
 			self.ROOTFSTYPE = 'tar.bz2'
 			self.KERNELFSTYPE = 'bin'
@@ -1138,7 +1138,7 @@ class ImageBackup(Screen):
 			self.commandMB.append('dd if=/dev/%s of=%s seek=1 bs=%s' % (self.MTDROOTFS, EMMC_IMAGE, ROOTFS_IMAGE_BS ))
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
 
-		elif getImageFileSystem() in ('octagonemmc', 'gigablueemmc', 'beyonwizemmc'):
+		elif getImageFileSystem().replace(' ','') in ('octagonemmc', 'gigablueemmc', 'beyonwizemmc'):
 			print '[ImageManager] Trio4K sf8008 bewonwiz: Making emmc_partitions.xml'
 			f = open("%s/emmc_partitions.xml" %self.WORKDIR, "w")
 			f.write('<?xml version="1.0" encoding="GB2312" ?>\n')
@@ -1182,7 +1182,8 @@ class ImageBackup(Screen):
 			self.commandMB.append('echo " "')
 			self.commandMB.append('/usr/sbin/mkupdate -s 00000003-00000001-01010101 -f %s/emmc_partitions.xml -d %s/%s' % (self.WORKDIR,self.WORKDIR,self.EMMCIMG))
 			self.Console.eBatch(self.commandMB, self.Stage3Complete, debug=False)
-		elif 'hdfastboot8gb' in getImageFileSystem():
+
+		elif getImageFileSystem().replace(' ','') in ('hdfastboot8gb', 'fastboot8gb'):
 			self.commandMB.append('echo " "')
 			self.commandMB.append('echo "' + _("Create:") + " fastboot dump" + '"')
 			self.commandMB.append("dd if=/dev/mmcblk0p1 of=%s/fastboot.bin" % self.WORKDIR)
@@ -1231,7 +1232,7 @@ class ImageBackup(Screen):
 		if self.ROOTDEVTYPE in ('hdemmc', 'emmcimg') and path.exists('%s/%s' % (self.WORKDIR, self.EMMCIMG)):
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST, self.EMMCIMG))
 
-		if getImageFileSystem() in ('octagonemmc', 'gigablueemmc'):
+		if getImageFileSystem().replace(' ','') in ('octagonemmc', 'gigablueemmc', 'beyonwizemmc'):
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST2, self.EMMCIMG))
 			move('%s/%s' %(self.WORKDIR, "emmc_partitions.xml"), '%s/%s' %(self.MAINDEST, "emmc_partitions.xml"))
 
@@ -1241,6 +1242,11 @@ class ImageBackup(Screen):
 			move('%s/vmlinux.gz' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
 
 		if getMachineBuild() in ("h9"):
+			system('mv %s/fastboot.bin %s/fastboot.bin' %(self.WORKDIR, self.MAINDEST))
+			system('mv %s/pq_param.bin %s/pq_param.bin' %(self.WORKDIR, self.MAINDEST))
+			system('mv %s/bootargs.bin %s/bootargs.bin' %(self.WORKDIR, self.MAINDEST))
+			system('mv %s/baseparam.bin %s/baseparam.bin' %(self.WORKDIR, self.MAINDEST))
+			system('mv %s/logo.bin %s/logo.bin' %(self.WORKDIR, self.MAINDEST))
 			z = open('/proc/cmdline', 'r').read()
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
 				move('%s/rootfs.tar.bz2' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
@@ -1255,14 +1261,7 @@ class ImageBackup(Screen):
 			system('cp -f /usr/share/gpt.bin %s/gpt.bin' %(self.MAINDEST))
 			print '[ImageManager] Stage5: Create: gpt.bin:',self.MODEL
 
-		if getMachineBuild() in ("h9"):
-			system('mv %s/fastboot.bin %s/fastboot.bin' %(self.WORKDIR, self.MAINDEST))
-			system('mv %s/pq_param.bin %s/pq_param.bin' %(self.WORKDIR, self.MAINDEST))
-			system('mv %s/bootargs.bin %s/bootargs.bin' %(self.WORKDIR, self.MAINDEST))
-			system('mv %s/baseparam.bin %s/baseparam.bin' %(self.WORKDIR, self.MAINDEST))
-			system('mv %s/logo.bin %s/logo.bin' %(self.WORKDIR, self.MAINDEST))
-
-		if 'hdfastboot8gb' in getImageFileSystem():
+		if getImageFileSystem().replace(' ','') in ('hdfastboot8gb', 'fastboot8gb'):
 			system('mv %s/baseparam.bin %s/bootoptions.bin' %(self.WORKDIR, self.MAINDEST))
 
 		fileout = open(self.MAINDEST + '/imageversion', 'w')
