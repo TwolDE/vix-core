@@ -7,7 +7,6 @@ from Components.config import config, ConfigBoolean
 from Components.Harddisk import harddiskmanager
 from BackupManager import BackupManagerautostart
 from ImageManager import ImageManagerautostart
-from IPTVcreate import IPTVcreateautostart
 from SoftcamManager import SoftcamAutostart
 from IPKInstaller import IpkgInstaller
 
