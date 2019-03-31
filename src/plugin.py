@@ -62,9 +62,9 @@ def startSetup(menuid):
 		return []
 	return [(_("ViX"), UpgradeMain, "vix_menu", 1010)]
 
-def RestoreWizard(*args, **kwargs):
-	from RestoreWizard import RestoreWizard
-	return RestoreWizard(*args, **kwargs)
+#def RestoreWizard(*args, **kwargs):
+#	from RestoreWizard import RestoreWizard
+#	return RestoreWizard(*args, **kwargs)
 
 def SoftcamManager(session):
 	from SoftcamManager import VIXSoftcamManager
@@ -106,12 +106,12 @@ def ImageMangerMenu(session, **kwargs):
 #def ImageFlashMenu(session, **kwargs):
 #	session.open(ImageFlash)
 #	
-def IPTVcreate(session):
-	from IPTVcreate import IPTVcreate
-	return IPTVcreate(session)
-
-def IPTVcreateMenu(session, **kwargs):
-	session.open(IPTVcreate)
+#def IPTVcreate(session):
+#	from IPTVcreate import IPTVcreate
+#	return IPTVcreate(session)
+#
+#def IPTVcreateMenu(session, **kwargs):
+#	session.open(IPTVcreate)
 
 def Multibootmgr(session):
 	from Multibootmgr import MultiBoot
@@ -126,8 +126,6 @@ def H9SDmanager(session):
 
 def H9SDmanagerMenu(session, **kwargs):
 	session.open(H9SDmanager)
-
-H9SDmanager
 
 def MountManager(session):
 	from MountManager import VIXDevicesPanel
@@ -164,8 +162,8 @@ def Plugins(**kwargs):
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=ImageManagerautostart))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=BackupManagerautostart))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=IPTVcreateautostart))
-	if config.misc.firstrun.value and not config.misc.restorewizardrun.value and backupAvailable == 1:
-		plist.append(PluginDescriptor(name=_("Restore wizard"), where=PluginDescriptor.WHERE_WIZARD, needsRestart=False, fnc=(3, RestoreWizard)))
+#	if config.misc.firstrun.value and not config.misc.restorewizardrun.value and backupAvailable == 1:
+#		plist.append(PluginDescriptor(name=_("Restore wizard"), where=PluginDescriptor.WHERE_WIZARD, needsRestart=False, fnc=(3, RestoreWizard)))
 	plist.append(PluginDescriptor(name=_("Ipkg"), where=PluginDescriptor.WHERE_FILESCAN, needsRestart=False, fnc=filescan))
 	plist.append(PluginDescriptor(name=_("ViX Backup manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=BackupManagerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Image manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ImageMangerMenu))

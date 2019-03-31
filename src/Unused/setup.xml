@@ -29,4 +29,27 @@
         <item level="2" text="Query before image backup starts" requires="config.imagemanager.schedule" description="Query before starting image backup.">config.imagemanager.query</item>
         <item level="2" text="Max image backups to keep (0==all)" requires="config.imagemanager.schedule" description="Backups to keep">config.imagemanager.number_to_keep</item>
     </setup>
+        <setup key="IPTVcreate" title="Create IPTV Bouquet settings" titleshort="Settings">
+        <item level="2" text="Provider" description="Host IPTV provider name">config.IPTVcreate.Provname</item>
+        <item level="2" text="Username" description="IPTV Logon Username">config.IPTVcreate.Username</item>
+        <item level="2" text="Password" description="IPTV Logon Password">config.IPTVcreate.Password</item>
+        <item level="2" text="m3u" description="m3 url prov 1">config.IPTVcreate.m3u_url</item>
+        <item level="2" text="epg" description="epg url prov 1">config.IPTVcreate.epg_url</item>
+        <item level="2" text="Provider2" description="Host IPTV provider name">config.IPTVcreate.Provname2</item>
+        <item level="2" text="Username2" description="IPTV Logon Username">config.IPTVcreate.Username2</item>
+        <item level="2" text="Password2" description="IPTV Logon Password">config.IPTVcreate.Password2</item>
+        <item level="2" text="m3u2" description="m3 url prov 2">config.IPTVcreate.m3u2_url</item>
+        <item level="2" text="epg2" description="epg url prov 2">config.IPTVcreate.epg2_url</item>
+        <item level="2" text="Picon" description="Set to download Picon">config.IPTVcreate.Picon</item>
+        <item level="2" text="PiconPath" description="Picon location">config.IPTVcreate.Piconpath</item>
+        <item level="2" text="Uninstall" description="Set to just Uninstall Bouquets">config.IPTVcreate.Uninstall</item>
+        <item level="2" text="MultiVOD" description="Create Multiple VOD Bouquets ">config.IPTVcreate.Multivod</item>
+        <item level="2" text="AllBouquet" description="Create all channels Bouquet">config.IPTVcreate.AllBouquet</item>
+        <item level="2" text="Xcludesref" description="Disable service ref overriding from override.xml file">config.IPTVcreate.Xcludesref</item>
+        <item level="2" text="IPTV Types" description="override IPTV type=1">config.IPTVcreate.iptvtypes</item>
+        <item level="2" text="AutoBoot Bouquet Update" description="Allows Auto at Boot">config.IPTVcreate.autobouquetupdateatboot</item>
+        <item level="2" text="Auto Bouquet Updates" description="Allows you schedule your backups">config.IPTVcreate.autobouquetupdate</item>
+        <item level="2" text="Frequency of Bouquet Update" requires="config.IPTVcreate.autobouquetupdate" description="Set the Bouquet Update Frequency.">config.IPTVcreate.scheduletime</item>
+        <item level="2" text="Provide Bouquet" description="Download provides Bouquet.">config.IPTVcreate.bouquetdownload</item>
+    </setup>
 </setupxml>

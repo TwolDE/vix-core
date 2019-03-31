@@ -68,6 +68,7 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("image-manager", _("ViX Image Manager"), _("Backup/Flash/ReBoot system image."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
+			self.list.append(("IPTV-manager", _("IPTV Bouquet manager"), _("Manage your IPTV Bouquets"), None))
 			if SystemInfo["canMultiBoot"]:
 				self.list.append(("multiboot manager", _("MultiBoot Manager"), _("Create empty slot"), None))
  			if SystemInfo["HasH9SD"]:
@@ -149,6 +150,15 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "script-runner":
 					from ScriptRunner import VIXScriptRunner
 					self.session.open(VIXScriptRunner, None, self.menu_path)
+				elif currentEntry == "IPTV-manager":
+					from IPTVcreate import IPTVcreate
+					self.session.open(IPTVcreate, self.menu_path)
+				elif currentEntry == "ImageFlash":
+					from ImageFlash import ImageFlash
+					self.session.open(ImageFlash, self.menu_path)
+				elif currentEntry == "ImageBackup":
+					from ImageBackup import ImageBackup
+					self.session.open(ImageBackup, self.menu_path)
 
 	def closeRecursive(self):
 		self.close(True)
