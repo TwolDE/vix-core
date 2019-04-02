@@ -1395,8 +1395,6 @@ class ImageManagerDownload(Screen):
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Download"))
 		self.Downlist = []
-		self.jsonlist = {}
-		self.imagesList = {}
 		self.setIndex = 0
 		self.expanded = []
 		if "pli" in self.urli:
@@ -1466,35 +1464,41 @@ class ImageManagerDownload(Screen):
 	def getImagesList(self):
 		model = HardwareInfo().get_device_name()
 		print "[ImageManager][imagelist] model %s " %model
+		self.jsonlist = {}
+		self.imagesList = {}
 		list = []
 		if not self.imagesList:
 			if not self.jsonlist:
 				try:
 					self.jsonlist = dict(json.load(urllib2.urlopen('http://downloads.openpli.org/json/%s' % model)))
 				except:
-					pass
+					self.Abort()
 			self.imagesList = self.jsonlist
-		for catagorie in reversed(sorted(self.imagesList.keys())):
-			if catagorie in self.expanded:
-				list.append(ChoiceEntryComponent('expanded',((str(catagorie)), "Expander")))
-				for image in reversed(sorted(self.imagesList[catagorie].keys())):
-					list.append(ChoiceEntryComponent('verticalline',((str(self.imagesList[catagorie][image]['name'])), str(self.imagesList[catagorie][image]['link']))))
-			else:
-				for image in self.imagesList[catagorie].keys():
-					list.append(ChoiceEntryComponent('expandable',((str(catagorie)), "Expander")))
-					break
-		if list:
-			self["list"].setList(list)
-			if self.setIndex:
-				self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
-				if self["list"].l.getCurrentSelection()[0][1] == "Expander":
-					self.setIndex -= 1
-					if self.setIndex:
-						self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
-				self.setIndex = 0
-			self.SelectionChanged()
+		if self.jsonlist and self.imagesList:
+			for catagorie in reversed(sorted(self.imagesList.keys())):
+				if catagorie in self.expanded:
+					list.append(ChoiceEntryComponent('expanded',((str(catagorie)), "Expander")))
+					for image in reversed(sorted(self.imagesList[catagorie].keys())):
+						list.append(ChoiceEntryComponent('verticalline',((str(self.imagesList[catagorie][image]['name'])), str(self.imagesList[catagorie][image]['link']))))
+				else:
+					for image in self.imagesList[catagorie].keys():
+						list.append(ChoiceEntryComponent('expandable',((str(catagorie)), "Expander")))
+						break
+			if list:
+				self["list"].setList(list)
+				if self.setIndex:
+					self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
+					if self["list"].l.getCurrentSelection()[0][1] == "Expander":
+						self.setIndex -= 1
+						if self.setIndex:
+							self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
+					self.setIndex = 0
+				self.SelectionChanged()
 		else:
-			self.session.openWithCallback(self.close, MessageBox, _("Cannot find images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
+			self.session.openWithCallback(self.Abort, MessageBox, _("Cannot find images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
+
+	def Abort(self, retval):
+		self.close()
 
 	def SelectionChanged(self):
 		currentSelected = self["list"].l.getCurrentSelection()
