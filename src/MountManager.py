@@ -156,15 +156,17 @@ class VIXDevicesPanel(Screen):
 		else:
 			device2 = re.sub('[0-9]', '', device)
 		devicetype = path.realpath('/sys/block/' + device2 + '/device')
-		print 'DEVICETYPE:',devicetype
-		print 'TEST TYPE MMC:',devicetype.find('mmc')
-		print 'TEST TYPE SDHCI:',devicetype.find('rdb')
-		print 'TEST TYPE soc:',devicetype.find('soc')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  'h9' not in getMachineBuild())):
+		print '[MountManager1]MachineBuild: ',getMachineBuild()
+		print '[MountManager1]DEVICETYPE:',devicetype
+		print '[MountManager1]TEST TYPE mmc:',devicetype.find('mmc')
+		print '[MountManager1]TEST TYPE rdb/SDHC:',devicetype.find('rdb')
+		print '[MountManager1]TEST TYPE soc:',devicetype.find('soc')
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  getMachineBuild() not in ("h9", "i55plus", "h9combo"))):
 			return
-		if  getMachineBuild() == 'h9combo' and "mmcblk0" in device:
+		if  getMachineBuild() == 'h9combo' and "mmcblk0" in device:	# h9/i55 use mmcblk0p[0-3] for sdcard, h9combo uses mmcblk1p[0-3]
 			return
 		d2 = device
+		print '[MountManager1]DEVICE D2:',d2
 		name = _("HARD DISK: ")
 		if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")):
 			mypixmap = resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")
@@ -390,8 +392,8 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				print '[MountManager2] HasSDmmc %s:' %device
 				continue
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
-				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p" in z and re.search('mmcblk1p1', device):
+#				continue
+#			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p" in z and re.search('mmcblk1p1', device):
 				continue
 			if device in list2:
 				continue
@@ -412,11 +414,17 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		else:
 			device2 = re.sub('[0-9]', '', device)
 		devicetype = path.realpath('/sys/block/' + device2 + '/device')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  'h9' not in getMachineBuild())):
+		print '[MountManager2]MachineBuild: ',getMachineBuild()
+		print '[MountManager2]DEVICETYPE:',devicetype
+		print '[MountManager2]TEST TYPE mmc:',devicetype.find('mmc')
+		print '[MountManager2]TEST TYPE rdb:',devicetype.find('rdb')
+		print '[MountManager2]TEST TYPE soc:',devicetype.find('soc')
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  getMachineBuild() not in ("h9", "i55plus", "h9combo"))):
 			return
 		if  getMachineBuild() == 'h9combo' and "mmcblk0" in device:
 			return
 		d2 = device
+		print '[MountManager2]DEVICE D2:',d2
 		name = _("HARD DISK: ")
 		if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")):
 			mypixmap = resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")

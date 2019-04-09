@@ -1009,7 +1009,7 @@ class ImageBackup(Screen):
 			output.write('vol_flags=autoresize\n')
 			output.close()
 			self.commands.append('mount --bind / %s/root' % self.TMPDIR)
-			if getMachineBuild() in ("h9"):
+			if getMachineBuild() in ("h9","i55plus"):
 				z = open('/proc/cmdline', 'r').read()
 				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
 					self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root --exclude=/var/nmbd/* ." % (self.WORKDIR, self.TMPDIR))
@@ -1241,7 +1241,7 @@ class ImageBackup(Screen):
 		else:
 			move('%s/vmlinux.gz' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
 
-		if getMachineBuild() in ("h9"):
+		if getMachineBuild() in ("h9","i55plus"):
 			system('mv %s/fastboot.bin %s/fastboot.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/pq_param.bin %s/pq_param.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/bootargs.bin %s/bootargs.bin' %(self.WORKDIR, self.MAINDEST))
