@@ -517,8 +517,12 @@ class VIXImageManager(Screen):
 				self.container = Console()
 				if pathExists('/tmp/startupmount'):
 					self.ContainterFallback()
+				mkdir('/tmp/startupmount')
+				if os.path.isfile("/dev/block/by-name/bootoptions"):
+					self.container.ePopen('mount /dev/block/by-name/bootoptions /tmp/startupmount', self.ContainterFallback)
+				elif os.path.isfile("/dev/block/by-name/boot"):
+					self.container.ePopen('mount /dev/block/by-name/boot /tmp/startupmount', self.ContainterFallback)
 				else:
-					mkdir('/tmp/startupmount')
 					self.container.ePopen('mount /dev/%s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
 			else:
 				self.session.open(TryQuitMainloop, 2)
@@ -528,8 +532,15 @@ class VIXImageManager(Screen):
 
 	def ContainterFallback(self, data=None, retval=None, extra_args=None):
 		self.container.killAll()
+		slot = self.multibootslot
+		print "[MultiBoot Restart] reboot3 slot:", slot
 		if pathExists("/tmp/startupmount/STARTUP"):
-			copyfile("/tmp/startupmount/STARTUP_%s" % self.multibootslot, "/tmp/startupmount/STARTUP")
+			if  os.path.isfile("/tmp/startupmount/STARTUP_1"):
+				shutil.copyfile("/tmp/startupmount/STARTUP_%s" % slot, "/tmp/startupmount/STARTUP")
+			elif os.path.isfile("/tmp/startupmount/STARTUP_LINUX_4_BOXMODE_12"):
+				shutil.copyfile("/tmp/startupmount/STARTUP_LINUX_%s_BOXMODE_1" % slot, "/tmp/startupmount/STARTUP")
+			elif os.path.isfile("/tmp/startupmount/STARTUP_LINUX_4"):
+				shutil.copyfile("/tmp/startupmount/STARTUP_LINUX_%s" % slot, "/tmp/startupmount/STARTUP")
 			self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.open(MessageBox, _("Multiboot ERROR! - no STARTUP in boot partition."), MessageBox.TYPE_INFO, timeout=20)
