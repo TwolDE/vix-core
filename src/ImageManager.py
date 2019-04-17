@@ -2,6 +2,7 @@
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
 from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
 from shutil import rmtree, move, copy, copyfile
+from Tools.Directories import fileExists, fileCheck, pathExists, fileHas
 from time import localtime, time, strftime, mktime
 import urllib, urllib2, json
 
@@ -518,9 +519,11 @@ class VIXImageManager(Screen):
 				if pathExists('/tmp/startupmount'):
 					self.ContainterFallback()
 				mkdir('/tmp/startupmount')
-				if os.path.isfile("/dev/block/by-name/bootoptions"):
+				if fileExists("/dev/block/by-name/bootoptions"):
+					print "[MultiBoot Restart] bootoptions"
 					self.container.ePopen('mount /dev/block/by-name/bootoptions /tmp/startupmount', self.ContainterFallback)
-				elif os.path.isfile("/dev/block/by-name/boot"):
+				elif fileExists("/dev/block/by-name/boot"):
+					print "[MultiBoot Restart] by-name/boot"
 					self.container.ePopen('mount /dev/block/by-name/boot /tmp/startupmount', self.ContainterFallback)
 				else:
 					self.container.ePopen('mount /dev/%s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
@@ -533,14 +536,14 @@ class VIXImageManager(Screen):
 	def ContainterFallback(self, data=None, retval=None, extra_args=None):
 		self.container.killAll()
 		slot = self.multibootslot
-		print "[MultiBoot Restart] reboot3 slot:", slot
+		print "[ImageManager Restart] reboot3 slot:", slot
 		if pathExists("/tmp/startupmount/STARTUP"):
-			if  os.path.isfile("/tmp/startupmount/STARTUP_1"):
-				shutil.copyfile("/tmp/startupmount/STARTUP_%s" % slot, "/tmp/startupmount/STARTUP")
-			elif os.path.isfile("/tmp/startupmount/STARTUP_LINUX_4_BOXMODE_12"):
-				shutil.copyfile("/tmp/startupmount/STARTUP_LINUX_%s_BOXMODE_1" % slot, "/tmp/startupmount/STARTUP")
-			elif os.path.isfile("/tmp/startupmount/STARTUP_LINUX_4"):
-				shutil.copyfile("/tmp/startupmount/STARTUP_LINUX_%s" % slot, "/tmp/startupmount/STARTUP")
+			if  fileExists("/tmp/startupmount/STARTUP_1"):
+				copyfile("/tmp/startupmount/STARTUP_%s" % slot, "/tmp/startupmount/STARTUP")
+			elif fileExists("/tmp/startupmount/STARTUP_LINUX_4_BOXMODE_12"):
+				copyfile("/tmp/startupmount/STARTUP_LINUX_%s_BOXMODE_1" % slot, "/tmp/startupmount/STARTUP")
+			elif fileExists("/tmp/startupmount/STARTUP_LINUX_4"):
+				copyfile("/tmp/startupmount/STARTUP_LINUX_%s" % slot, "/tmp/startupmount/STARTUP")
 			self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.open(MessageBox, _("Multiboot ERROR! - no STARTUP in boot partition."), MessageBox.TYPE_INFO, timeout=20)
