@@ -2,14 +2,12 @@
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
 from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
 from shutil import rmtree, move, copy, copyfile
-from Tools.Directories import fileExists, fileCheck, pathExists, fileHas
 from time import localtime, time, strftime, mktime
 import urllib, urllib2, json
 
 from enigma import eTimer, fbClass
 
 from . import _, PluginLanguageDomain
-import Tools.CopyFiles
 import Components.Task
 from Components.ActionMap import ActionMap
 from Components.Button import Button
@@ -28,7 +26,8 @@ from Screens.Setup import Setup
 from Screens.Standby import TryQuitMainloop
 from Screens.TaskView import JobView
 from Tools.BoundFunction import boundFunction
-from Tools.Directories import pathExists, fileHas, fileExists
+from Tools.Directories import fileExists, fileCheck, pathExists, fileHas
+import Tools.CopyFiles
 from Tools.HardwareInfo import HardwareInfo
 from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentKern, GetCurrentRoot
 from Tools.Notifications import AddPopupWithCallback
@@ -525,10 +524,11 @@ class VIXImageManager(Screen):
 				if pathExists('/tmp/startupmount'):
 					self.ContainterFallback()
 				mkdir('/tmp/startupmount')
-				if fileExists("/dev/block/by-name/bootoptions"):
-					self.container.ePopen('mount /dev/block/by-name/bootoptions /tmp/startupmount', self.ContainterFallback)
-				elif fileExists("/dev/block/by-name/boot"):
-					self.container.ePopen('mount /dev/block/by-name/boot /tmp/startupmount', self.ContainterFallback)
+				if SystemInfo["HasRootSubdir"]:
+					if fileExists("/dev/block/by-name/bootoptions"):
+						self.container.ePopen('mount /dev/block/by-name/bootoptions /tmp/startupmount', self.ContainterFallback)
+					elif fileExists("/dev/block/by-name/boot"):
+						self.container.ePopen('mount /dev/block/by-name/boot /tmp/startupmount', self.ContainterFallback)
 				else:
 					self.container.ePopen('mount /dev/%s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
 			else:
@@ -1067,6 +1067,10 @@ class ImageBackup(Screen):
 				self.commands.append("dd if=/dev/mtd3 of=%s/pq_param.bin" % self.WORKDIR)
 				self.commands.append('echo "' + _("Create:") + " logo dump" + '"')
 				self.commands.append("dd if=/dev/mtd4 of=%s/logo.bin" % self.WORKDIR)
+			else:
+				self.commands.append('touch %s/root.ubi' % self.WORKDIR)
+				self.commands.append('mkfs.ubifs -r %s/root -o %s/root.ubi %s' % (self.TMPDIR, self.WORKDIR, MKUBIFS_ARGS))
+				self.commands.append('ubinize -o %s/rootfs.ubifs %s %s/ubinize.cfg' % (self.WORKDIR, UBINIZE_ARGS, self.WORKDIR))
 		self.Console.eBatch(self.commands, self.Stage2Complete, debug=False)
 
 	def Stage2Complete(self, extra_args=None):
@@ -1274,9 +1278,6 @@ class ImageBackup(Screen):
 			move('%s/%s' % (self.WORKDIR, self.GB4Krescue), '%s/%s' % (self.MAINDEST, self.GB4Krescue))
 			system('cp -f /usr/share/gpt.bin %s/gpt.bin' %(self.MAINDEST))
 			print '[ImageManager] Stage5: Create: gpt.bin:',self.MODEL
-
-		if getImageFileSystem().replace(' ','') in ('hdfastboot8gb', 'fastboot8gb'):
-			system('mv %s/baseparam.bin %s/bootoptions.bin' %(self.WORKDIR, self.MAINDEST))
 
 		fileout = open(self.MAINDEST + '/imageversion', 'w')
 		line = defaultprefix + '-' + getImageType() + '-backup-' + getImageVersion() + '.' + getImageBuild() + '-' + self.BackupDate
