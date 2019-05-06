@@ -504,11 +504,12 @@ class VIXImageManager(Screen):
 					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
  			elif SystemInfo["HasHiSi"]:
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
-			elif SystemInfo["HasH9SD"] and fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True: 
-				if fileExists("%s/rootfs.tar.bz2" %MAINDEST):
-					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % MAINDEST
-				else:
-					self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("Zgemma H9 unable to restore H9 ubi root to SDcard"), MessageBox.TYPE_INFO, timeout=20)
+			elif SystemInfo["HasH9SD"]: 
+				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
+					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
+			elif fileExists("%s/rootfs.ubi" %MAINDEST) and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
+				rename('%s/rootfs.tar.bz2' %MAINDEST, '%s/xx.txt' %MAINDEST)
+				CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST 	
 			else:
 				CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST
 		else:
