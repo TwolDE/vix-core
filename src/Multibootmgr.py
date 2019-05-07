@@ -180,6 +180,7 @@ class MultiBoot(Screen):
 						cmdlist.append("echo -e 'EOF' >> /tmp/init.sh")
 						cmdlist.append("chmod +x /tmp/init.sh")
 						cmdlist.append("/tmp/init.sh")
+						cmdlist.append("partprobe")
 						self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
 		else:
 			self.close()

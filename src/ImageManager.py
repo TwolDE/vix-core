@@ -493,7 +493,7 @@ class VIXImageManager(Screen):
 
 	def keyRestore6(self,ret):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		CMD = " "
+		CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST
 		if ret == 0:
 			if SystemInfo["canMultiBoot"]:
  				if SystemInfo["HasSDmmc"]:
@@ -509,18 +509,12 @@ class VIXImageManager(Screen):
 					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
 			elif fileExists("%s/rootfs.ubi" %MAINDEST) and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
 				rename('%s/rootfs.tar.bz2' %MAINDEST, '%s/xx.txt' %MAINDEST)
-				CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST 	
-			else:
-				CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST
 		else:
 			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)
 		config.imagemanager.restoreimage.setValue(self.sel)
-		if CMD == " ":
-			self.close()
-		else:
-			print '[ImageManager] running commnd:',CMD
-			self.Console.ePopen(CMD, self.ofgwriteResult)
-			fbClass.getInstance().lock()
+		print '[ImageManager] running commnd:',CMD
+		self.Console.ePopen(CMD, self.ofgwriteResult)
+		fbClass.getInstance().lock()
 
 	def ofgwriteResult(self, result, retval, extra_args=None):
 		fbClass.getInstance().unlock()
