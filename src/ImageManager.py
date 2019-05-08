@@ -1026,9 +1026,9 @@ class ImageBackup(Screen):
 			else:
 				self.commands.append('mount --bind / %s/root' % self.TMPDIR)
 			if SystemInfo["HasRootSubdir"]:
-				self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root/%s --exclude=/var/nmbd/* ." % (self.WORKDIR, self.TMPDIR, self.ROOTFSSUBDIR))
+				self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root/%s --exclude ./var/nmbd --exclude ./.resizerootfs --exclude ./.resize-rootfs --exclude ./.resize-linuxrootfs --exclude ./.resize-userdata --exclude ./var/lib/samba/private/msg.sock ." % (self.WORKDIR, self.TMPDIR, self.ROOTFSSUBDIR))
 			else:
-				self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root --exclude=/var/nmbd/* ." % (self.WORKDIR, self.TMPDIR))
+				self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root --exclude ./var/nmbd --exclude ./.resizerootfs --exclude ./.resize-rootfs --exclude ./.resize-linuxrootfs --exclude ./.resize-userdata --exclude ./var/lib/samba/private/msg.sock ." % (self.WORKDIR, self.TMPDIR))
 			self.commands.append("/usr/bin/bzip2 %s/rootfs.tar" % self.WORKDIR)
 			if getMachineBuild() in ("gb7252"):
 				self.commands.append("dd if=/dev/mmcblk0p1 of=%s/boot.bin" % self.WORKDIR)
@@ -1052,7 +1052,7 @@ class ImageBackup(Screen):
 			if getMachineBuild() in ("h9","i55plus"):
 				z = open('/proc/cmdline', 'r').read()
 				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
-					self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root --exclude=/var/nmbd/* ." % (self.WORKDIR, self.TMPDIR))
+					self.commands.append("/bin/tar -cf %s/rootfs.tar -C %s/root --exclude ./var/nmbd --exclude ./.resizerootfs --exclude ./.resize-rootfs --exclude ./.resize-linuxrootfs --exclude ./.resize-userdata --exclude ./var/lib/samba/private/msg.sock ." % (self.WORKDIR, self.TMPDIR))
 					self.commands.append("/usr/bin/bzip2 %s/rootfs.tar" % self.WORKDIR)
 				else:
 					self.commands.append('touch %s/root.ubi' % self.WORKDIR)
