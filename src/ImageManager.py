@@ -1085,7 +1085,7 @@ class ImageBackup(Screen):
 			PARTED_END_KERNEL4 = int(FOURTH_KERNEL_PARTITION_OFFSET) + int(KERNEL_PARTITION_SIZE)
 			self.commandMB.append('parted -s %s unit KiB mkpart linuxkernel4 %s %s' % (EMMC_IMAGE, FOURTH_KERNEL_PARTITION_OFFSET, PARTED_END_KERNEL4 ))
 			try:
-				rd = open("/proc/swap", "r").read()
+				rd = open("/proc/swaps", "r").read()
 				if "mmcblk0p7" in rd: 
 					SWAP_PARTITION_OFFSET = int(FOURTH_KERNEL_PARTITION_OFFSET) + int(KERNEL_PARTITION_SIZE)
 					SWAP_PARTITION_SIZE = int(262144)
