@@ -1225,7 +1225,10 @@ class ImageBackup(Screen):
 
 		if self.EMMCIMG == "usb_update.bin":
 			move('%s/%s' %(self.WORKDIR, self.EMMCIMG), '%s/%s' %(self.MAINDEST2, self.EMMCIMG))
-			move('%s/%s' %(self.WORKDIR, "emmc_partitions.xml"), '%s/%s' %(self.MAINDEST, "emmc_partitions.xml"))
+			system('cp -f /usr/share/fastboot.bin %s/fastboot.bin' %(self.MAINDEST2))
+			system('cp -f /usr/share/bootargs.bin %s/bootargs.bin' %(self.MAINDEST2))
+			if fileExists("/usr/share/apploader.bin"):
+				system('cp -f /usr/share/apploader.bin %s/apploader.bin' %self.MAINDEST2)
 
 		if "bin" or "uImage" in self.KERNELFILE and path.exists('%s/vmlinux.bin' % self.WORKDIR):
 			move('%s/vmlinux.bin' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.KERNELFILE))
@@ -1234,10 +1237,12 @@ class ImageBackup(Screen):
 
 		if getMachineBuild() in ("h9","i55plus"):
 			system('mv %s/fastboot.bin %s/fastboot.bin' %(self.WORKDIR, self.MAINDEST))
-			system('mv %s/pq_param.bin %s/pq_param.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/bootargs.bin %s/bootargs.bin' %(self.WORKDIR, self.MAINDEST))
+			system('mv %s/pq_param.bin %s/pq_param.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/baseparam.bin %s/baseparam.bin' %(self.WORKDIR, self.MAINDEST))
 			system('mv %s/logo.bin %s/logo.bin' %(self.WORKDIR, self.MAINDEST))
+			system('cp -f /usr/share/fastboot.bin %s/fastboot.bin' %(self.MAINDEST2))
+			system('cp -f /usr/share/bootargs.bin %s/bootargs.bin' %(self.MAINDEST2))
 			z = open('/proc/cmdline', 'r').read()
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z: 
 				move('%s/rootfs.tar.bz2' % self.WORKDIR, '%s/%s' % (self.MAINDEST, self.ROOTFSFILE))
