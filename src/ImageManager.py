@@ -58,7 +58,7 @@ config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
 config.imagemanager.imagefeed_twol = ConfigText(default="http://192.168.0.171/openvix-builds/", fixed_size=False)
 config.imagemanager.imagefeed_ViX = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
-config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/6.2/", fixed_size=False)
+config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/", fixed_size=False)
 config.imagemanager.imagefeed_Pli = ConfigText(default="https://openpli.org/download/", fixed_size=False)
 
 autoImageManagerTimer = None
@@ -1403,13 +1403,12 @@ class ImageManagerDownload(Screen):
 		self["key_red"] = Button(_("Close"))
 		self["key_green"] = Button(_("Download"))
 		self.Downlist = []
+		self.imagesList = {}
 		self.setIndex = 0
 		self.expanded = []
 		if "pli" in self.urli:
 			self.Pli = True
-			self["list"] = ChoiceList(list=[ChoiceEntryComponent('',((_("Retrieving image list - Please wait...")), "Waiter"))])
-		else:
-			self['list'] = MenuList(self.Downlist)
+		self["list"] = ChoiceList(list=[ChoiceEntryComponent('',((_("Retrieving image list - Please wait...")), "Waiter"))])
 		self['ImageDown'] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "KeyboardInputActions", "MenuActions"],
 									  {
 										'cancel': self.close,
@@ -1426,82 +1425,88 @@ class ImageManagerDownload(Screen):
 										"rightRepeated": self.keyRight,
 										"menu": self.close,
 									  }, -1)
-		if self.Pli:
-			self.delay = eTimer()
-			self.delay.callback.append(self.getImagesList)
-			self.delay.start(0, True)
-		else:
-			self.populate_DownList()
+		self.getImageDistro()
 
 
-	def populate_DownList(self):
-		try:
-			if not path.exists(self.BackupDirectory):
-				mkdir(self.BackupDirectory, 0755)
-			from bs4 import BeautifulSoup
-			if "atv" in self.urli:
-				self.urlb = '%s/index.php?open=%s' % (self.urli, getMachineMake())
-			else:
-				self.boxtype = getMachineMake()
-				self.urlb = self.urli+self.boxtype+'/'
-
-			conn = urllib2.urlopen(self.urlb)
-			html = conn.read()
-
-			soup = BeautifulSoup(html)
-			links = soup.find_all('a')
-
-			del self.Downlist[:]
-			for tag in links:
-				link = tag.get('href',None)
-				if link != None and link.endswith('zip') and link.find(getMachineMake()) != -1:
-					self.Downlist.append(str(link))
-
-			self.Downlist.sort()
-			self.Downlist.reverse()
-		except:
-			self['ImageDown'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions'],
-										  {
-										  'cancel': self.close,
-										  'red': self.close,
-										  }, -1)
-			self.Downlist.append(" ")
-			self["list"].setList(self.Downlist)
-			self["list"].show()
-
-	def getImagesList(self):
-		model = HardwareInfo().get_device_name()
-		print "[ImageManager][imagelist] model %s " %model
-		self.jsonlist = {}
+	def getImageDistro(self):
+		if not path.exists(self.BackupDirectory):
+			mkdir(self.BackupDirectory, 0755)
+		from bs4 import BeautifulSoup
 		self.imagesList = {}
+		self.jsonlist = {}
 		list = []
-		if not self.imagesList:
+		self.boxtype = getMachineMake()
+		model = HardwareInfo().get_device_name()
+
+
+		if "atv" in self.urli:
+			imagecat = [6.2,6.3]
+		else:
+			imagecat = [5.2]	
+			self.urlb = self.urli+self.boxtype+'/'
+
+		if not self.Pli and not self.imagesList:
+			for version in reversed(sorted(imagecat)):
+				newversion = _("Image Version %s") %version
+				if "atv" in self.urli:
+					self.urlb = '%s/%s/index.php?open=%s' % (self.urli,version,self.boxtype)
+				try:
+					conn = urllib2.urlopen(self.urlb)
+					html = conn.read()
+				except urllib2.HTTPError as e:
+					print "HTTP download ERROR: %s" % e.code
+					continue
+
+				soup = BeautifulSoup(html)
+				links = soup.find_all('a')
+
+				countimage = []
+				for tag in links:
+					link = tag.get('href',None)
+					if link != None and link.endswith('zip') and link.find(getMachineMake()) != -1:
+						countimage.append(str(link))
+				if len(countimage) >= 1:
+					self.imagesList[newversion] = {}
+					for image in countimage:
+						self.imagesList[newversion][image] = {}
+						self.imagesList[newversion][image]["name"] = image
+						if "atv" in self.urli:
+							self.imagesList[newversion][image]["link"] = '%s/%s/%s' % (self.urli,version,image)
+						else:
+							self.imagesList[newversion][image]["link"] = '%s/%s/%s' % (self.urli,self.boxtype,image)
+
+
+		if self.Pli and not self.imagesList:
 			if not self.jsonlist:
 				try:
 					self.jsonlist = dict(json.load(urllib2.urlopen('http://downloads.openpli.org/json/%s' % model)))
 				except:
 					self.Abort()
 			self.imagesList = self.jsonlist
-		if self.jsonlist and self.imagesList:
-			for catagorie in reversed(sorted(self.imagesList.keys())):
-				if catagorie in self.expanded:
-					list.append(ChoiceEntryComponent('expanded',((str(catagorie)), "Expander")))
-					for image in reversed(sorted(self.imagesList[catagorie].keys())):
-						list.append(ChoiceEntryComponent('verticalline',((str(self.imagesList[catagorie][image]['name'])), str(self.imagesList[catagorie][image]['link']))))
-				else:
-					for image in self.imagesList[catagorie].keys():
-						list.append(ChoiceEntryComponent('expandable',((str(catagorie)), "Expander")))
-						break
-			if list:
-				self["list"].setList(list)
-				if self.setIndex:
-					self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
-					if self["list"].l.getCurrentSelection()[0][1] == "Expander":
-						self.setIndex -= 1
-						if self.setIndex:
-							self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
-					self.setIndex = 0
-				self.SelectionChanged()
+
+		if self.Pli and not self.jsonlist and not self.imagesList:
+			self.session.openWithCallback(self.Abort, MessageBox, _("Cannot find OpenPli images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
+
+
+		for catagorie in reversed(sorted(self.imagesList.keys())):
+			if catagorie in self.expanded:
+				list.append(ChoiceEntryComponent('expanded',((str(catagorie)), "Expander")))
+				for image in reversed(sorted(self.imagesList[catagorie].keys())):
+					list.append(ChoiceEntryComponent('verticalline',((str(self.imagesList[catagorie][image]['name'])), str(self.imagesList[catagorie][image]['link']))))
+			else:
+				for image in self.imagesList[catagorie].keys():
+					list.append(ChoiceEntryComponent('expandable',((str(catagorie)), "Expander")))
+					break
+		if list:
+			self["list"].setList(list)
+			if self.setIndex:
+				self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
+				if self["list"].l.getCurrentSelection()[0][1] == "Expander":
+					self.setIndex -= 1
+					if self.setIndex:
+						self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
+				self.setIndex = 0
+			self.SelectionChanged()
 		else:
 			self.session.openWithCallback(self.Abort, MessageBox, _("Cannot find images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
 
@@ -1510,14 +1515,13 @@ class ImageManagerDownload(Screen):
 
 	def SelectionChanged(self):
 		currentSelected = self["list"].l.getCurrentSelection()
-		if self.Pli:
-			if currentSelected[0][1] == "Waiter":
-				self["key_green"].setText("")
+		if currentSelected[0][1] == "Waiter":
+			self["key_green"].setText("")
+		else:
+			if currentSelected[0][1] == "Expander":
+				self["key_green"].setText(_("Compress") if currentSelected[0][0] in self.expanded else _("Expand"))
 			else:
-				if currentSelected[0][1] == "Expander":
-					self["key_green"].setText(_("Compress") if currentSelected[0][0] in self.expanded else _("Expand"))
-				else:
-					self["key_green"].setText(_("DownLoad"))
+				self["key_green"].setText(_("DownLoad"))
 
 	def keyLeft(self):
 		self["list"].instance.moveSelection(self["list"].instance.pageUp)
@@ -1536,24 +1540,16 @@ class ImageManagerDownload(Screen):
 		self.SelectionChanged()
 
 	def keyDownload(self):
-		if self.Pli:
-			currentSelected = self["list"].l.getCurrentSelection()
-			if currentSelected[0][1] == "Expander":
-				if currentSelected[0][0] in self.expanded:
-					self.expanded.remove(currentSelected[0][0])
-				else:
-					self.expanded.append(currentSelected[0][0])
-				self.getImagesList()
-			elif currentSelected[0][1] != "Waiter":
-				self.sel = currentSelected[0][0]
-				if self.sel:
-					message = _("Are you sure you want to download this image:\n ") + self.sel
-					ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
-					ybox.setTitle(_("Download confirmation"))
-				else:
-					self.session.open(MessageBox, _("There is no image to download."), MessageBox.TYPE_INFO, timeout=10)
-		else:
-			self.sel = self['list'].getCurrent()
+		currentSelected = self["list"].l.getCurrentSelection()
+		if currentSelected[0][1] == "Expander":
+			if currentSelected[0][0] in self.expanded:
+				self.expanded.remove(currentSelected[0][0])
+			else:
+				self.expanded.append(currentSelected[0][0])
+			self.getImageDistro()
+
+		elif currentSelected[0][1] != "Waiter":
+			self.sel = currentSelected[0][0]
 			if self.sel:
 				message = _("Are you sure you want to download this image:\n ") + self.sel
 				ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
@@ -1564,20 +1560,13 @@ class ImageManagerDownload(Screen):
 	def doDownload(self, answer):
 		if answer is True:
 			selectedimage = self['list'].getCurrent()
-			if self.Pli:
-				currentSelected = self["list"].l.getCurrentSelection()
-				selectedimage = currentSelected[0][0]
-				fileurl = currentSelected[0][1]
-				fileloc = self.BackupDirectory + selectedimage
-				print "[ImageManager][OpenPli] detected %s is passed url for list image." % fileurl
-			elif "atv" in self.urli:
+			currentSelected = self["list"].l.getCurrentSelection()
+			selectedimage = currentSelected[0][0]
+			fileurl = currentSelected[0][1]
+			if "atv" in self.urli:
 				fileloc = self.BackupDirectory + selectedimage.split("/")[1]
-				fileurl = self.urli + selectedimage
-				print "[ImageManager][OpenATV] detected %s is passed url for list image." % fileurl
 			else:
 				fileloc = self.BackupDirectory + selectedimage
-				fileurl = self.urlb + selectedimage
-				print "[ImageManager][url plus boxtype] %s is passed url for image." % fileurl
 			Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
 			for job in Components.Task.job_manager.getPendingJobs():
 				if job.name.startswith(_("Downloading")):
