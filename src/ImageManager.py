@@ -56,10 +56,11 @@ config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
 config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
-config.imagemanager.imagefeed_twol = ConfigText(default="http://192.168.0.171/openvix-builds/", fixed_size=False)
+config.imagemanager.imagefeed_User = ConfigText(default="http://192.168.0.171/openvix-builds/", fixed_size=False)
 config.imagemanager.imagefeed_ViX = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
 config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/", fixed_size=False)
 config.imagemanager.imagefeed_Pli = ConfigText(default="https://openpli.org/download/", fixed_size=False)
+config.imagemanager.imagefeed_Dev = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
 
 autoImageManagerTimer = None
 
@@ -288,14 +289,18 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
 
 	def doDownLoad(self):
-		choices = [("OpenTwol", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4)]
-		self.message = _("Do you want to change download url")
-		self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=choices, default=1, simple=True)
+		if getImageType() == 'releasex':
+			self.urli = config.imagemanager.imagefeed_ViX.value
+			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
+		else:
+			choices = [("User1", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4), ("ViXDev", 5)]
+			self.message = _("Do you want to change download url")
+			self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=choices, default=1, simple=True)
 
 	def doDownload2(self, retval):
 		if retval:
 			retvalx = int(retval) 
-			urlchoices = [config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_twol.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value]
+			urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
 			self.urli = urlchoices[retvalx]
 			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
 
