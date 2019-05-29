@@ -1,7 +1,7 @@
 # for localized messages
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
 from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
-from shutil import rmtree, move, copy, copyfile
+from shutil import rmtree, move, copy, copyfile, copyfileobj
 from time import localtime, time, strftime, mktime
 import urllib, urllib2, json
 
@@ -59,8 +59,9 @@ config.imagemanager.number_to_keep = ConfigNumber(default=0)
 config.imagemanager.imagefeed_User = ConfigText(default="http://192.168.0.171/openvix-builds/", fixed_size=False)
 config.imagemanager.imagefeed_ViX = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
 config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/", fixed_size=False)
-config.imagemanager.imagefeed_Pli = ConfigText(default="https://openpli.org/download/", fixed_size=False)
-config.imagemanager.imagefeed_Dev = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
+config.imagemanager.imagefeed_Pli = ConfigText(default="http://downloads.openpli.org/json", fixed_size=False)
+config.imagemanager.imagefeed_Dev = ConfigText(default="ftp://login@176.31.181.161/***Dev_Images_5.2***", fixed_size=False)
+config.imagemanager.imagefeed_DevL = ConfigText(default="login:pswd", fixed_size=False)
 
 autoImageManagerTimer = None
 
@@ -293,15 +294,15 @@ class VIXImageManager(Screen):
 			self.urli = config.imagemanager.imagefeed_ViX.value
 			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
 		else:
-			choices = [("User1", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4), ("ViXDev", 5)]
+			self.choices = [("User1", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli",4), ("ViXDev", 5)]
+			self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
 			self.message = _("Do you want to change download url")
-			self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=choices, default=1, simple=True)
+			self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
 
 	def doDownload2(self, retval):
 		if retval:
-			retvalx = int(retval) 
-			urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
-			self.urli = urlchoices[retvalx]
+			retval -= 1
+			self.urli = self.urlchoices[retval]
 			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
 
 	def setupDone(self, test=None):
@@ -1443,19 +1444,24 @@ class ImageManagerDownload(Screen):
 		list = []
 		self.boxtype = getMachineMake()
 		model = HardwareInfo().get_device_name()
-
+		imagecat = [6.0]
 
 		if "atv" in self.urli:
 			imagecat = [6.2,6.3]
-		else:
-			imagecat = [5.2]	
-			self.urlb = self.urli+self.boxtype+'/'
+		elif "Dev" in self.urli:
+			self.urlb = self.urli.replace("login", "%s") %config.imagemanager.imagefeed_DevL.value 
+			imagecat = [5.2]
+		elif "www.openvix" in self.urli:
+			imagecat = [5.2]
 
 		if not self.Pli and not self.imagesList:
 			for version in reversed(sorted(imagecat)):
 				newversion = _("Image Version %s") %version
+				countimage = []
 				if "atv" in self.urli:
 					self.urlb = '%s/%s/index.php?open=%s' % (self.urli,version,self.boxtype)
+				else:
+					self.urlb = self.urli+self.boxtype+'/'
 				try:
 					conn = urllib2.urlopen(self.urlb)
 					html = conn.read()
@@ -1463,14 +1469,21 @@ class ImageManagerDownload(Screen):
 					print "HTTP download ERROR: %s" % e.code
 					continue
 
-				soup = BeautifulSoup(html)
-				links = soup.find_all('a')
+				if "Dev" in self.urli:
+					lines = html.split('\n')
+					for line in lines:
+						if line.find("openvix") > -1 and line.find(".zip") > -1 and link.find(getMachineMake()) != -1:
+							t = line.find("openvix")
+							lineb = (line[t:t+51]).replace(" ","")	
+							countimage.append(lineb)
+				else:
+					soup = BeautifulSoup(html)
+					links = soup.find_all('a')
 
-				countimage = []
-				for tag in links:
-					link = tag.get('href',None)
-					if link != None and link.endswith('zip') and link.find(getMachineMake()) != -1:
-						countimage.append(str(link))
+					for tag in links:
+						link = tag.get('href',None)
+						if link != None and link.endswith('zip') and link.find(getMachineMake()) != -1:
+							countimage.append(str(link))
 				if len(countimage) >= 1:
 					self.imagesList[newversion] = {}
 					for image in countimage:
@@ -1478,6 +1491,8 @@ class ImageManagerDownload(Screen):
 						self.imagesList[newversion][image]["name"] = image
 						if "atv" in self.urli:
 							self.imagesList[newversion][image]["link"] = '%s/%s/%s' % (self.urli,version,image)
+						elif "Dev" in self.urli:
+							self.imagesList[newversion][image]["link"] = '%s/%s' % (self.urlb,image)
 						else:
 							self.imagesList[newversion][image]["link"] = '%s/%s/%s' % (self.urli,self.boxtype,image)
 
@@ -1485,14 +1500,14 @@ class ImageManagerDownload(Screen):
 		if self.Pli and not self.imagesList:
 			if not self.jsonlist:
 				try:
-					self.jsonlist = dict(json.load(urllib2.urlopen('http://downloads.openpli.org/json/%s' % model)))
+					urljson = '%s/%s' %(self.urli, model)
+					self.jsonlist = dict(json.load(urllib2.urlopen('%s' %urljson)))
 				except:
-					self.Abort()
+					self.close()
 			self.imagesList = self.jsonlist
 
 		if self.Pli and not self.jsonlist and not self.imagesList:
-			self.session.openWithCallback(self.Abort, MessageBox, _("Cannot find OpenPli images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
-
+			self.close()
 
 		for catagorie in reversed(sorted(self.imagesList.keys())):
 			if catagorie in self.expanded:
@@ -1514,10 +1529,7 @@ class ImageManagerDownload(Screen):
 				self.setIndex = 0
 			self.SelectionChanged()
 		else:
-			self.session.openWithCallback(self.Abort, MessageBox, _("Cannot find images - please try later"), type=MessageBox.TYPE_ERROR, timeout=3)
-
-	def Abort(self, retval):
-		self.close()
+			self.close()
 
 	def SelectionChanged(self):
 		currentSelected = self["list"].l.getCurrentSelection()
@@ -1573,11 +1585,18 @@ class ImageManagerDownload(Screen):
 				fileloc = self.BackupDirectory + selectedimage.split("/")[1]
 			else:
 				fileloc = self.BackupDirectory + selectedimage
-			Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
-			for job in Components.Task.job_manager.getPendingJobs():
-				if job.name.startswith(_("Downloading")):
-					break
-			self.showJobView(job)
+			if "Dev" in self.urli:
+				try:
+					urllib.urlretrieve('%s' %fileurl, '%s' %fileloc)
+				except urllib.HTTPError as e:
+					print "HTTP download ERROR: %s" % e.code
+			else:
+				print '[getImageDistro] self.urlb= %s, self.urli= %s fileurl= %s fileloc= %s' %(self.urlb, self.urli, fileurl, fileloc)
+				Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
+				for job in Components.Task.job_manager.getPendingJobs():
+					if job.name.startswith(_("Downloading")):
+						break
+				self.showJobView(job)
 
 	def showJobView(self, job):
 		Components.Task.job_manager.in_background = False
