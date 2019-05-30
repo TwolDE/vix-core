@@ -292,7 +292,7 @@ class VIXImageManager(Screen):
 	def doDownLoad(self):
 		if getImageType() == 'releasex':
 			self.urli = config.imagemanager.imagefeed_ViX.value
-			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
+			self.session.openWithCallback(self.doDownload2, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
 		else:
 			self.choices = [("User1", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli",4), ("ViXDev", 5)]
 			self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
@@ -1415,7 +1415,11 @@ class ImageManagerDownload(Screen):
 		self.expanded = []
 		if "pli" in self.urli:
 			self.Pli = True
-		self["list"] = ChoiceList(list=[ChoiceEntryComponent('',((_("Retrieving image list - Please wait...")), "Waiter"))])
+		self["list"] = ChoiceList(list=[ChoiceEntryComponent('',((_("No images found for selected download server...if password check validity")), "Waiter"))])
+		self.getImageDistro()
+
+
+	def getImageDistro(self):
 		self['ImageDown'] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "KeyboardInputActions", "MenuActions"],
 									  {
 										'cancel': self.close,
@@ -1432,10 +1436,7 @@ class ImageManagerDownload(Screen):
 										"rightRepeated": self.keyRight,
 										"menu": self.close,
 									  }, -1)
-		self.getImageDistro()
 
-
-	def getImageDistro(self):
 		if not path.exists(self.BackupDirectory):
 			mkdir(self.BackupDirectory, 0755)
 		from bs4 import BeautifulSoup
@@ -1445,12 +1446,16 @@ class ImageManagerDownload(Screen):
 		self.boxtype = getMachineMake()
 		model = HardwareInfo().get_device_name()
 		imagecat = [6.0]
-
+		self.urlb = self.urli+self.boxtype+'/'
+		
 		if "atv" in self.urli:
 			imagecat = [6.2,6.3]
 		elif "Dev" in self.urli:
-			self.urlb = self.urli.replace("login", "%s") %config.imagemanager.imagefeed_DevL.value 
-			imagecat = [5.2]
+			if "login:pswd" in config.imagemanager.imagefeed_DevL.value:
+				return
+			else:
+				self.urlb = self.urli.replace("login", "%s") %config.imagemanager.imagefeed_DevL.value 
+				imagecat = [5.2]
 		elif "www.openvix" in self.urli:
 			imagecat = [5.2]
 
@@ -1460,8 +1465,6 @@ class ImageManagerDownload(Screen):
 				countimage = []
 				if "atv" in self.urli:
 					self.urlb = '%s/%s/index.php?open=%s' % (self.urli,version,self.boxtype)
-				else:
-					self.urlb = self.urli+self.boxtype+'/'
 				try:
 					conn = urllib2.urlopen(self.urlb)
 					html = conn.read()
@@ -1472,7 +1475,7 @@ class ImageManagerDownload(Screen):
 				if "Dev" in self.urli:
 					lines = html.split('\n')
 					for line in lines:
-						if line.find("openvix") > -1 and line.find(".zip") > -1 and link.find(getMachineMake()) != -1:
+						if line.find("openvix") > -1 and line.find(".zip") > -1 and line.find(getMachineMake()) != -1:
 							t = line.find("openvix")
 							lineb = (line[t:t+51]).replace(" ","")	
 							countimage.append(lineb)
@@ -1529,7 +1532,7 @@ class ImageManagerDownload(Screen):
 				self.setIndex = 0
 			self.SelectionChanged()
 		else:
-			self.close()
+			return 
 
 	def SelectionChanged(self):
 		currentSelected = self["list"].l.getCurrentSelection()
@@ -1573,7 +1576,7 @@ class ImageManagerDownload(Screen):
 				ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
 				ybox.setTitle(_("Download confirmation"))
 			else:
-				self.session.open(MessageBox, _("There is no image to download."), MessageBox.TYPE_INFO, timeout=10)
+				self.Close()
 
 	def doDownload(self, answer):
 		if answer is True:
@@ -1585,13 +1588,13 @@ class ImageManagerDownload(Screen):
 				fileloc = self.BackupDirectory + selectedimage.split("/")[1]
 			else:
 				fileloc = self.BackupDirectory + selectedimage
+			print '[getImageDistro] self.urlb= %s, self.urli= %s fileurl= %s fileloc= %s' %(self.urlb, self.urli, fileurl, fileloc)
 			if "Dev" in self.urli:
 				try:
 					urllib.urlretrieve('%s' %fileurl, '%s' %fileloc)
 				except urllib.HTTPError as e:
 					print "HTTP download ERROR: %s" % e.code
 			else:
-				print '[getImageDistro] self.urlb= %s, self.urli= %s fileurl= %s fileloc= %s' %(self.urlb, self.urli, fileurl, fileloc)
 				Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace('_usb',''))
 				for job in Components.Task.job_manager.getPendingJobs():
 					if job.name.startswith(_("Downloading")):
