@@ -1,7 +1,7 @@
 # for localized messages
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
 from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
-from shutil import rmtree, move, copy, copyfile, copyfileobj
+from shutil import rmtree, move, copy, copyfile
 from time import localtime, time, strftime, mktime
 import urllib, urllib2, json
 
@@ -31,7 +31,6 @@ import Tools.CopyFiles
 from Tools.HardwareInfo import HardwareInfo
 from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentKern, GetCurrentRoot
 from Tools.Notifications import AddPopupWithCallback
-from Tools.HardwareInfo import HardwareInfo
 
 RAMCHEKFAILEDID = 'RamCheckFailedNotification'
 
@@ -245,11 +244,11 @@ class VIXImageManager(Screen):
 										  'cancel': self.close,
 										  'red': self.keyDelete,
 										  'green': self.GreenPressed,
-										  'yellow': self.doDownLoad,
+										  'yellow': self.doDownload,
 										  "menu": self.createSetup,
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
-										  "displayHelp": self.doDownLoad,
+										  "displayHelp": self.doDownload,
 										  }, -1)
 
 			if SystemInfo["HasH9SD"]:
@@ -289,12 +288,12 @@ class VIXImageManager(Screen):
 	def createSetup(self):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
 
-	def doDownLoad(self):
+	def doDownload(self):
 		if getImageType() == 'releasex':
 			self.urli = config.imagemanager.imagefeed_ViX.value
 			self.session.openWithCallback(self.doDownload2, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
 		else:
-			self.choices = [("User1", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli",4), ("ViXDev", 5)]
+			self.choices = [("User", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli",4), ("ViXDev", 5)]
 			self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
 			self.message = _("Do you want to change download url")
 			self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
@@ -1445,6 +1444,8 @@ class ImageManagerDownload(Screen):
 		list = []
 		self.boxtype = getMachineMake()
 		model = HardwareInfo().get_device_name()
+		if model == "dm8000":
+			model = getMachineMake()
 		imagecat = [6.0]
 		self.urlb = self.urli+self.boxtype+'/'
 		
@@ -1458,6 +1459,14 @@ class ImageManagerDownload(Screen):
 				imagecat = [5.2]
 		elif "www.openvix" in self.urli:
 			imagecat = [5.2]
+
+#		try:
+#			feedserver = "http://192.168.0.171"
+#			import socket
+#			socket.getaddrinfo(feedserver, None)
+#		except socket.error as e:
+#			print "FEEDSERVER ERROR: %s" %e
+#			return
 
 		if not self.Pli and not self.imagesList:
 			for version in reversed(sorted(imagecat)):
@@ -1506,11 +1515,11 @@ class ImageManagerDownload(Screen):
 					urljson = '%s/%s' %(self.urli, model)
 					self.jsonlist = dict(json.load(urllib2.urlopen('%s' %urljson)))
 				except:
-					self.close()
+					return
 			self.imagesList = self.jsonlist
 
 		if self.Pli and not self.jsonlist and not self.imagesList:
-			self.close()
+			return
 
 		for catagorie in reversed(sorted(self.imagesList.keys())):
 			if catagorie in self.expanded:
