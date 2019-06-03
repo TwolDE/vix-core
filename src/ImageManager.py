@@ -1521,14 +1521,14 @@ class ImageManagerDownload(Screen):
 		if self.Pli and not self.jsonlist and not self.imagesList:
 			return
 
-		for catagorie in reversed(sorted(self.imagesList.keys())):
-			if catagorie in self.expanded:
-				list.append(ChoiceEntryComponent('expanded',((str(catagorie)), "Expander")))
-				for image in reversed(sorted(self.imagesList[catagorie].keys())):
-					list.append(ChoiceEntryComponent('verticalline',((str(self.imagesList[catagorie][image]['name'])), str(self.imagesList[catagorie][image]['link']))))
+		for categorie in reversed(sorted(self.imagesList.keys())):
+			if categorie in self.expanded:
+				list.append(ChoiceEntryComponent('expanded',((str(categorie)), "Expander")))
+				for image in reversed(sorted(self.imagesList[categorie].keys())):
+					list.append(ChoiceEntryComponent('verticalline',((str(self.imagesList[categorie][image]['name'])), str(self.imagesList[categorie][image]['link']))))
 			else:
-				for image in self.imagesList[catagorie].keys():
-					list.append(ChoiceEntryComponent('expandable',((str(catagorie)), "Expander")))
+				for image in self.imagesList[categorie].keys():
+					list.append(ChoiceEntryComponent('expandable',((str(categorie)), "Expander")))
 					break
 		if list:
 			self["list"].setList(list)
