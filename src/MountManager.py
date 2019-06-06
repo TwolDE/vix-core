@@ -135,10 +135,10 @@ class VIXDevicesPanel(Screen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
-			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):
+			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
 				print '[MountManager1] HasSDmmc %s:' %device
 				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):		# h9 using SDcard for root
 				continue
 			if device in list2:
 				continue
@@ -161,10 +161,11 @@ class VIXDevicesPanel(Screen):
 		print '[MountManager1]TEST TYPE mmc:',devicetype.find('mmc')
 		print '[MountManager1]TEST TYPE rdb/SDHC:',devicetype.find('rdb')
 		print '[MountManager1]TEST TYPE soc:',devicetype.find('soc')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  getMachineBuild() not in ("h9", "i55plus", "h9combo"))):
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  not SystemInfo["HasSDnomount"])):
 			return
-		if  getMachineBuild() == 'h9combo' and "mmcblk0" in device:	# h9/i55 use mmcblk0p[0-3] for sdcard, h9combo uses mmcblk1p[0-3]
-			return
+		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] for sdcard, h9combo uses mmcblk1p[0-3]
+			if SystemInfo["HasSDnomount"][0] == 'Yes' and "%s" %SystemInfo["HasSDnomount"][1] in device:
+				return
 		d2 = device
 		print '[MountManager1]DEVICE D2:',d2
 		name = _("HARD DISK: ")
@@ -388,12 +389,10 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
-			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):
+			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
 				print '[MountManager2] HasSDmmc %s:' %device
 				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):
-#				continue
-#			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p" in z and re.search('mmcblk1p1', device):
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):		# h9 using SDcard for root
 				continue
 			if device in list2:
 				continue
@@ -419,10 +418,11 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		print '[MountManager2]TEST TYPE mmc:',devicetype.find('mmc')
 		print '[MountManager2]TEST TYPE rdb:',devicetype.find('rdb')
 		print '[MountManager2]TEST TYPE soc:',devicetype.find('soc')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  getMachineBuild() not in ("h9", "i55plus", "h9combo"))):
+		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  not SystemInfo["HasSDnomount"])):
 			return
-		if  getMachineBuild() == 'h9combo' and "mmcblk0" in device:
-			return
+		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] for sdcard, h9combo uses mmcblk1p[0-3]
+			if SystemInfo["HasSDnomount"][0] == 'Yes' and "%s" %SystemInfo["HasSDnomount"][1] in device:
+				return
 		d2 = device
 		print '[MountManager2]DEVICE D2:',d2
 		name = _("HARD DISK: ")
