@@ -458,7 +458,7 @@ class VIXImageManager(Screen):
 
 	def keyRestore3(self, val = None):
 		if SystemInfo["HasRootSubdir"]:
-			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares, after the image is flashed, your %s will restart - to access the new image use Multiboot restart." %getMachineMake()), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
+			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares, after the image is flashed, your %s will restart - if error please use Recovery mode to restart." %getMachineMake()), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
 		else:
 			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares."), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
@@ -504,6 +504,8 @@ class VIXImageManager(Screen):
  				if SystemInfo["HasSDmmc"]:						#h9, i55plus
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 				elif SystemInfo["HasRootSubdir"] and not SystemInfo["canMode12"]:	#h9Combo, multibox
+					if fileExists("/boot/STARTUP") and fileExists("/boot/STARTUP_LINUX_4"):
+						copyfile("/boot/STARTUP_LINUX_%s" % self.multibootslot, "/boot/STARTUP")
 					CMD = "/usr/bin/ofgwrite -f -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
 				else:
 					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
@@ -511,7 +513,7 @@ class VIXImageManager(Screen):
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 			elif SystemInfo["HasH9SD"]: 
 				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
-					CMD = "/usr/bin/ofgwrite -kmtd6 -rmmcblk0p1 '%s'" % (MAINDEST)
+					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
 			elif fileExists("%s/rootfs.ubi" %MAINDEST) and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
 				rename('%s/rootfs.tar.bz2' %MAINDEST, '%s/xx.txt' %MAINDEST)
 		else:
@@ -548,15 +550,14 @@ class VIXImageManager(Screen):
 
 	def ContainterFallback(self, data=None, retval=None, extra_args=None):
 		self.container.killAll()
-		slot = self.multibootslot
-		print "[ImageManager Restart] reboot3 slot:", slot
+		print "[ImageManager Restart] reboot3 slot:", self.multibootslot
 		if pathExists("/tmp/startupmount/STARTUP"):
 			if  fileExists("/tmp/startupmount/STARTUP_1"):
-				copyfile("/tmp/startupmount/STARTUP_%s" % slot, "/tmp/startupmount/STARTUP")
+				copyfile("/tmp/startupmount/STARTUP_%s" % self.multibootslot, "/tmp/startupmount/STARTUP")
 			elif fileExists("/tmp/startupmount/STARTUP_LINUX_4_BOXMODE_12"):
-				copyfile("/tmp/startupmount/STARTUP_LINUX_%s_BOXMODE_1" % slot, "/tmp/startupmount/STARTUP")
+				copyfile("/tmp/startupmount/STARTUP_LINUX_%s_BOXMODE_1" % self.multibootslot, "/tmp/startupmount/STARTUP")
 			elif fileExists("/tmp/startupmount/STARTUP_LINUX_4"):
-				copyfile("/tmp/startupmount/STARTUP_LINUX_%s" % slot, "/tmp/startupmount/STARTUP")
+				copyfile("/tmp/startupmount/STARTUP_LINUX_%s" % self.multibootslot, "/tmp/startupmount/STARTUP")
 			self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.open(MessageBox, _("Multiboot ERROR! - no STARTUP in boot partition."), MessageBox.TYPE_INFO, timeout=20)
@@ -1477,7 +1478,7 @@ class ImageManagerDownload(Screen):
 				if "Dev" in self.urli:
 					lines = html.split('\n')
 					for line in lines:
-						if line.find("openvix") > -1 and line.find(".zip") > -1 and line.find(getMachineMake()) != -1:
+						if line.find("openvix") > -1 and line.find(".zip") > -1 and line.find(getMachineMake()) != -1 and line.find('recovery') == -1:
 							t = line.find("openvix")
 							lineb = (line[t:t+51]).replace(" ","")	
 							countimage.append(lineb)
@@ -1487,7 +1488,7 @@ class ImageManagerDownload(Screen):
 
 					for tag in links:
 						link = tag.get('href',None)
-						if link != None and link.endswith('zip') and link.find(getMachineMake()) != -1:
+						if link != None and link.endswith('zip') and link.find(getMachineMake()) != -1 and link.find('recovery') == -1:
 							countimage.append(str(link))
 				if len(countimage) >= 1:
 					self.imagesList[newversion] = {}
@@ -1576,12 +1577,12 @@ class ImageManagerDownload(Screen):
 			self.sel = currentSelected[0][0]
 			if self.sel:
 				message = _("Are you sure you want to download this image:\n ") + self.sel
-				ybox = self.session.openWithCallback(self.doDownload, MessageBox, message, MessageBox.TYPE_YESNO)
+				ybox = self.session.openWithCallback(self.doDownloadX, MessageBox, message, MessageBox.TYPE_YESNO)
 				ybox.setTitle(_("Download confirmation"))
 			else:
-				self.Close()
+				self.close()
 
-	def doDownload(self, answer):
+	def doDownloadX(self, answer):
 		if answer is True:
 			selectedimage = self['list'].getCurrent()
 			currentSelected = self["list"].l.getCurrentSelection()
@@ -1603,6 +1604,7 @@ class ImageManagerDownload(Screen):
 					if job.name.startswith(_("Downloading")):
 						break
 				self.showJobView(job)
+			self.close()
 
 	def showJobView(self, job):
 		Components.Task.job_manager.in_background = False
