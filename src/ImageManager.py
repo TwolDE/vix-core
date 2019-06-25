@@ -457,7 +457,7 @@ class VIXImageManager(Screen):
 
 
 	def keyRestore3(self, val = None):
-		if SystemInfo["HasRootSubdir"]:
+		if SystemInfo["RecoveryMode"]:
 			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares, after the image is flashed, your %s will restart - if error please use Recovery mode to restart." %getMachineMake()), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
 		else:
 			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares."), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
