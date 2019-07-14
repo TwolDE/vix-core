@@ -513,7 +513,8 @@ class VIXImageManager(Screen):
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 			elif SystemInfo["HasH9SD"]: 
 				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
-					CMD = "/usr/bin/ofgwrite -kmtd6 -rmmcblk0p1 '%s'" % (MAINDEST)
+					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
+#					CMD = "/usr/bin/ofgwrite -kmtd6 -rmmcblk0p1 '%s'" % (MAINDEST)
 			elif fileExists("%s/rootfs.ubi" %MAINDEST) and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
 				rename('%s/rootfs.tar.bz2' %MAINDEST, '%s/xx.txt' %MAINDEST)
 		else:
