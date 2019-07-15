@@ -28,11 +28,11 @@ def setLanguageFromBackup(backupfile):
 						if languageToSelect:
 							from Components.Language import language
 							language.activateLanguage(languageToSelect)
-							config.osd.language.setValue(languageToSelect)
-							config.osd.language.save()
-							config.misc.languageselected.value = 0
-							config.misc.languageselected.save()
-							configfile.save()
+#							config.osd.language.setValue(languageToSelect)
+#							config.osd.language.save()
+#							config.misc.languageselected.value = 0
+#							config.misc.languageselected.save()
+#							configfile.save()
 							break
 		tar.close()
 	except:
