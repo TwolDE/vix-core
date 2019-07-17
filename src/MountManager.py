@@ -292,6 +292,7 @@ class VIXDevicesPanel(Screen):
 			parts = sel[1].split()
 			self.device = parts[5]
 			self.mountp = parts[3]
+			print '[MountManager1]saveMypoints: device = %s, mountp=%s' %(self.device, self.mountp)
 			self.Console.ePopen('umount ' + self.device)
 			if self.mountp.find('/media/hdd') < 0:
 				self.Console.ePopen('umount /media/hdd')
@@ -303,6 +304,7 @@ class VIXDevicesPanel(Screen):
 		self.device = extra_args[0]
 		self.mountp = extra_args[1]
 		self.device_uuid = 'UUID=' + result.split('UUID=')[1].split(' ')[0].replace('"', '')
+		print '[MountManager1]add_fstab: device = %s, mountp=%s, UUID=%s' %(self.device, self.mountp, self.device_uuid)
 		if not path.exists(self.mountp):
 			mkdir(self.mountp, 0755)
 		file('/etc/fstab.tmp', 'w').writelines([l for l in file('/etc/fstab').readlines() if '/media/hdd' not in l])
