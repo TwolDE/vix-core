@@ -509,9 +509,9 @@ class VIXImageManager(Screen):
 					CMD = "/usr/bin/ofgwrite -f -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
 				else:
 					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
- 			elif pathExists('/proc/hisi'):							#SF8008, GBtrio, Beyonwizv2
+ 			elif SystemInfo["HasHiSi"]:
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
-			elif SystemInfo["HasH9SD"]:							#H9 using SD card for root 
+			elif SystemInfo["HasH9SD"]: 
 				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
 					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
 #					CMD = "/usr/bin/ofgwrite -kmtd6 -rmmcblk0p1 '%s'" % (MAINDEST)
