@@ -44,6 +44,7 @@ class RestoreWizard(WizardLanguage, Rc):
 		list = []
 		files = []
 		mtimes = []
+		defaultprefix = getImageDistro()[4:]
 		for x in devices:
 			if x[1] == '/':
 				devices.remove(x)
@@ -59,7 +60,7 @@ class RestoreWizard(WizardLanguage, Rc):
 					files = []
 				if len(files):
 					for file in files:
-						if file.endswith('.tar.gz'):
+						if file.endswith('.tar.gz') and file.startswith('%s' %defaultprefix):
 							mtimes.append((path.join(devpath, file), stat(path.join(devpath, file)).st_mtime)) # (filname, mtime)
 		for file in [x[0] for x in sorted(mtimes, key=lambda x: x[1], reverse=True)]: # sort by mtime
 			list.append((file, file))
