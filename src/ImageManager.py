@@ -1461,7 +1461,7 @@ class ImageManagerDownload(Screen):
 				self.urlb = self.urli.replace("login", "%s") %config.imagemanager.imagefeed_DevL.value 
 				imagecat = [5.3]
 		elif "www.openvix" in self.urli:
-			imagecat = [5.2]
+			imagecat = [5.3]
 
 		if not self.Pli and not self.imagesList:
 			for version in reversed(sorted(imagecat)):
