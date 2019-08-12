@@ -1459,7 +1459,7 @@ class ImageManagerDownload(Screen):
 				return
 			else:
 				self.urlb = self.urli.replace("login", "%s") %config.imagemanager.imagefeed_DevL.value 
-				imagecat = [5.2]
+				imagecat = [5.3]
 		elif "www.openvix" in self.urli:
 			imagecat = [5.2]
 
