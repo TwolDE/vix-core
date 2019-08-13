@@ -1,7 +1,6 @@
 # for localized messages
 from os import listdir, path, walk, stat
-from boxbranding import getMachineBrand, getMachineName
-
+from boxbranding import getMachineBrand, getMachineName, getImageDistro
 from . import _
 from Components.About import about
 from Components.Console import Console
