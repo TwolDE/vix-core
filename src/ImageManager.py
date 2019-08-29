@@ -50,7 +50,6 @@ config.imagemanager.repeattype = ConfigSelection(default="daily", choices=[("dai
 config.imagemanager.backupretry = ConfigNumber(default=30)
 config.imagemanager.backupretrycount = NoSave(ConfigNumber(default=0))
 config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default=0))
-config.imagemanager.restoreimage = NoSave(ConfigText(default=getBoxType(), fixed_size=False))
 config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
 config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
@@ -289,14 +288,10 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
 
 	def doDownload(self):
-		if getImageType() == 'releasex':
-			self.urli = config.imagemanager.imagefeed_ViX.value
-			self.session.openWithCallback(self.doDownload2, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urli)
-		else:
-			self.choices = [("User", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli",4), ("ViXDev", 5)]
-			self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
-			self.message = _("Do you want to change download url")
-			self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
+		self.choices = [("Local", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli",4), ("ViXDev", 5)]
+		self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
+		self.message = _("Do you want to change download url")
+		self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
 
 	def doDownload2(self, retval):
 		if retval:
@@ -498,28 +493,22 @@ class VIXImageManager(Screen):
 
 	def keyRestore6(self,ret):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
-		CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST
 		if ret == 0:
+			CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST										#normal non multiboot receiver
 			if SystemInfo["canMultiBoot"]:
- 				if SystemInfo["HasSDmmc"]:						#h9, i55plus
+				currentimageslot = GetCurrentImage()
+				CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)					#normal multiboot receiver restart
+ 				if SystemInfo["HasSDmmc"]:											#SF8008 type receiver with SD card multiboot
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
-				elif SystemInfo["HasRootSubdir"] and not SystemInfo["canMode12"]:	#h9Combo, multibox
-					if fileExists("/boot/STARTUP") and fileExists("/boot/STARTUP_LINUX_4"):
-						copyfile("/boot/STARTUP_LINUX_%s" % self.multibootslot, "/boot/STARTUP")
-					CMD = "/usr/bin/ofgwrite -f -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
-				else:
-					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
  			elif SystemInfo["HasHiSi"]:
-				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
+				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)				#SF8008 type receiver No SD card multiboot
 			elif SystemInfo["HasH9SD"]: 
-				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
+				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):	#h9 using SD card
 					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
-#					CMD = "/usr/bin/ofgwrite -kmtd6 -rmmcblk0p1 '%s'" % (MAINDEST)
-			elif fileExists("%s/rootfs.ubi" %MAINDEST) and fileExists("%s/rootfs.tar.bz2" %MAINDEST):
+			elif fileExists("%s/rootfs.ubi" %MAINDEST) and fileExists("%s/rootfs.tar.bz2" %MAINDEST):				#h9 no SD card - build has both roots causes ofgwrite issue
 				rename('%s/rootfs.tar.bz2' %MAINDEST, '%s/xx.txt' %MAINDEST)
 		else:
-			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)
-		config.imagemanager.restoreimage.setValue(self.sel)
+			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)								#Xtrend ET8500 with OS2 multiboot
 		print '[ImageManager] running commnd:',CMD
 		self.Console.ePopen(CMD, self.ofgwriteResult)
 		fbClass.getInstance().lock()
@@ -546,7 +535,7 @@ class VIXImageManager(Screen):
 			else:
 				self.session.open(TryQuitMainloop, 2)
 		else:
-			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("OFGwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
+			self.session.openWithCallback(self.restore_infobox.close, MessageBox, _("ofgwrite error (also sent to any debug log):\n%s") % result, MessageBox.TYPE_INFO, timeout=20)
 			print "[ImageManager] OFGWriteResult failed:\n", result
 
 	def ContainterFallback(self, data=None, retval=None, extra_args=None):
