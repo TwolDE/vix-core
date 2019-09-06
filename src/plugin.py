@@ -65,7 +65,7 @@ def checkConfigBackup():
  		if len(list):
 			print '[RestoreWizard] Backup Image:', list[0]
 			backupfile = list[0]
-			if path.isfile(backupfile) and feedsstatuscheck.adapterAvailable() and feedsstatuscheck.NetworkUp()::
+			if path.isfile(backupfile) and feedsstatuscheck.adapterAvailable() and feedsstatuscheck.NetworkUp():
 				setLanguageFromBackup(backupfile)
 			return True
 		else:
