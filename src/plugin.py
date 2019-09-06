@@ -6,6 +6,7 @@ from . import _
 from Plugins.Plugin import PluginDescriptor
 from Components.config import config, ConfigBoolean, configfile
 from Components.Harddisk import harddiskmanager
+from Components.OnlineUpdateCheck import feedsstatuscheck, kernelMismatch
 from BackupManager import BackupManagerautostart
 from ImageManager import ImageManagerautostart
 from SoftcamManager import SoftcamAutostart
@@ -64,7 +65,7 @@ def checkConfigBackup():
  		if len(list):
 			print '[RestoreWizard] Backup Image:', list[0]
 			backupfile = list[0]
-			if path.isfile(backupfile):
+			if path.isfile(backupfile) and feedsstatuscheck.adapterAvailable() and feedsstatuscheck.NetworkUp()::
 				setLanguageFromBackup(backupfile)
 			return True
 		else:
