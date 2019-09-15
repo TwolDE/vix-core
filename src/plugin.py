@@ -13,6 +13,7 @@ from SoftcamManager import SoftcamAutostart
 from IPKInstaller import IpkgInstaller
 
 config.misc.restorewizardrun = ConfigBoolean(default=False)
+languageToSelect = False
 
 def setLanguageFromBackup(backupfile):
 	try:
@@ -29,11 +30,6 @@ def setLanguageFromBackup(backupfile):
 						if languageToSelect:
 							from Components.Language import language
 							language.activateLanguage(languageToSelect)
-#							config.osd.language.setValue(languageToSelect)
-#							config.osd.language.save()
-#							config.misc.languageselected.value = 0
-#							config.misc.languageselected.save()
-#							configfile.save()
 							break
 		tar.close()
 	except:
@@ -65,9 +61,12 @@ def checkConfigBackup():
  		if len(list):
 			print '[RestoreWizard] Backup Image:', list[0]
 			backupfile = list[0]
-			if path.isfile(backupfile) and feedsstatuscheck.adapterAvailable() and feedsstatuscheck.NetworkUp():
+			if path.isfile(backupfile):
 				setLanguageFromBackup(backupfile)
-			return True
+			if languageToSelect:
+				return True
+			else:
+				return None
 		else:
 			return None
 	except IOError, e:
