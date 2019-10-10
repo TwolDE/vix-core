@@ -496,18 +496,15 @@ class VIXImageManager(Screen):
 		if ret == 0:
 			CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST										#normal non multiboot receiver
 			if SystemInfo["canMultiBoot"]:
-				currentimageslot = GetCurrentImage()
 				CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)					#normal multiboot receiver restart
  				if SystemInfo["HasSDmmc"]:											#SF8008 type receiver with SD card multiboot
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
  			elif SystemInfo["HasHiSi"]:
 				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)				#SF8008 type receiver No SD card multiboot
 			elif SystemInfo["HasH9SD"]: 
-				print "[ImageManager] 2 HasH9Sd and mmc in boot" 
 				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):	#h9 using SD card
 					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
 				elif fileExists("%s/rootfs.ubi" %MAINDEST) and fileExists("%s/rootfs.tar.bz2" %MAINDEST):				#h9 no SD card - build has both roots causes ofgwrite issue
-					print "[ImageManager] Has H9 rootfs and ubi" 
 					rename('%s/rootfs.tar.bz2' %MAINDEST, '%s/xx.txt' %MAINDEST)
 		else:
 			CMD = '/usr/bin/ofgwrite -rmtd4 -kmtd3  %s/' % (MAINDEST)								#Xtrend ET8500 with OS2 multiboot
@@ -1444,7 +1441,7 @@ class ImageManagerDownload(Screen):
 		self.urlb = self.urli+self.boxtype+'/'
 		
 		if "atv" in self.urli:
-			imagecat = [6.2,6.3]
+			imagecat = [6.2,6.3, 6.4]
 		elif "Dev" in self.urli:
 			if "login:pswd" in config.imagemanager.imagefeed_DevL.value:
 				return
