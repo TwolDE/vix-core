@@ -1437,7 +1437,7 @@ class ImageManagerDownload(Screen):
 		model = HardwareInfo().get_device_name()
 		if model == "dm8000":
 			model = getMachineMake()
-		imagecat = [6.0]
+		imagecat = [6.4]
 		self.urlb = self.urli+self.boxtype+'/'
 		
 		if "atv" in self.urli:
@@ -1447,7 +1447,7 @@ class ImageManagerDownload(Screen):
 				return
 			else:
 				self.urlb = self.urli.replace("login", "%s") %config.imagemanager.imagefeed_DevL.value 
-				imagecat = 6.4]
+				imagecat = [5.3]
 		elif "www.openvix" in self.urli:
 			imagecat = [5.3]
 
