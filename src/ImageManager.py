@@ -34,16 +34,18 @@ from Tools.Notifications import AddPopupWithCallback
 
 RAMCHEKFAILEDID = 'RamCheckFailedNotification'
 
-hddchoises = []
+hddchoices = []
 for p in harddiskmanager.getMountedPartitions():
 	if path.exists(p.mountpoint):
 		d = path.normpath(p.mountpoint)
-		if p.mountpoint != '/':
-			hddchoises.append((p.mountpoint, d))
+		if SystemInfo["canMultiBoot"] and SystemInfo["canMultiBoot"][2] in d:
+				continue
+		elif p.mountpoint != '/':
+			hddchoices.append((p.mountpoint, d))
 config.imagemanager = ConfigSubsection()
 defaultprefix = getImageDistro() + '-' + getBoxType()
 config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
-config.imagemanager.backuplocation = ConfigSelection(choices=hddchoises)
+config.imagemanager.backuplocation = ConfigSelection(choices=hddchoices)
 config.imagemanager.schedule = ConfigYesNo(default=False)
 config.imagemanager.scheduletime = ConfigClock(default=0)  # 1:00
 config.imagemanager.repeattype = ConfigSelection(default="daily", choices=[("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
@@ -135,6 +137,7 @@ class VIXImageManager(Screen):
 		self["key_blue"] = Button(_("Flash"))
 
 		self.BackupRunning = False
+		self.BackupDirectory = " "
 		if SystemInfo["canMultiBoot"]:
 			self.mtdboot = "%s1" % SystemInfo["canMultiBoot"][2]
 	 		if SystemInfo["canMultiBoot"][2] == "sda":
@@ -194,6 +197,8 @@ class VIXImageManager(Screen):
 		self["list"].instance.moveSelection(self["list"].instance.moveDown)
 
 	def refreshList(self):
+		if self.BackupDirectory == " ":
+			return
 		images = listdir(self.BackupDirectory)
 		self.oldlist = images
 		del self.emlist[:]
@@ -217,26 +222,18 @@ class VIXImageManager(Screen):
 		Components.Task.job_manager.in_background = in_background
 
 	def populate_List(self):
-		imparts = []
-		for p in harddiskmanager.getMountedPartitions():
-			if path.exists(p.mountpoint):
-				d = path.normpath(p.mountpoint)
-				if p.mountpoint != '/':
-					imparts.append((p.mountpoint, d))
-		config.imagemanager.backuplocation.setChoices(imparts)
-
 		if config.imagemanager.backuplocation.value.endswith('/'):
 			mount = config.imagemanager.backuplocation.value, config.imagemanager.backuplocation.value[:-1]
 		else:
 			mount = config.imagemanager.backuplocation.value + '/', config.imagemanager.backuplocation.value
 		hdd = '/media/hdd/', '/media/hdd'
 		if mount not in config.imagemanager.backuplocation.choices.choices and hdd not in config.imagemanager.backuplocation.choices.choices:
-			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions"],
+			self['myactions'] = ActionMap(["OkCancelActions", "MenuActions"],
 											  {
 											  'cancel': self.close,
 											  "menu": self.createSetup,
 											  }, -1)
-			self['lab1'].setText(_("Device: None available") + "\n" + _("Select a storage device:"))
+			self['lab1'].setText(_("Device: None available") + "\n" + _("Press 'Menu' to select a storage device"))
 		else:
 			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
 										  {
@@ -270,19 +267,25 @@ class VIXImageManager(Screen):
 										  "ok": self.keyRestore,
 										  'blue': self.keyRestore,
 										  }, -1)
-			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
-			s = statvfs(config.imagemanager.backuplocation.value)
-			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
-			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Select an image to flash:"))
-		try:
-			if not path.exists(self.BackupDirectory):
-				mkdir(self.BackupDirectory, 0755)
-			if path.exists(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup'):
-				system('swapoff ' + self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
-				remove(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
-#			self.refreshList()
-		except:
-			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("There is a problem with this device. Please reformat it and try again."))
+			if mount not in config.imagemanager.backuplocation.choices.choices: 
+				self.BackupDirectory = '/media/hdd/imagebackups/'
+				config.imagemanager.backuplocation.value = '/media/hdd/'
+				config.imagemanager.backuplocation.save()
+				self['lab1'].setText(_("The chosen location does not exist, using /media/hdd.") + "\n" + _("Select an image to flash:"))
+			else:
+				self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
+				s = statvfs(config.imagemanager.backuplocation.value)
+				free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
+				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB') + "\n" + _("Select an image to flash:"))
+			try:
+				if not path.exists(self.BackupDirectory):
+					mkdir(self.BackupDirectory, 0755)
+				if path.exists(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup'):
+					system('swapoff ' + self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
+					remove(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
+#				self.refreshList()
+			except:
+				self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("There is a problem with this device. Please reformat it and try again."))
 
 	def createSetup(self):
 		self.session.openWithCallback(self.setupDone, Setup, 'viximagemanager', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
