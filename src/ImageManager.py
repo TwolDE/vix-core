@@ -242,30 +242,11 @@ class VIXImageManager(Screen):
 										  'green': self.GreenPressed,
 										  'yellow': self.doDownload,
 										  "menu": self.createSetup,
+										  "ok": self.keyRestore,
+										  'blue': self.keyRestore,
 										  "up": self.refreshUp,
 										  "down": self.refreshDown,
 										  "displayHelp": self.doDownload,
-										  }, -1)
-
-			if SystemInfo["HasH9SD"]:
- 				if fileHas("/proc/cmdline", "root=/dev/mmcblk0px") is True:		# dummy this for my system
-					print "[ImageManager] HasH9Sd and mmc in boot" 
-					self["key_blue"].setText("")
-					self["key_blue"].show()
-					pass
-				else:
-					print "[ImageManager] HasH9Sd and not MMC in boot" 
-					self['restoreaction'] = ActionMap(['ColorActions', 'OkCancelActions'],
-												  {
-												  "ok": self.keyRestore,
-												  'blue': self.keyRestore,
-												  }, -1)
-			else:
-				print "[ImageManager] Not HasH9Sd" 
-				self['restoreaction'] = ActionMap(['ColorActions', 'OkCancelActions'],
-										  {
-										  "ok": self.keyRestore,
-										  'blue': self.keyRestore,
 										  }, -1)
 			if mount not in config.imagemanager.backuplocation.choices.choices: 
 				self.BackupDirectory = '/media/hdd/imagebackups/'
