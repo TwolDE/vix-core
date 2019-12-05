@@ -5,7 +5,6 @@ from boxbranding import getBoxType, getImageDistro
 from . import _
 from Plugins.Plugin import PluginDescriptor
 from Components.config import config, ConfigBoolean, configfile
-from Components.Harddisk import harddiskmanager
 from Components.OnlineUpdateCheck import feedsstatuscheck, kernelMismatch
 from BackupManager import BackupManagerautostart
 from ImageManager import ImageManagerautostart
@@ -36,19 +35,16 @@ def setLanguageFromBackup(backupfile):
 
 def checkConfigBackup():
 	try:
-		devices = [(r.description, r.mountpoint) for r in harddiskmanager.getMountedPartitions(onlyhotplug=False)]
+		devmounts = []
 		list = []
 		files = []
-		defaultprefix = getImageDistro()[4:]
-		for x in devices:
-			if x[1] == '/':
-				devices.remove(x)
-		if len(devices):
-			for x in devices:
-				devpath = path.join(x[1], 'backup')
-				if path.exists(devpath):
+		for dir in ["/media/%s/backup" % media for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
+			devmounts.append(dir)
+		if len(devmounts):
+			for x in devmounts:
+				if path.exists(x):
 					try:
-						files = listdir(devpath)
+						files = listdir(x)
 					except:
 						files = []
 				else:
@@ -56,7 +52,7 @@ def checkConfigBackup():
 				if len(files):
 					for file in files:
 						if file.endswith('.tar.gz') and "vix" in file.lower():
-							list.append((path.join(devpath, file)))
+							list.append((path.join(x, file)))
  		if len(list):
 			print '[RestoreWizard] Backup Image:', list[0]
 			backupfile = list[0]

@@ -6,7 +6,6 @@ from Components.About import about
 from Components.Console import Console
 from Components.config import config, configfile
 from Components.Pixmap import Pixmap
-from Components.Harddisk import harddiskmanager
 from Screens.WizardLanguage import WizardLanguage
 from Screens.Rc import Rc
 from Screens.MessageBox import MessageBox
@@ -39,20 +38,19 @@ class RestoreWizard(WizardLanguage, Rc):
 		return _(text).replace("%s %s", "%s %s" % (getMachineBrand(), getMachineName()))
 
 	def listDevices(self):
-		devices = [(r.description, r.mountpoint) for r in harddiskmanager.getMountedPartitions(onlyhotplug=False)]
+		devmounts = []
 		list = []
 		files = []
 		mtimes = []
 		defaultprefix = getImageDistro()[4:]
-		for x in devices:
-			if x[1] == '/':
-				devices.remove(x)
-		if len(devices):
-			for x in devices:
-				devpath = path.join(x[1], 'backup')
-				if path.exists(devpath):
+
+		for dir in ["/media/%s/backup" % media for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
+			devmounts.append(dir)
+		if len(devmounts):
+			for x in devmounts:
+				if path.exists(x):
 					try:
-						files = listdir(devpath)
+						files = listdir(x)
 					except:
 						files = []
 				else:
@@ -60,7 +58,7 @@ class RestoreWizard(WizardLanguage, Rc):
 				if len(files):
 					for file in files:
 						if file.endswith('.tar.gz') and "vix" in file.lower() or file.startswith('%s' %defaultprefix):
-							mtimes.append((path.join(devpath, file), stat(path.join(devpath, file)).st_mtime)) # (filname, mtime)
+							mtimes.append((path.join(x, file), stat(path.join(x, file)).st_mtime)) # (filname, mtime)
 		for file in [x[0] for x in sorted(mtimes, key=lambda x: x[1], reverse=True)]: # sort by mtime
 			list.append((file, file))
 		return list
