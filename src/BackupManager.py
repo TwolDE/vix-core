@@ -1,6 +1,6 @@
 # for localized messages
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getMachineBrand, getMachineName
-from os import path, stat, mkdir, listdir, remove, statvfs, chmod, walk
+from os import path, stat, mkdir, listdir, remove, statvfs, chmod
 from time import localtime, time, strftime, mktime
 from datetime import date, datetime
 import tarfile, glob
@@ -40,7 +40,7 @@ for p in harddiskmanager.getMountedPartitions():
 				continue
 		elif p.mountpoint != '/':
 			hddchoices.append((p.mountpoint, d))
-
+	print "[BackupManager]hddchoices = %s" %hddchoices
 config.backupmanager = ConfigSubsection()
 config.backupmanager.showboxname = ConfigYesNo(default=False)
 defaultprefix = getImageDistro()[4:]
@@ -590,6 +590,8 @@ class VIXBackupManager(Screen):
 			if config.backupmanager.xtraplugindir.value:
 				self.thirdpartyPluginsLocation = config.backupmanager.xtraplugindir.value
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
+				self.plugfiles = config.backupmanager.xtraplugindir.value.split('/',3)
+				print "[BackupManager] config.backupmanager.xtraplugindir split = %s" %self.plugfiles
 			elif path.exists('/tmp/3rdPartyPluginsLocation'):
 				self.thirdpartyPluginsLocation = open('/tmp/3rdPartyPluginsLocation', 'r').readlines()
 				self.thirdpartyPluginsLocation = "".join(self.thirdpartyPluginsLocation)
@@ -604,30 +606,38 @@ class VIXBackupManager(Screen):
 					parts = line.strip().split('_')
 					if parts[0] not in plugins:
 						ipk = parts[0]
-						if path.exists(self.thirdpartyPluginsLocation):
+					if path.exists(self.thirdpartyPluginsLocation):
 							available = listdir(self.thirdpartyPluginsLocation)
-						else:
-							for root, subFolders, files in walk('/media'):
-								for folder in subFolders:
-									# 									print "%s has subdirectory %s" % (root, folder)
-									if folder and folder == path.split(self.thirdpartyPluginsLocation[:-1])[-1]:
-										self.thirdpartyPluginsLocation = path.join(root, folder)
-										self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
+					else:
+						devmounts = []
+						files = []
+						self.plugfile = self.plugfiles[3]
+						for dir in ["/media/%s/%s" %(media, self.plugfile)  for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
+							if media != "autofs" or "net":
+								devmounts.append(dir)
+						if len(devmounts):
+							for x in devmounts:
+								print "[BackupManager] search dir = %s" %devmounts
+								if path.exists(x):
+									self.thirdpartyPluginsLocation = x
+									try:
 										available = listdir(self.thirdpartyPluginsLocation)
-										# 										print 'TRUE',self.thirdpartyPluginsLocation
 										break
-						if available:
-							for file in available:
-								if file:
-									fileparts = file.strip().split('_')
-									# 									print 'FILE:',fileparts
-									# 									print 'IPK:',ipk
-									if fileparts[0] == ipk:
-										self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
-										ipk = path.join(self.thirdpartyPluginsLocation, file)
-										if path.exists(ipk):
-											# 											print 'IPK', ipk
-											self.pluginslist2.append(ipk)
+									except:
+										continue
+					if available:
+						for file in available:
+							if file:
+								fileparts = file.strip().split('_')
+								# 									print 'FILE:',fileparts
+								# 									print 'IPK:',ipk
+								if fileparts[0] == ipk:
+									self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
+									ipk = path.join(self.thirdpartyPluginsLocation, file)
+									if path.exists(ipk):
+										# 											print 'IPK', ipk
+										self.pluginslist2.append(ipk)
+					print "[BackupManager] pluginslist = %s" %self.pluginslist2
 
 		print '[BackupManager] Restoring Stage 3: Complete'
 		self.Stage3Completed = True

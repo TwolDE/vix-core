@@ -1,5 +1,5 @@
 # for localized messages
-from os import listdir, path, walk, stat
+from os import listdir, path, stat
 from boxbranding import getMachineBrand, getMachineName, getImageDistro
 from . import _
 from Components.About import about
@@ -304,6 +304,7 @@ class RestoreWizard(WizardLanguage, Rc):
 				self.thirdpartyPluginsLocation = "".join(self.thirdpartyPluginsLocation)
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace('\n', '')
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
+				self.plugfiles = self.thirdpartyPluginsLocation.split('/',3)
 			else:
 				self.thirdpartyPluginsLocation = " "
 
@@ -317,13 +318,22 @@ class RestoreWizard(WizardLanguage, Rc):
 						if path.exists(self.thirdpartyPluginsLocation):
 							available = listdir(self.thirdpartyPluginsLocation)
 						else:
-							for root, subFolders, files in walk('/media'):
-								for folder in subFolders:
-									if folder and folder == path.split(self.thirdpartyPluginsLocation[:-1])[-1]:
-										self.thirdpartyPluginsLocation = path.join(root, folder)
-										self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
-										available = listdir(self.thirdpartyPluginsLocation)
-										break
+							devmounts = []
+							files = []
+							self.plugfile = self.plugfiles[3]
+							for dir in ["/media/%s/%s" %(media, self.plugfile)  for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
+								if media != "autofs" or "net":
+									devmounts.append(dir)
+							if len(devmounts):
+								for x in devmounts:
+									print "[BackupManager] search dir = %s" %devmounts
+									if path.exists(x):
+										self.thirdpartyPluginsLocation = x
+										try:
+											available = listdir(self.thirdpartyPluginsLocation)
+											break
+										except:
+											continue
 						if available:
 							for file in available:
 								if file:

@@ -5,7 +5,6 @@ from boxbranding import getBoxType, getImageDistro
 from . import _
 from Plugins.Plugin import PluginDescriptor
 from Components.config import config, ConfigBoolean, configfile
-from Components.OnlineUpdateCheck import feedsstatuscheck, kernelMismatch
 from BackupManager import BackupManagerautostart
 from ImageManager import ImageManagerautostart
 from SoftcamManager import SoftcamAutostart
