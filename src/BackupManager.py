@@ -587,18 +587,19 @@ class VIXBackupManager(Screen):
 
 		if path.exists('/tmp/3rdPartyPlugins') and self.kernelcheck:
 			self.pluginslist2 = []
+			self.plugfiles = []
+			self.thirdpartyPluginsLocation = " "
 			if config.backupmanager.xtraplugindir.value:
+				self.plugfiles = config.backupmanager.xtraplugindir.value.split('/',3)
 				self.thirdpartyPluginsLocation = config.backupmanager.xtraplugindir.value
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
-				self.plugfiles = config.backupmanager.xtraplugindir.value.split('/',3)
-				print "[BackupManager] config.backupmanager.xtraplugindir split = %s" %self.plugfiles
 			elif path.exists('/tmp/3rdPartyPluginsLocation'):
 				self.thirdpartyPluginsLocation = open('/tmp/3rdPartyPluginsLocation', 'r').readlines()
 				self.thirdpartyPluginsLocation = "".join(self.thirdpartyPluginsLocation)
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace('\n', '')
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
-			else:
-				self.thirdpartyPluginsLocation = " "
+				self.plugfiles = self.thirdpartyPluginsLocation.split('/',3)
+			print "[BackupManager] thirdpartyPluginsLocation split = %s" %self.plugfiles
 			tmppluginslist2 = open('/tmp/3rdPartyPlugins', 'r').readlines()
 			available = None
 			for line in tmppluginslist2:
@@ -606,38 +607,38 @@ class VIXBackupManager(Screen):
 					parts = line.strip().split('_')
 					if parts[0] not in plugins:
 						ipk = parts[0]
-					if path.exists(self.thirdpartyPluginsLocation):
+						if path.exists(self.thirdpartyPluginsLocation):
 							available = listdir(self.thirdpartyPluginsLocation)
-					else:
-						devmounts = []
-						files = []
-						self.plugfile = self.plugfiles[3]
-						for dir in ["/media/%s/%s" %(media, self.plugfile)  for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
-							if media != "autofs" or "net":
-								devmounts.append(dir)
-						if len(devmounts):
-							for x in devmounts:
-								print "[BackupManager] search dir = %s" %devmounts
-								if path.exists(x):
-									self.thirdpartyPluginsLocation = x
-									try:
-										available = listdir(self.thirdpartyPluginsLocation)
-										break
-									except:
-										continue
-					if available:
-						for file in available:
-							if file:
-								fileparts = file.strip().split('_')
-								# 									print 'FILE:',fileparts
-								# 									print 'IPK:',ipk
-								if fileparts[0] == ipk:
-									self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
-									ipk = path.join(self.thirdpartyPluginsLocation, file)
-									if path.exists(ipk):
-										# 											print 'IPK', ipk
-										self.pluginslist2.append(ipk)
-					print "[BackupManager] pluginslist = %s" %self.pluginslist2
+						else:
+							devmounts = []
+							files = []
+							self.plugfile = self.plugfiles[3]
+							for dir in ["/media/%s/%s" %(media, self.plugfile)  for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
+								if media != "autofs" or "net":
+									devmounts.append(dir)
+							if len(devmounts):
+								for x in devmounts:
+									print "[BackupManager] search dir = %s" %devmounts
+									if path.exists(x):
+										self.thirdpartyPluginsLocation = x
+										try:
+											available = listdir(self.thirdpartyPluginsLocation)
+											break
+										except:
+											continue
+						if available:
+							for file in available:
+								if file:
+									fileparts = file.strip().split('_')
+									# 									print 'FILE:',fileparts
+									# 									print 'IPK:',ipk
+									if fileparts[0] == ipk:
+										self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(' ', '%20')
+										ipk = path.join(self.thirdpartyPluginsLocation, file)
+										if path.exists(ipk):
+											# 											print 'IPK', ipk
+											self.pluginslist2.append(ipk)
+						print "[BackupManager] pluginslist = %s" %self.pluginslist2
 
 		print '[BackupManager] Restoring Stage 3: Complete'
 		self.Stage3Completed = True
