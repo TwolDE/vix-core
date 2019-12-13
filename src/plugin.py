@@ -40,10 +40,10 @@ def checkConfigBackup():
 		for dir in ["/media/%s/backup" % media for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
 			devmounts.append(dir)
 		if len(devmounts):
-			for x in devmounts:
-				if path.exists(x):
+			for devpath in devmounts:
+				if path.exists(devpath):
 					try:
-						files = listdir(x)
+						files = listdir(devpath)
 					except:
 						files = []
 				else:
@@ -51,7 +51,7 @@ def checkConfigBackup():
 				if len(files):
 					for file in files:
 						if file.endswith('.tar.gz') and "vix" in file.lower():
-							list.append((path.join(x, file)))
+							list.append((path.join(devpath, file)))
  		if len(list):
 			print '[RestoreWizard] Backup Image:', list[0]
 			backupfile = list[0]
