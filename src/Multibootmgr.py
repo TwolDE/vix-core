@@ -1,3 +1,4 @@
+from os import statvfs
 from Screens.Screen import Screen
 from Screens.Standby import TryQuitMainloop
 from Screens.MessageBox import MessageBox
@@ -9,7 +10,6 @@ from Components.config import config
 from Components.Label import Label
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
-from Components.Harddisk import Harddisk
 from Tools.BoundFunction import boundFunction
 from Tools.Directories import pathExists
 from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentImageMode, EmptySlot
@@ -163,7 +163,9 @@ class MultiBoot(Screen):
 		if answer is True:
 			sda = "sda"
 			des = " "
-			size = Harddisk(sda).diskSize()
+			stat = statvfs(sda)
+			cap = int(stat.f_blocks * stat.f_bsize)
+			size = cap / 1000 / 1000
 
 			if ((float(size) / 1024) / 1024) >= 1:
 				des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
