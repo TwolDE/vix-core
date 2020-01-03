@@ -191,6 +191,7 @@ class VIXDevicesPanel(Screen):
 			else:
 				mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_sd.png'
 		name += model
+		print '[MountManager1] device= %s, name = %s' %(device, name)
 		# self.Console.ePopen("sfdisk -l /dev/sd? | grep swap | awk '{print $(NF-9)}' >/tmp/devices.tmp")
 		# sleep(0.5)
 		# f = open('/tmp/devices.tmp', 'r')
@@ -210,6 +211,7 @@ class VIXDevicesPanel(Screen):
 				d1 = parts[1]
 				dtype = parts[2]
 				rw = parts[3]
+				print '[MountManager1] device =%s, parts=%s,d1= %s, dtype= %s, rw=%s' %(device, parts, d1, dtype, rw)
 				break
 			# else:
 			# 	if device in swapdevices:
@@ -219,18 +221,21 @@ class VIXDevicesPanel(Screen):
 			# 		rw = _("None")
 			# 		break
 		f.close()
-		stat = statvfs(d1)
-		cap = int(stat.f_blocks * stat.f_bsize)
-		size = cap / 1000 / 1000
-
-		if ((float(size) / 1024) / 1024) >= 1:
-			des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
-		elif (size / 1024) >= 1:
-			des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
-		elif size >= 1:
-			des = _("Size: ") + str(size) + _("MB")
+		if d1 == _("None") or d1 == None:
+			des = ''
 		else:
-			des = _("Size: ") + _("unavailable")
+			stat = statvfs(d1)
+			cap = int(stat.f_blocks * stat.f_bsize)
+			size = cap / 1000 / 1000
+
+			if ((float(size) / 1024) / 1024) >= 1:
+				des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
+			elif (size / 1024) >= 1:
+				des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
+			elif size >= 1:
+				des = _("Size: ") + str(size) + _("MB")
+			else:
+				des = _("Size: ") + _("unavailable")
 
 		if des != '':
 			if rw.startswith('rw'):
@@ -462,17 +467,20 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				dtype = parts[2]
 				break
 		f.close()
-		stat = statvfs(d1)
-		cap = int(stat.f_blocks * stat.f_bsize)
-		size = cap / 1000 / 1000
-		if ((float(size) / 1024) / 1024) >= 1:
-			des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
-		elif (size / 1024) >= 1:
-			des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
-		elif size >= 1:
-			des = _("Size: ") + str(size) + _("MB")
+		if d1 == _("None") or d1 == None:
+			des = ''
 		else:
-			des = _("Size: ") + _("unavailable")
+			stat = statvfs(d1)
+			cap = int(stat.f_blocks * stat.f_bsize)
+			size = cap / 1000 / 1000
+			if ((float(size) / 1024) / 1024) >= 1:
+				des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
+			elif (size / 1024) >= 1:
+				des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
+			elif size >= 1:
+				des = _("Size: ") + str(size) + _("MB")
+			else:
+				des = _("Size: ") + _("unavailable")
 
 		item = NoSave(ConfigSelection(default='/media/' + device, choices=[('/media/' + device, '/media/' + device),
 																		   ('/media/hdd', '/media/hdd'),
