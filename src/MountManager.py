@@ -222,7 +222,7 @@ class VIXDevicesPanel(Screen):
 			# 		break
 		f.close()
 		if d1 == _("None") or d1 == None:
-			des = ''
+			des = _("Size: ") + _("unavailable")
 		else:
 			stat = statvfs(d1)
 			cap = int(stat.f_blocks * stat.f_bsize)
@@ -468,7 +468,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				break
 		f.close()
 		if d1 == _("None") or d1 == None:
-			des = ''
+			des = _("Size: ") + _("unavailable")
 		else:
 			stat = statvfs(d1)
 			cap = int(stat.f_blocks * stat.f_bsize)
