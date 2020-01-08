@@ -179,7 +179,7 @@ class MultiBoot(Screen):
 					self.close
 				else:
 					IMAGE_ALIGNMENT=1024
-					KERNEL_PARTITION_SIZE=8192
+					KERNEL_PARTITION_SIZE=32768
 					ROOTFS_PARTITION_SIZE=2097152
 					PARTED_START_KERNEL2 = IMAGE_ALIGNMENT
 					PARTED_END_KERNEL2 = int(PARTED_START_KERNEL2) + int(KERNEL_PARTITION_SIZE)
@@ -201,8 +201,8 @@ class MultiBoot(Screen):
 					cmdlist.append("parted -s /dev/%s unit KiB mkpart rootfs2 ext4 %s %s "%(sda,PARTED_START_ROOTFS2,PARTED_END_ROOTFS2))
 					cmdlist.append("parted -s /dev/%s unit KiB mkpart kernel3 ext2 %s %s"%(sda,PARTED_START_KERNEL3,PARTED_END_KERNEL3))
 					cmdlist.append("parted -s /dev/%s unit KiB mkpart rootfs3 ext4 %s %s "%(sda,PARTED_START_ROOTFS3,PARTED_END_ROOTFS3))
-					cmdlist.append("parted -s /dev/%s unit KiB mkpart userdata ext4 %s 100%% "%(sda,PARTED_END_ROOTFS3))  ### Tech note: should be 95% for new mSD cards with discard"
-					cmdlist.append("for n in /dev/%s{1..5} ; do mkfs.ext4 $n ; done"%sda)  ###  we should do kernels in ext2, but ok for small kernel partitions 
+					cmdlist.append("parted -s /dev/%s unit KiB mkpart userdata ext4 %s 100%% "%(sda,PARTED_END_ROOTFS3))
+					cmdlist.append("for n in /dev/%s{1..5} ; do mkfs.ext4 $n ; done"%sda)   
 					cmdlist.append("partprobe /dev/%s"%sda)
 					self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
 			else:
