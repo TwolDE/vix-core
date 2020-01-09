@@ -3,26 +3,25 @@ import re
 from os import path, makedirs, remove, rename, symlink, mkdir, listdir
 from datetime import datetime
 from time import time, sleep
-
 from enigma import eTimer
 
 from . import _, PluginLanguageDomain
-import Components.Task
+
 from Components.ActionMap import ActionMap
-from Components.Label import Label
 from Components.Button import Button
-from Components.ScrollLabel import ScrollLabel
-from Components.Pixmap import MultiPixmap
 from Components.config import configfile, config, ConfigSubsection, ConfigYesNo, ConfigNumber, ConfigLocations
 from Components.Console import Console
 from Components.FileList import MultiFileSelectList
+from Components.Label import Label
+from Components.Pixmap import MultiPixmap
 from Components.PluginComponent import plugins
+from Components.ScrollLabel import ScrollLabel
 from Components.Sources.StaticText import StaticText
-from Tools.Directories import resolveFilename, SCOPE_PLUGINS
+from Components.SystemInfo import SystemInfo
+import Components.Task
 from Screens.Screen import Screen
 from Screens.MessageBox import MessageBox
-from Components.SystemInfo import SystemInfo
-
+from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 
 config.softcammanager = ConfigSubsection()
 config.softcammanager.softcams_autostart = ConfigLocations(default='')

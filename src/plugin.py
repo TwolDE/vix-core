@@ -3,12 +3,13 @@ from os import listdir, path, walk, stat
 from boxbranding import getBoxType, getImageDistro
 
 from . import _
-from Plugins.Plugin import PluginDescriptor
+
 from Components.config import config, ConfigBoolean, configfile
+from Plugins.Plugin import PluginDescriptor
 from BackupManager import BackupManagerautostart
 from ImageManager import ImageManagerautostart
-from SoftcamManager import SoftcamAutostart
 from IPKInstaller import IpkgInstaller
+from SoftcamManager import SoftcamAutostart
 
 config.misc.restorewizardrun = ConfigBoolean(default=False)
 

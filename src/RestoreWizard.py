@@ -3,12 +3,12 @@ from os import listdir, path, stat
 from boxbranding import getMachineBrand, getMachineName, getImageDistro
 from . import _
 from Components.About import about
-from Components.Console import Console
 from Components.config import config, configfile
+from Components.Console import Console
 from Components.Pixmap import Pixmap
-from Screens.WizardLanguage import WizardLanguage
-from Screens.Rc import Rc
 from Screens.MessageBox import MessageBox
+from Screens.Rc import Rc
+from Screens.WizardLanguage import WizardLanguage
 from Tools.Directories import fileExists, resolveFilename, SCOPE_PLUGINS
 
 from BackupManager import isRestorableSettings, isRestorablePlugins, isRestorableKernel

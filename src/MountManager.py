@@ -1,15 +1,13 @@
 # for localized messages
 from boxbranding import getMachineBrand, getMachineName, getMachineBuild
 from os import system, rename, path, mkdir, remove, statvfs
-from time import sleep
 import re
+from time import sleep
 
 from enigma import eTimer
 
 from . import _
-from Screens.Screen import Screen
-from Screens.MessageBox import MessageBox
-from Screens.Standby import TryQuitMainloop
+
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.ConfigList import ConfigListScreen
@@ -18,6 +16,9 @@ from Components.Console import Console
 from Components.Sources.List import List
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
+from Screens.MessageBox import MessageBox
+from Screens.Screen import Screen
+from Screens.Standby import TryQuitMainloop
 from Tools.LoadPixmap import LoadPixmap
 from Tools.Directories import SCOPE_ACTIVE_SKIN, resolveFilename, pathExists
 
