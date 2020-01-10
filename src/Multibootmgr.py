@@ -3,6 +3,7 @@ from boxbranding import getMachineBuild
 from Components.ActionMap import ActionMap
 from Components.ChoiceList import ChoiceList, ChoiceEntryComponent
 from Components.config import config
+from Components.Harddisk import Harddisk
 from Components.Label import Label
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
@@ -163,9 +164,7 @@ class MultiBoot(Screen):
 		if answer is True:
 			sda = "sda"
 			des = " "
-			stat = statvfs(sda)
-			cap = int(stat.f_blocks * stat.f_bsize)
-			size = cap / 1000 / 1000
+			size = Harddisk(sda).diskSize()
 
 			if ((float(size) / 1024) / 1024) >= 1:
 				des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
