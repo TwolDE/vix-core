@@ -126,7 +126,6 @@ class VIXDevicesPanel(Screen):
 		self.activityTimer.stop()
 		self.list = []
 		list2 = []
-		z = open('/proc/cmdline', 'r').read()
 		f = open('/proc/partitions', 'r')
 		for line in f.readlines():
 			parts = line.strip().split()
@@ -138,7 +137,7 @@ class VIXDevicesPanel(Screen):
 			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
 				print '[MountManager1] HasSDmmc %s:' %device
 				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):		# h9 using SDcard for root
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
 				continue
 			if device in list2:
 				continue
@@ -389,7 +388,6 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		# 	remove('/tmp/devices.tmp')
 		# swapdevices = swapdevices.replace('\n', '')
 		# swapdevices = swapdevices.split('/')
-		z = open('/proc/cmdline', 'r').read()
 		f = open('/proc/partitions', 'r')
 		for line in f.readlines():
 			parts = line.strip().split()
@@ -401,7 +399,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
 				print '[MountManager2] HasSDmmc %s:' %device
 				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in z and re.search('mmcblk0p1', device):		# h9 using SDcard for root
+			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
 				continue
 			if device in list2:
 				continue
