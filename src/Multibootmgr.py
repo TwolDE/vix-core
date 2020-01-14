@@ -3,7 +3,6 @@ from boxbranding import getMachineBuild
 from Components.ActionMap import ActionMap
 from Components.ChoiceList import ChoiceList, ChoiceEntryComponent
 from Components.config import config
-from Components.Harddisk import Harddisk
 from Components.Label import Label
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
@@ -151,61 +150,48 @@ class MultiBoot(Screen):
 	def format(self):
 		if SystemInfo["HasSDmmc"]:
 			self.TITLE = _("Init SDCARD")
-			f = open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read()
-			if "sda" in f:
+			if "sda" in open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read():
 				self.session.open(MessageBox, _("Multiboot manager - Cannot initialise SDcard when running image on SDcard."), MessageBox.TYPE_INFO, timeout=10)
 				self.close
 			else:
-				message = _("Multiboot manager - to use this routine %s image must be at OpenViX 4.2.043 or later and USB flashed - reply Yes to continue" %getMachineBuild())
-				ybox = self.session.openWithCallback(self.doFormat, MessageBox, message, MessageBox.TYPE_YESNO, default=True)
-				ybox.setTitle(_("Remove confirmation"))
+				self.doFormat()
 
 	def doFormat(self, answer):
 		if answer is True:
+			from Components.Harddisk import Harddisk
 			sda = "sda"
-			des = " "
 			size = Harddisk(sda).diskSize()
-
-			if ((float(size) / 1024) / 1024) >= 1:
-				des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
-			elif (size / 1024) >= 1:
-				des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
-			if "GB" in des:
-				print "Multibootmgr1", des, "%s" %des[6], size
-				if size/1024 < 6:
-					print "Multibootmgr2", des, "%s" %des[6], size/1024 
-					self.session.open(MessageBox, _("Multiboot manager - The SDcard must be at least 8MB."), MessageBox.TYPE_INFO, timeout=10)
-					self.close
-				else:
-					IMAGE_ALIGNMENT=1024
-					KERNEL_PARTITION_SIZE=32768
-					ROOTFS_PARTITION_SIZE=2097152
-					PARTED_START_KERNEL2 = IMAGE_ALIGNMENT
-					PARTED_END_KERNEL2 = int(PARTED_START_KERNEL2) + int(KERNEL_PARTITION_SIZE)
-					PARTED_START_ROOTFS2 = PARTED_END_KERNEL2
-					PARTED_END_ROOTFS2 = int(PARTED_END_KERNEL2) + int(ROOTFS_PARTITION_SIZE)
-					PARTED_START_KERNEL3 = PARTED_END_ROOTFS2
-					PARTED_END_KERNEL3 = int(PARTED_END_ROOTFS2) + int(KERNEL_PARTITION_SIZE)
-					PARTED_START_ROOTFS3 = PARTED_END_KERNEL3
-					PARTED_END_ROOTFS3 = int(PARTED_END_KERNEL3) + int(ROOTFS_PARTITION_SIZE)
-
-					self.session.open(MessageBox, _("Multiboot manager - SDcard initialization run, please restart your Image."), MessageBox.TYPE_INFO, timeout=10)
-					cmdlist = []
-					cmdlist.append("for n in /dev/%s* ; do umount $n > /dev/null 2>&1 ; done"%sda)
-					cmdlist.append("for n in /dev/%s* ; do parted -s /dev/%s rm  ${n:8} > /dev/null 2>&1; done"%(sda,sda))
-					cmdlist.append("dd if=/dev/zero of=/dev/%s bs=512 count=10240 conv=notrunc"%sda)
-					cmdlist.append("partprobe /dev/%s"%sda)
-					cmdlist.append("parted -s /dev/%s mklabel gpt"%sda)
-					cmdlist.append("parted -s /dev/%s unit KiB mkpart kernel2 ext2 %s %s"%(sda,PARTED_START_KERNEL2,PARTED_END_KERNEL2))
-					cmdlist.append("parted -s /dev/%s unit KiB mkpart rootfs2 ext4 %s %s "%(sda,PARTED_START_ROOTFS2,PARTED_END_ROOTFS2))
-					cmdlist.append("parted -s /dev/%s unit KiB mkpart kernel3 ext2 %s %s"%(sda,PARTED_START_KERNEL3,PARTED_END_KERNEL3))
-					cmdlist.append("parted -s /dev/%s unit KiB mkpart rootfs3 ext4 %s %s "%(sda,PARTED_START_ROOTFS3,PARTED_END_ROOTFS3))
-					cmdlist.append("parted -s /dev/%s unit KiB mkpart userdata ext4 %s 100%% "%(sda,PARTED_END_ROOTFS3))
-					cmdlist.append("for n in /dev/%s{1..5} ; do mkfs.ext4 $n ; done"%sda)   
-					cmdlist.append("partprobe /dev/%s"%sda)
-					self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
+			if size/1024 < 7:
+				self.session.open(MessageBox, _("Multiboot manager - The SDcard must be at least 8MB."), MessageBox.TYPE_INFO, timeout=10)
+				self.close
 			else:
-				self.close()
+				IMAGE_ALIGNMENT=1024
+				KERNEL_PARTITION_SIZE=8192
+				ROOTFS_PARTITION_SIZE=2097152
+				PARTED_START_KERNEL2 = IMAGE_ALIGNMENT
+				PARTED_END_KERNEL2 = int(PARTED_START_KERNEL2) + int(KERNEL_PARTITION_SIZE)
+				PARTED_START_ROOTFS2 = PARTED_END_KERNEL2
+				PARTED_END_ROOTFS2 = int(PARTED_END_KERNEL2) + int(ROOTFS_PARTITION_SIZE)
+				PARTED_START_KERNEL3 = PARTED_END_ROOTFS2
+				PARTED_END_KERNEL3 = int(PARTED_END_ROOTFS2) + int(KERNEL_PARTITION_SIZE)
+				PARTED_START_ROOTFS3 = PARTED_END_KERNEL3
+				PARTED_END_ROOTFS3 = int(PARTED_END_KERNEL3) + int(ROOTFS_PARTITION_SIZE)
+
+				self.session.open(MessageBox, _("Multiboot manager - SDcard initialization run, please restart your Image."), MessageBox.TYPE_INFO, timeout=10)
+				cmdlist = []
+				cmdlist.append("for n in /dev/%s* ; do umount $n > /dev/null 2>&1 ; done"%sda)
+				cmdlist.append("for n in /dev/%s* ; do parted -s /dev/%s rm  ${n:8} > /dev/null 2>&1; done"%(sda,sda))
+				cmdlist.append("dd if=/dev/zero of=/dev/%s bs=512 count=10240 conv=notrunc"%sda)
+				cmdlist.append("partprobe /dev/%s"%sda)
+				cmdlist.append("parted -s /dev/%s mklabel gpt"%sda)
+				cmdlist.append("parted -s /dev/%s unit KiB mkpart kernel2 ext2 %s %s"%(sda,PARTED_START_KERNEL2,PARTED_END_KERNEL2))
+				cmdlist.append("parted -s /dev/%s unit KiB mkpart rootfs2 ext4 %s %s "%(sda,PARTED_START_ROOTFS2,PARTED_END_ROOTFS2))
+				cmdlist.append("parted -s /dev/%s unit KiB mkpart kernel3 ext2 %s %s"%(sda,PARTED_START_KERNEL3,PARTED_END_KERNEL3))
+				cmdlist.append("parted -s /dev/%s unit KiB mkpart rootfs3 ext4 %s %s "%(sda,PARTED_START_ROOTFS3,PARTED_END_ROOTFS3))
+				cmdlist.append("parted -s /dev/%s unit KiB mkpart userdata ext4 %s 100%% "%(sda,PARTED_END_ROOTFS3))
+				cmdlist.append("for n in /dev/%s{1..5} ; do mkfs.ext4 $n ; done"%sda)   
+				cmdlist.append("partprobe /dev/%s"%sda)
+				self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
 		else:
 			self.close()
 
