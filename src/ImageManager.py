@@ -38,9 +38,10 @@ hddchoices = []
 for p in harddiskmanager.getMountedPartitions():
 	if path.exists(p.mountpoint):
 		d = path.normpath(p.mountpoint)
-		if SystemInfo["canMultiBoot"] and SystemInfo["canMultiBoot"][2] in d:
+		if SystemInfo["canMultiBoot"]:
+			if "mmcblk0p" in d or "mmcblk1p" in d:
 				continue
-		elif p.mountpoint != '/':
+		if p.mountpoint != '/':
 			hddchoices.append((p.mountpoint, d))
 config.imagemanager = ConfigSubsection()
 defaultprefix = getImageDistro() + '-' + getBoxType()
@@ -139,9 +140,7 @@ class VIXImageManager(Screen):
 		self.BackupRunning = False
 		self.BackupDirectory = " "
 		if SystemInfo["canMultiBoot"]:
-			self.mtdboot = "%s1" % SystemInfo["canMultiBoot"][2]
-	 		if SystemInfo["canMultiBoot"][2] == "sda":
-				self.mtdboot = "%s3" %getMachineMtdRoot()[0:8]
+			self.mtdboot = SystemInfo["MBbootdevice"]
 		self.imagelist = {}
 		self.getImageList = None
 		self.onChangedEntry = []
@@ -383,8 +382,8 @@ class VIXImageManager(Screen):
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
 		if SystemInfo["canMultiBoot"]:
-			if SystemInfo["HasSDmmc"]:
- 				if pathExists('/dev/%s4' %SystemInfo["canMultiBoot"][2]):
+			if SystemInfo["HasHiSi"]:
+ 				if pathExists('/dev/sda4'):
 					self.HasSDmmc = True
 					self.getImageList = GetImagelist(self.keyRestore1)
 				elif config.imagemanager.autosettingsbackup.value:
@@ -405,8 +404,6 @@ class VIXImageManager(Screen):
 		choices = []
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
-		if SystemInfo["HasSDmmc"]:
-			currentimageslot += 1
 		print "ImageManager", currentimageslot, self.imagelist
 		for x in range(1,HIslot):
 			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]['imagename']), (x)))
@@ -417,13 +414,8 @@ class VIXImageManager(Screen):
 			if SystemInfo["canMultiBoot"]:
 				self.multibootslot = retval
 				print "ImageManager", retval, self.imagelist
-				if SystemInfo["HasSDmmc"]:
-					if "sd" in self.imagelist[retval]['part']:
-						self.MTDKERNEL = "%s%s" %(SystemInfo["canMultiBoot"][2], int(self.imagelist[retval]['part'][3])-1)
-						self.MTDROOTFS = "%s" %(self.imagelist[retval]['part'])
-					else:
-						self.MTDKERNEL = getMachineMtdKernel()
-						self.MTDROOTFS = getMachineMtdRoot()					
+				self.MTDKERNEL  = SystemInfo["canMultiBoot"][self.multibootslot]["kernel"].split('/')[2] 
+				self.MTDROOTFS  = SystemInfo["canMultiBoot"][self.multibootslot]["device"].split('/')[2] 
 			if self.sel:
 				if config.imagemanager.autosettingsbackup.value:
 					self.doSettingsBackup()
@@ -436,10 +428,7 @@ class VIXImageManager(Screen):
 
 
 	def keyRestore3(self, val = None):
-		if SystemInfo["RecoveryMode"]:
-			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares, after the image is flashed, your %s will restart - if error please use Recovery mode to restart." %getMachineMake()), MessageBox.TYPE_INFO, timeout=180, enable_input=False)
-		else:
-			self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares."), MessageBox.TYPE_INFO, timeout=240, enable_input=False)
+		self.restore_infobox = self.session.open(MessageBox, _("Please wait while the flash prepares."), MessageBox.TYPE_INFO, timeout=240, enable_input=False)
 		self.TEMPDESTROOT = self.BackupDirectory + 'imagerestore'
 		if self.sel.endswith('.zip'):
 			if not path.exists(self.TEMPDESTROOT):
@@ -478,13 +467,13 @@ class VIXImageManager(Screen):
 	def keyRestore6(self,ret):
 		MAINDEST = '%s/%s' % (self.TEMPDESTROOT,getImageFolder())
 		if ret == 0:
-			CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST										#normal non multiboot receiver
+			CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST	
+									#normal non multiboot receiver
 			if SystemInfo["canMultiBoot"]:
-				CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)					#normal multiboot receiver restart
- 				if SystemInfo["HasSDmmc"]:											#SF8008 type receiver with SD card multiboot
+ 				if SystemInfo["HasHiSi"]:											#SF8008 type receiver with SD card multiboot
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
- 			elif SystemInfo["HasHiSi"]:
-				CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)				#SF8008 type receiver No SD card multiboot
+				else:
+					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
 			elif SystemInfo["HasH9SD"]: 
 				if  fileHas("/proc/cmdline", "root=/dev/mmcblk0p1") is True and fileExists("%s/rootfs.tar.bz2" %MAINDEST):	#h9 using SD card
 					CMD = "/usr/bin/ofgwrite -rmmcblk0p1 '%s'" % (MAINDEST)
@@ -500,21 +489,15 @@ class VIXImageManager(Screen):
 		fbClass.getInstance().unlock()
 		print '[ImageManager] ofgwrite retval :', retval
 		if retval == 0:
-			if SystemInfo["canMultiBoot"]:
-				if SystemInfo["HasSDmmc"] and self.HasSDmmc is False:
-					self.session.open(TryQuitMainloop, 2)
+			if SystemInfo["HasHiSi"] and self.HasSDmmc is False:
+				self.session.open(TryQuitMainloop, 2)
+			elif SystemInfo["canMultiBoot"]:
 				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
 				self.container = Console()
 				if pathExists('/tmp/startupmount'):
 					self.ContainterFallback()
 				mkdir('/tmp/startupmount')
-				if SystemInfo["HasRootSubdir"]:
-					if fileExists("/dev/block/by-name/bootoptions"):
-						self.container.ePopen('mount /dev/block/by-name/bootoptions /tmp/startupmount', self.ContainterFallback)
-					elif fileExists("/dev/block/by-name/boot"):
-						self.container.ePopen('mount /dev/block/by-name/boot /tmp/startupmount', self.ContainterFallback)
-				else:
-					self.container.ePopen('mount /dev/%s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
+				self.container.ePopen('mount /dev/%s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
 			else:
 				self.session.open(TryQuitMainloop, 2)
 		else:
@@ -525,12 +508,7 @@ class VIXImageManager(Screen):
 		self.container.killAll()
 		print "[ImageManager Restart] reboot3 slot:", self.multibootslot
 		if pathExists("/tmp/startupmount/STARTUP"):
-			if  fileExists("/tmp/startupmount/STARTUP_1"):
-				copyfile("/tmp/startupmount/STARTUP_%s" % self.multibootslot, "/tmp/startupmount/STARTUP")
-			elif fileExists("/tmp/startupmount/STARTUP_LINUX_4_BOXMODE_12"):
-				copyfile("/tmp/startupmount/STARTUP_LINUX_%s_BOXMODE_1" % self.multibootslot, "/tmp/startupmount/STARTUP")
-			elif fileExists("/tmp/startupmount/STARTUP_LINUX_4"):
-				copyfile("/tmp/startupmount/STARTUP_LINUX_%s" % self.multibootslot, "/tmp/startupmount/STARTUP")
+			copyfile("/tmp/startupmount/%s" % SystemInfo["canMultiBoot"][self.slot]['startupfile'], "/tmp/startupmount/STARTUP")
 			self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.open(MessageBox, _("Multiboot ERROR! - no STARTUP in boot partition."), MessageBox.TYPE_INFO, timeout=20)
@@ -728,28 +706,11 @@ class ImageBackup(Screen):
 		self.KERN = "mmc"
 		self.rootdir = 0
 		if SystemInfo["canMultiBoot"]:
-			kernel = GetCurrentImage()
-			if SystemInfo["HasSDmmc"]:
-				f = open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read()
-				if "sda" in f :
-					self.KERN = "sda"
-					kern =  kernel*2
-					self.MTDKERNEL = "sda%s" %(kern-1)
-					self.MTDROOTFS = "sda%s" %(kern)
-				else:
-					self.MTDKERNEL = getMachineMtdKernel()
-					self.MTDROOTFS = getMachineMtdRoot()
-			elif SystemInfo["HasRootSubdir"]:
-				self.rootdir = GetCurrentImage()
-				kern = GetCurrentKern()
-				root = GetCurrentRoot()
-				self.MTDKERNEL = "%s%s" %(SystemInfo["canMultiBoot"][2], kern)
-				self.MTDROOTFS = "%s%s" %(SystemInfo["canMultiBoot"][2], root)
-				self.ROOTFSSUBDIR = "linuxrootfs%s" %self.rootdir
-			else:					
-				self.addin = SystemInfo["canMultiBoot"][0]
-				self.MTDKERNEL = "%s%s" %(SystemInfo["canMultiBoot"][2], kernel*2 +self.addin -1)
-				self.MTDROOTFS = "%s%s" %(SystemInfo["canMultiBoot"][2], kernel*2 +self.addin)
+			slot = GetCurrentImage()
+			self.MTDKERNEL  = SystemInfo["canMultiBoot"][slot]["kernel"].split('/')[2] 
+			self.MTDROOTFS  = SystemInfo["canMultiBoot"][slot]["device"].split('/')[2] 
+			if SystemInfo["HasRootSubdir"]:
+				self.ROOTFSSUBDIR = SystemInfo["canMultiBoot"][slot]['rootsubdir']
 		else:
 			self.MTDKERNEL = getMachineMtdKernel()
 			self.MTDROOTFS = getMachineMtdRoot()
@@ -762,6 +723,7 @@ class ImageBackup(Screen):
 		print '[ImageManager] Root File:',self.ROOTFSFILE
 		print '[ImageManager] MTD Kernel:',self.MTDKERNEL
 		print '[ImageManager] MTD Root:',self.MTDROOTFS
+		print '[ImageManager] ROOTFSSUBDIR:',self.ROOTFSSUBDIR
 		print '[ImageManager] ROOTFSTYPE:',self.ROOTFSTYPE
 		print '[ImageManager] MAINDESTROOT:',self.MAINDESTROOT
 		print '[ImageManager] MAINDEST:',self.MAINDEST

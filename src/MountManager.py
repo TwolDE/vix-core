@@ -134,7 +134,7 @@ class VIXDevicesPanel(Screen):
 			device = parts[3]
 			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
 				continue
-			if SystemInfo["HasSDmmc"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
+			if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
 				print '[MountManager1] HasSDmmc %s:' %device
 				continue
 			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root

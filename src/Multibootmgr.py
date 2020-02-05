@@ -58,7 +58,7 @@ class MultiBoot(Screen):
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
 		self.title = screentitle
-		if SystemInfo["HasSDmmc"] and not pathExists('/dev/sda4'):
+		if SystemInfo["HasHiSi"] and not pathExists('/dev/sda4'):
 			self["key_red"] = StaticText(_("Cancel"))
 			self["labe14"] = StaticText(_("Press Init to format SDcard."))
 			self["labe15"] = StaticText("")
@@ -85,7 +85,7 @@ class MultiBoot(Screen):
 			self["labe14"] = StaticText(_("Use the cursor keys to select an installed image and then Erase button."))
 			self["labe15"] = StaticText(_("Note: slot list does not show current image or empty slots."))
 			self["key_green"] = StaticText(_("Erase"))
-			if SystemInfo["HasSDmmc"]:
+			if SystemInfo["HasHiSi"]:
 				self["key_yellow"] = StaticText(_("Init SDcard"))
 			else:
 				self["key_yellow"] = StaticText("")
@@ -123,8 +123,6 @@ class MultiBoot(Screen):
 		list = []
 		mode = GetCurrentImageMode() or 0
 		currentimageslot = GetCurrentImage()
-		if SystemInfo["HasSDmmc"]:
-			currentimageslot += 1
 		for x in sorted(imagedict.keys()):
 			if imagedict[x]["imagename"] != _("Empty slot") and x != currentimageslot:
 				list.append(ChoiceEntryComponent('',((_("slot%s - %s ")) % (x, imagedict[x]['imagename']), x)))
@@ -148,7 +146,7 @@ class MultiBoot(Screen):
 			sloterase = EmptySlot(self.currentSelected[0][1], self.startit)
 
 	def format(self):
-		if SystemInfo["HasSDmmc"]:
+		if SystemInfo["HasHiSi"]:
 			self.TITLE = _("Init SDCARD")
 			if "sda" in open('/sys/firmware/devicetree/base/chosen/bootargs', 'r').read():
 				self.session.open(MessageBox, _("Multiboot manager - Cannot initialise SDcard when running image on SDcard."), MessageBox.TYPE_INFO, timeout=10)
