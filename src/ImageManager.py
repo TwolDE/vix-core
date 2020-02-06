@@ -508,7 +508,7 @@ class VIXImageManager(Screen):
 		self.container.killAll()
 		print "[ImageManager Restart] reboot3 slot:", self.multibootslot
 		if pathExists("/tmp/startupmount/STARTUP"):
-			copyfile("/tmp/startupmount/%s" % SystemInfo["canMultiBoot"][self.slot]['startupfile'], "/tmp/startupmount/STARTUP")
+			copyfile("/tmp/startupmount/%s" % SystemInfo["canMultiBoot"][self.multibootslot]['startupfile'].replace("boxmode=12'", "boxmode=1'"), "/tmp/startupmount/STARTUP")
 			self.session.open(TryQuitMainloop, 2)
 		else:
 			self.session.open(MessageBox, _("Multiboot ERROR! - no STARTUP in boot partition."), MessageBox.TYPE_INFO, timeout=20)
@@ -697,7 +697,7 @@ class ImageBackup(Screen):
 		self.UBINIZE_ARGS = getMachineUBINIZE()
 		self.MKUBIFS_ARGS = getMachineMKUBIFS()
 		self.ROOTFSTYPE = getImageFileSystem().strip()
-		self.ROOTFSSUBDIR = "linuxrootfs1"
+		self.ROOTFSSUBDIR = "none"
 		self.EMMCIMG = "none"
 		self.MTDBOOT = "none"
 		if SystemInfo["canBackupEMC"]:
