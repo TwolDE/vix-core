@@ -496,8 +496,9 @@ class VIXImageManager(Screen):
 				self.container = Console()
 				if pathExists('/tmp/startupmount'):
 					self.ContainterFallback()
-				mkdir('/tmp/startupmount')
-				self.container.ePopen('mount /dev/%s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
+				else:
+					mkdir('/tmp/startupmount')
+					self.container.ePopen('mount %s /tmp/startupmount' % self.mtdboot, self.ContainterFallback)
 			else:
 				self.session.open(TryQuitMainloop, 2)
 		else:
