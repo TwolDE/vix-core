@@ -470,7 +470,7 @@ class VIXImageManager(Screen):
 			CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST	
 									#normal non multiboot receiver
 			if SystemInfo["canMultiBoot"]:
- 				if SystemInfo["HasHiSi"]:											#SF8008 type receiver with SD card multiboot
+ 				if SystemInfo["HasHiSi"]:									#SF8008 type receiver with SD card multiboot
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 				else:
 					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
@@ -718,6 +718,8 @@ class ImageBackup(Screen):
 		if getMachineBuild() in ("gb7252", "gbx34k"):
 			self.GB4Kbin = 'boot.bin'
 			self.GB4Krescue = 'rescue.bin'
+		if "sda" in self.MTDKERNEL:
+			self.KERN = "sda"
 		print '[ImageManager] Model:',self.MODEL
 		print '[ImageManager] Machine Build:',self.MCBUILD
 		print '[ImageManager] Kernel File:',self.KERNELFILE
@@ -1224,7 +1226,7 @@ class ImageBackup(Screen):
 				line = "rename this file to 'force' to force an update without confirmation"
 				fileout.write(line)
 				fileout.close()
-			if getBrandOEM() in ('octagon', 'gigablue', 'beyonwiz') and SystemInfo["HasSDmmc"] and self.KERN == "mmc":
+			if SystemInfo('HiSi') and self.HasSDmmc and self.KERN == "mmc":
 				fileout = open(self.MAINDEST + '/SDAbackup', 'w')
 				line = "SF8008 indicate type of backup %s" %self.KERN
 				fileout.write(line)
