@@ -1225,7 +1225,7 @@ class ImageBackup(Screen):
 				line = "rename this file to 'force' to force an update without confirmation"
 				fileout.write(line)
 				fileout.close()
-			if SystemInfo('HiSi') and pathExists('/dev/sda4') and self.KERN == "mmc":
+			if SystemInfo["HasHiSi"] and self.KERN == "mmc":
 				fileout = open(self.MAINDEST + '/SDAbackup', 'w')
 				line = "SF8008 indicate type of backup %s" %self.KERN
 				fileout.write(line)
