@@ -368,7 +368,6 @@ class VIXImageManager(Screen):
 		self.sel = self['list'].getCurrent()
 		if not self.sel:
 			return
-		self.HasSDmmc = False
 		self.multibootslot = 1
 		self.MTDKERNEL = getMachineMtdKernel()
 		self.MTDROOTFS = getMachineMtdRoot()	
@@ -383,7 +382,7 @@ class VIXImageManager(Screen):
 			self.message = _("Do you want to flash image\n%s") % self.sel
 		if SystemInfo["canMultiBoot"]:
 			if SystemInfo["HasHiSi"]:
- 				if pathExists('/dev/sda4'):
+				if pathExists('/dev/sda4'):
 					self.HasSDmmc = True
 					self.getImageList = GetImagelist(self.keyRestore1)
 				elif config.imagemanager.autosettingsbackup.value:
@@ -1226,7 +1225,7 @@ class ImageBackup(Screen):
 				line = "rename this file to 'force' to force an update without confirmation"
 				fileout.write(line)
 				fileout.close()
-			if SystemInfo('HiSi') and self.HasSDmmc and self.KERN == "mmc":
+			if SystemInfo('HiSi') and pathExists('/dev/sda4') and self.KERN == "mmc":
 				fileout = open(self.MAINDEST + '/SDAbackup', 'w')
 				line = "SF8008 indicate type of backup %s" %self.KERN
 				fileout.write(line)
