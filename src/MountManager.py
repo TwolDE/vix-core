@@ -1,4 +1,3 @@
-# for localized messages
 from boxbranding import getMachineBrand, getMachineName, getMachineBuild
 from os import system, rename, path, mkdir, remove, statvfs
 import re
@@ -126,24 +125,23 @@ class VIXDevicesPanel(Screen):
 		self.activityTimer.stop()
 		self.list = []
 		list2 = []
-		f = open('/proc/partitions', 'r')
-		for line in f.readlines():
-			parts = line.strip().split()
-			if not parts:
-				continue
-			device = parts[3]
-			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
-				continue
-			if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
-				print '[MountManager1] HasSDmmc %s:' %device
-				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
-				continue
-			if device in list2:
-				continue
-			self.buildMy_rec(device)
-			list2.append(device)
-		f.close()
+		with open('/proc/partitions', 'r') as f:
+			for line in f.readlines():
+				parts = line.strip().split()
+				if not parts:
+					continue
+				device = parts[3]
+				if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
+					continue
+				if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
+					print '[MountManager1] HasSDmmc %s:' %device
+					continue
+				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
+					continue
+				if device in list2:
+					continue
+				self.buildMy_rec(device)
+				list2.append(device)
 		self['list'].list = self.list
 		self['lab1'].hide()
 
@@ -162,7 +160,7 @@ class VIXDevicesPanel(Screen):
 		print '[MountManager1]TEST TYPE soc:',devicetype.find('soc')
 		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  not SystemInfo["HasSDnomount"])):
 			return
-		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] for sdcard, h9combo uses mmcblk1p[0-3]
+		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] with sdcard, h9combo uses mmcblk1p[0-3]
 			if SystemInfo["HasSDnomount"][0] == 'Yes' and "%s" %SystemInfo["HasSDnomount"][1] in device:
 				return
 		d2 = device
@@ -192,35 +190,20 @@ class VIXDevicesPanel(Screen):
 				mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_sd.png'
 		name += model
 		print '[MountManager1] device= %s, name = %s' %(device, name)
-		# self.Console.ePopen("sfdisk -l /dev/sd? | grep swap | awk '{print $(NF-9)}' >/tmp/devices.tmp")
-		# sleep(0.5)
-		# f = open('/tmp/devices.tmp', 'r')
-		# swapdevices = f.read()
-		# f.close()
-		# if path.exists('/tmp/devices.tmp'):
-		# 	remove('/tmp/devices.tmp')
-		# swapdevices = swapdevices.replace('\n', '')
-		# swapdevices = swapdevices.split('/')
-		f = open('/proc/mounts', 'r')
-		d1 = _("None")
-		dtype = _("unavailable")
-		rw = _("None")
-		for line in f.readlines():
-			if line.find(device) != -1:
-				parts = line.strip().split()
-				d1 = parts[1]
-				dtype = parts[2]
-				rw = parts[3]
-				print '[MountManager1] device =%s, parts=%s,d1= %s, dtype= %s, rw=%s' %(device, parts, d1, dtype, rw)
-				break
-			# else:
-			# 	if device in swapdevices:
-			# 		parts = line.strip().split()
-			# 		d1 = _("None")
-			# 		dtype = 'swap'
-			# 		rw = _("None")
-			# 		break
-		f.close()
+
+		with open('/proc/mounts', 'r') as f:
+			d1 = _("None")
+			dtype = _("unavailable")
+			rw = _("None")
+			for line in f.readlines():
+				if line.find(device) != -1:
+					parts = line.strip().split()
+					d1 = parts[1]
+					dtype = parts[2]
+					rw = parts[3]
+					print '[MountManager1] device =%s, parts=%s,d1= %s, dtype= %s, rw=%s' %(device, parts, d1, dtype, rw)
+					break
+
 		if d1 == _("None") or d1 == None:
 			des = _("Size: ") + _("unavailable")
 		else:
@@ -262,11 +245,10 @@ class VIXDevicesPanel(Screen):
 			device = parts[2].replace(_("Device: "), '')
 			system('mount ' + device)
 			mountok = False
-			f = open('/proc/mounts', 'r')
-			for line in f.readlines():
-				if line.find(device) != -1:
-					mountok = True
-			f.close()
+			with open('/proc/mounts', 'r') as f:
+				for line in f.readlines():
+					if line.find(device) != -1:
+						mountok = True
 			if not mountok:
 				self.session.open(MessageBox, _("Mount failed."), MessageBox.TYPE_INFO, timeout=5)
 			self.updateList()
@@ -281,13 +263,13 @@ class VIXDevicesPanel(Screen):
 			device = parts[2].replace(_("Device: "), '')
 			system('umount ' + mountp)
 			try:
-				mounts = open("/proc/mounts")
-				mountcheck = mounts.readlines()
-				mounts.close()
-				for line in mountcheck:
-					parts = line.strip().split(" ")
-					if path.realpath(parts[0]).startswith(device):
-						self.session.open(MessageBox, _("Can't un-mount the partition; make sure it is not being used for SWAP or record/timeshift paths."), MessageBox.TYPE_INFO)
+				with open("/proc/mounts") as mounts: 
+					mountcheck = mounts.readlines()
+					mounts.close()
+					for line in mountcheck:
+						parts = line.strip().split(" ")
+						if path.realpath(parts[0]).startswith(device):
+							self.session.open(MessageBox, _("Can't un-mount the partition; make sure it is not being used for SWAP or record/timeshift paths."), MessageBox.TYPE_INFO)
 			except IOError:
 				return -1
 			self.updateList()
@@ -319,10 +301,9 @@ class VIXDevicesPanel(Screen):
 		rename('/etc/fstab.tmp', '/etc/fstab')
 		file('/etc/fstab.tmp', 'w').writelines([l for l in file('/etc/fstab').readlines() if self.device_uuid not in l])
 		rename('/etc/fstab.tmp', '/etc/fstab')
-		out = open('/etc/fstab', 'a')
-		line = self.device_uuid + '\t/media/hdd\tauto\tdefaults\t0 0\n'
-		out.write(line)
-		out.close()
+		with open('/etc/fstab', 'a') as out:
+			line = self.device_uuid + '\t/media/hdd\tauto\tdefaults\t0 0\n'
+			out.write(line)
 		self.Console.ePopen('mount -a', self.updateList)
 
 	def restBo(self, answer):
@@ -378,36 +359,26 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		self.activityTimer.stop()
 		self.list = []
 		list2 = []
-		# self.Console.ePopen("sfdisk -l /dev/sd? | grep swap | awk '{print $(NF-9)}' >/tmp/devices.tmp")
-		# sleep(0.5)
-		# swapdevices = ''
-		# if path.exists('/tmp/devices.tmp'):
-		# 	f = open('/tmp/devices.tmp', 'r')
-		# 	swapdevices = f.read()
-		# 	f.close()
-		# 	remove('/tmp/devices.tmp')
-		# swapdevices = swapdevices.replace('\n', '')
-		# swapdevices = swapdevices.split('/')
-		f = open('/proc/partitions', 'r')
-		for line in f.readlines():
-			parts = line.strip().split()
-			if not parts:
-				continue
-			device = parts[3]
-			if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
-				continue
-			if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
-				print '[MountManager2] HasSDmmc %s:' %device
-				continue
-			if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
-				continue
-			if device in list2:
-				continue
-			# if device in swapdevices:
-			# 	continue
-			self.buildMy_rec(device)
-			list2.append(device)
-		f.close()
+
+		with open('/proc/partitions', 'r') as f:
+			for line in f.readlines():
+				parts = line.strip().split()
+				if not parts:
+					continue
+				device = parts[3]
+				if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
+					continue
+				if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
+					print '[MountManager2] HasSDmmc %s:' %device
+					continue
+				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
+					continue
+				if device in list2:
+					continue
+				# if device in swapdevices:
+				# 	continue
+				self.buildMy_rec(device)
+				list2.append(device)
 		self['config'].list = self.list
 		self['config'].l.setList(self.list)
 		self['Linconn'].hide()
@@ -427,7 +398,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		print '[MountManager2]TEST TYPE soc:',devicetype.find('soc')
 		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  not SystemInfo["HasSDnomount"])):
 			return
-		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] for sdcard, h9combo uses mmcblk1p[0-3]
+		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] with sdcard, h9combo uses mmcblk1p[0-3]
 			if SystemInfo["HasSDnomount"][0] == 'Yes' and "%s" %SystemInfo["HasSDnomount"][1] in device:
 				return
 		d2 = device
@@ -458,14 +429,13 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		name += model
 		d1 = _("None")
 		dtype = _("unavailable")
-		f = open('/proc/mounts', 'r')
-		for line in f.readlines():
-			if line.find(device) != -1:
-				parts = line.strip().split()
-				d1 = parts[1]
-				dtype = parts[2]
-				break
-		f.close()
+		with open('/proc/mounts', 'r') as f:
+			for line in f.readlines():
+				if line.find(device) != -1:
+					parts = line.strip().split()
+					d1 = parts[1]
+					dtype = parts[2]
+					break
 		if d1 == _("None") or d1 == None:
 			des = _("Size: ") + _("unavailable")
 		else:
@@ -538,10 +508,9 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			rename('/etc/fstab.tmp', '/etc/fstab')
 			file('/etc/fstab.tmp', 'w').writelines([l for l in file('/etc/fstab').readlines() if self.device_uuid not in l])
 			rename('/etc/fstab.tmp', '/etc/fstab')
-			out = open('/etc/fstab', 'a')
-			line = self.device_uuid + '\t' + self.mountp + '\t' + self.device_type + '\tdefaults\t0 0\n'
-			out.write(line)
-			out.close()
+			with open('/etc/fstab', 'a') as out:
+				line = self.device_uuid + '\t' + self.mountp + '\t' + self.device_type + '\tdefaults\t0 0\n'
+				out.write(line)
 
 	def restartBox(self, answer):
 		if answer is True:
