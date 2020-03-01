@@ -103,16 +103,13 @@ class VIXDevicesPanel(Screen):
 					self["key_red"].setText(" ")
 			except:
 				pass
+		name = desc = ""
 		if sel:
 			try:
 				name = str(sel[0])
 				desc = str(sel[1].replace('\t', '  '))
 			except:
-				name = ""
-				desc = ""
-		else:
-			name = ""
-			desc = ""
+				pass
 		for cb in self.onChangedEntry:
 			cb(name, desc)
 
@@ -130,41 +127,49 @@ class VIXDevicesPanel(Screen):
 				parts = line.strip().split()
 				if not parts:
 					continue
-				device = parts[3]
-				if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
+				(devmajor, devminor, blocks, device) = parts
+				print '[MountManager1] device = %s devmajor = %s devminor = %s' %(device, devmajor, devminor)
+				if devmajor == "major":
 					continue
-				if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
-					print '[MountManager1] HasSDmmc %s:' %device
+				if not re.search('8', devmajor) and not re.search('179', devmajor):					# look at disk & mmc
 					continue
-				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
-					continue
+				if  re.search('179', devmajor):  
+					if not SystemInfo["HasSDnomount"]:								# only interested in h9/i55/h9combo(+dups) mmc partitions
+						continue										# h9combo(+dups) uses mmcblk1p[0-3] include
+					if SystemInfo["HasH9SD"]:
+						if not re.search('mmcblk0p1', device):							# h9/i55 only mmcblk0p1 mmc partition
+							continue	
+						if SystemInfo["HasMMC"]:								# h9/i55 reject mmcblk0p1 mmc partition if root device
+							continue
+					if SystemInfo["HasSDnomount"][0] == 'Yes' and not re.search('mmcblk1p[0-3]', device):		# h9combo(+dups) uses mmcblk1p[0-3] include
+						continue
+				if re.search('8', devmajor):
+					if not re.search('sd[a-z][1-9]', device):							# if storage use partitions only
+						continue
+					if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):	# sf8008 using SDcard for slots ---> exclude
+						continue
 				if device in list2:
 					continue
 				self.buildMy_rec(device)
 				list2.append(device)
+				print '[MountManager1] list2 = %s' %list2
 		self['list'].list = self.list
 		self['lab1'].hide()
 
 	def buildMy_rec(self, device):
-		if re.search('mmcblk[0-9]p[0-9][0-9]', device):
-			device2 = re.sub('p[0-9][0-9]', '', device)
-		elif re.search('mmcblk[0-9]p[0-9]', device):
+		if re.search('mmcblk[0-1]p[0-3]', device):
 			device2 = re.sub('p[0-9]', '', device)
+			print '[MountManager12]device2: %s' %device2
 		else:
 			device2 = re.sub('[0-9]', '', device)
+			print '[MountManager13]device2: %s' %device2
 		devicetype = path.realpath('/sys/block/' + device2 + '/device')
-		print '[MountManager1]MachineBuild: ',getMachineBuild()
-		print '[MountManager1]DEVICETYPE:',devicetype
-		print '[MountManager1]TEST TYPE mmc:',devicetype.find('mmc')
-		print '[MountManager1]TEST TYPE rdb/SDHC:',devicetype.find('rdb')
-		print '[MountManager1]TEST TYPE soc:',devicetype.find('soc')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  not SystemInfo["HasSDnomount"])):
-			return
-		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] with sdcard, h9combo uses mmcblk1p[0-3]
-			if SystemInfo["HasSDnomount"][0] == 'Yes' and "%s" %SystemInfo["HasSDnomount"][1] in device:
-				return
-		d2 = device
-		print '[MountManager1]DEVICE D2:',d2
+
+		print '[MountManager1]MachineBuild: %s' %getMachineBuild()
+		print '[MountManager1]device: %s' %device
+		print '[MountManager1]device2: %s' %device2
+		print '[MountManager1]devicetype:%s' %devicetype
+
 		name = _("HARD DISK: ")
 		if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")):
 			mypixmap = resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")
@@ -365,44 +370,50 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				parts = line.strip().split()
 				if not parts:
 					continue
-				device = parts[3]
-				if not re.search('sd[a-z][1-9]', device) and not re.search('mmcblk[0-9]p[1-9]', device):
+				(devmajor, devminor, blocks, device) = parts
+				print '[MountManager1] device = %s devmajor = %s devminor = %s' %(device, devmajor, devminor)
+				if devmajor == "major":
 					continue
-				if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):		# sf8008 using SDcard for slots
-					print '[MountManager2] HasSDmmc %s:' %device
+				if not re.search('8', devmajor) and not re.search('179', devmajor):					# look at disk & mmc
 					continue
-				if SystemInfo["HasMMC"] and "root=/dev/mmcblk0p1" in open('/proc/cmdline', 'r').read() and re.search('mmcblk0p1', device):		# h9 using SDcard(mmcblk0p1) for root
-					continue
+				if  re.search('179', devmajor):  
+					if not SystemInfo["HasSDnomount"]:								# only interested in h9/i55/h9combo(+dups) mmc partitions
+						continue										# h9combo(+dups) uses mmcblk1p[0-3] include
+					if SystemInfo["HasH9SD"]:
+						if not re.search('mmcblk0p1', device):							# h9/i55 only mmcblk0p1 mmc partition
+							continue	
+						if SystemInfo["HasMMC"]:								# h9/i55 reject mmcblk0p1 mmc partition if root device
+							continue
+					if SystemInfo["HasSDnomount"][0] == 'Yes' and not re.search('mmcblk1p[0-3]', device):		# h9combo(+dups) uses mmcblk1p[0-3] include
+						continue
+				if re.search('8', devmajor):
+					if not re.search('sd[a-z][1-9]', device):							# if storage use partitions only
+						continue
+					if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):	# sf8008 using SDcard for slots ---> exclude
+						continue
 				if device in list2:
 					continue
-				# if device in swapdevices:
-				# 	continue
 				self.buildMy_rec(device)
 				list2.append(device)
+				print '[MountManager1] list2 = %s' %list2
 		self['config'].list = self.list
 		self['config'].l.setList(self.list)
 		self['Linconn'].hide()
 
 	def buildMy_rec(self, device):
-		if re.search('mmcblk[0-9]p[0-9][0-9]', device):
-			device2 = re.sub('p[0-9][0-9]', '', device)
-		elif re.search('mmcblk[0-9]p[0-9]', device):
+		if re.search('mmcblk[0-1]p[0-3]', device):
 			device2 = re.sub('p[0-9]', '', device)
+			print '[MountManager12]device2: %s' %device2
 		else:
 			device2 = re.sub('[0-9]', '', device)
+			print '[MountManager13]device2: %s' %device2
 		devicetype = path.realpath('/sys/block/' + device2 + '/device')
-		print '[MountManager2]MachineBuild: ',getMachineBuild()
-		print '[MountManager2]DEVICETYPE:',devicetype
-		print '[MountManager2]TEST TYPE mmc:',devicetype.find('mmc')
-		print '[MountManager2]TEST TYPE rdb:',devicetype.find('rdb')
-		print '[MountManager2]TEST TYPE soc:',devicetype.find('soc')
-		if devicetype.find('mmc') != -1 and (devicetype.find('rdb') != -1 or (devicetype.find('soc') != -1 and  not SystemInfo["HasSDnomount"])):
-			return
-		if  SystemInfo["HasSDnomount"]:											# h9/i55 use mmcblk0p[0-3] with sdcard, h9combo uses mmcblk1p[0-3]
-			if SystemInfo["HasSDnomount"][0] == 'Yes' and "%s" %SystemInfo["HasSDnomount"][1] in device:
-				return
-		d2 = device
-		print '[MountManager2]DEVICE D2:',d2
+
+		print '[MountManager1]MachineBuild: %s' %getMachineBuild()
+		print '[MountManager1]device: %s' %device
+		print '[MountManager1]device2: %s' %device2
+		print '[MountManager1]devicetype:%s' %devicetype
+
 		name = _("HARD DISK: ")
 		if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")):
 			mypixmap = resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")
