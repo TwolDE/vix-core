@@ -854,7 +854,7 @@ class SoftcamAutoPoller:
 						output.close()
 						if softcamcheck.lower().startswith('oscam'):
 							self.Console.ePopen("ps.procps | grep softcams | grep -v grep | awk 'NR==1' | awk '{print $5}'| awk  -F'[/]' '{print $4}' > /tmp/softcamRuningCheck.tmp")
-							sleep(2)
+							# sleep(2)
 							file = open('/tmp/softcamRuningCheck.tmp')
 							cccamcheck_process = file.read()
 							cccamcheck_process = cccamcheck_process.replace("\n", "")
@@ -870,7 +870,7 @@ class SoftcamAutoPoller:
 								except:
 									pass
 							self.Console.ePopen('ulimit -s 512;/usr/softcams/' + softcamcheck + " -b")
-							sleep(10)
+							# sleep(10)
 							remove('/tmp/softcamRuningCheck.tmp')
 						elif softcamcheck.lower().startswith('sbox'):
 							self.Console.ePopen('ulimit -s 512;/usr/softcams/' + softcamcheck)
