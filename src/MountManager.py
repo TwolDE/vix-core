@@ -1,5 +1,5 @@
 from boxbranding import getMachineBrand, getMachineName, getMachineBuild
-from os import system, rename, path, mkdir, remove, statvfs
+from os import mkdir, path, remove, rename, statvfs, system 
 import re
 from time import sleep
 
@@ -19,9 +19,9 @@ from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Screens.Standby import TryQuitMainloop
 from Tools.LoadPixmap import LoadPixmap
-from Tools.Directories import SCOPE_ACTIVE_SKIN, resolveFilename, pathExists
+from Tools.Directories import SCOPE_ACTIVE_SKIN, resolveFilename
 
-def getProcPartitions(List, Type):
+def getProcPartitions(List):
 	list2 = []
 	with open('/proc/partitions', 'r') as f:
 		for line in f.readlines():
@@ -29,7 +29,7 @@ def getProcPartitions(List, Type):
 			if not parts:
 				continue
 			(devmajor, devminor, blocks, device) = parts
-			print '[MountManager1] Type = %s device = %s devmajor = %s devminor = %s' %(Type, device, devmajor, devminor)
+			# print '[MountManager1] device = %s devmajor = %s devminor = %s' %(device, devmajor, devminor)
 			if devmajor == "major":
 				continue
 			if not re.search('8', devmajor) and not re.search('179', devmajor):					# look at disk & mmc(179)
@@ -47,39 +47,37 @@ def getProcPartitions(List, Type):
 			if re.search('8', devmajor):
 				if not re.search('sd[a-z][1-9]', device):							# if storage use partitions only
 					continue
-				if SystemInfo["HasHiSi"] and pathExists("/dev/sda4") and re.search('sd[a][1-4]', device):	# sf8008 using SDcard for slots ---> exclude
+				if SystemInfo["HasHiSi"] and path.exists("/dev/sda4") and re.search('sd[a][1-4]', device):	# sf8008 using SDcard for slots ---> exclude
 					continue
 			if device in list2:
 				continue
-			buildDeviceList(device, List, Type)
+			buildDeviceList(device, List)
 			list2.append(device)
 
-def buildDeviceList(device, List, Type):
+def buildDeviceList(device, List):
 	if re.search('mmcblk[0-1]p[0-3]', device):
 		device2 = re.sub('p[0-9]', '', device)
-		print '[MountManager12]device2: %s Type = %s' %(device2, Type)
 	else:
 		device2 = re.sub('[0-9]', '', device)
-		print '[MountManager13]device2: %s Type = %s' %(device2, Type)
 	devicetype = path.realpath('/sys/block/' + device2 + '/device')
 
-	print '[MountManager1]MachineBuild: %s' %getMachineBuild()
-	print '[MountManager1]device: %s' %device
-	print '[MountManager1]device2: %s' %device2
-	print '[MountManager1]devicetype:%s' %devicetype
-	print '[MountManager1]Type:%s' %Type
+	# print '[MountManager1]MachineBuild: %s' %getMachineBuild()
+	# print '[MountManager1]device: %s' %device
+	# print '[MountManager1]device2: %s' %device2
+	# print '[MountManager1]devicetype:%s' %devicetype
+	# print '[MountManager1]Type:%s' %SystemInfo["MountManager"]
 
 	name = _("HARD DISK: ")
 	if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")):
 		mypixmap = resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_hdd.png")
 	else:
 		mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_hdd.png'
-	if pathExists('/sys/block/' + device2 + '/device/model'):
+	if path.exists('/sys/block/' + device2 + '/device/model'):
 		model = file('/sys/block/' + device2 + '/device/model').read()
-	elif pathExists('/sys/block/' + device2 + '/device/name'):
+	elif path.exists('/sys/block/' + device2 + '/device/name'):
 		model = file('/sys/block/' + device2 + '/device/name').read()
 	model = str(model).replace('\n', '')
-	des = ''
+
 	if devicetype.find('usb') != -1:
 		name = _('USB: ')
 		if path.exists(resolveFilename(SCOPE_ACTIVE_SKIN, "vixcore/dev_usb.png")):
@@ -93,45 +91,45 @@ def buildDeviceList(device, List, Type):
 		else:
 			mypixmap = '/usr/lib/enigma2/python/Plugins/SystemPlugins/ViX/images/dev_sd.png'
 	name += model
-
-	d1 = _("None")
-	dtype = _("unavailable")
+	description = ''
+	mediamount = _("None")
+	devicetype = _("unavailable")
 	rw = _("None")
 
 	with open('/proc/mounts', 'r') as f:
 		for line in f.readlines():
 			if line.find(device) != -1:
 				parts = line.strip().split()
-				d1 = parts[1]
-				dtype = parts[2]
-				rw = parts[3]
+				mediamount = parts[1]		# media mount e.g. /media/xxxxx
+				devicetype = parts[2]		# device type e.g. ext4 
+				rw = parts[3]			# read/write
 				break
 
-	if d1 == _("None") or d1 == None:
-		des = _("Size: ") + _("unavailable")
+	if mediamount == _("None") or mediamount == None:
+		description = _("Size: ") + _("unavailable")
 	else:
-		stat = statvfs(d1)
+		stat = statvfs(mediamount)
 		cap = int(stat.f_blocks * stat.f_bsize)
 		size = cap / 1000 / 1000
 		if ((float(size) / 1024) / 1024) >= 1:
-			des = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
+			description = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
 		elif (size / 1024) >= 1:
-			des = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
+			description = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
 		elif size >= 1:
-			des = _("Size: ") + str(size) + _("MB")
+			description = _("Size: ") + str(size) + _("MB")
 		else:
-			des = _("Size: ") + _("unavailable")
-	if des != '':
-		if Type == "A":
+			description = _("Size: ") + _("unavailable")
+	if description != '':
+		if SystemInfo["MountManager"]:
 			if rw.startswith('rw'):
 				rw = ' R/W'
 			elif rw.startswith('ro'):
 				rw = ' R/O'
 			else:
 				rw = ""
-			des += '\t' + _("Mount: ") + d1 + '\n' + _("Device: ") + '/dev/' + device + '\t' + _("Type: ") + dtype + rw
+			description += '\t' + _("Mount: ") + mediamount + '\n' + _("Device: ") + '/dev/' + device + '\t' + _("Type: ") + devicetype + rw
 			png = LoadPixmap(mypixmap)
-			res = (name, des, png)
+			res = (name, description, png)
 		else:
 			Gmedia=[('/media/' + device, '/media/' + device),
 					   ('/media/hdd', '/media/hdd'),
@@ -142,13 +140,13 @@ def buildDeviceList(device, List, Type):
 					   ('/media/usb3', '/media/usb3'),
 					   ('/media/sdcard', '/media/sdcard')]
 			item = NoSave(ConfigSelection(default='/media/' + device, choices=Gmedia))
-			if dtype == 'Linux':
-				dtype = 'ext4'
+			if devicetype == 'Linux':
+				devicetype = 'ext4'
 			else:
-				dtype = 'auto'
-			item.value = d1.strip()
-			text = name + ' ' + des + ' /dev/' + device
-			res = getConfigListEntry(text, item, device, dtype)
+				devicetype = 'auto'
+			item.value = mediamount.strip()
+			text = name + ' ' + description + ' /dev/' + device
+			res = getConfigListEntry(text, item, device, devicetype)
 		List.append(res)
 
 
@@ -216,9 +214,6 @@ class VIXDevicesPanel(Screen):
 		self.activityTimer.timeout.get().append(self.updateList2)
 		self.updateList()
 
-	def createSummary(self):
-		return VIXDevicesPanelSummary
-
 	def selectionChanged(self):
 		if len(self.list) == 0:
 			return
@@ -234,15 +229,15 @@ class VIXDevicesPanel(Screen):
 					self["key_red"].setText(" ")
 			except:
 				pass
-		name = desc = ""
+		name = description = ""
 		if sel:
 			try:
 				name = str(sel[0])
-				desc = str(sel[1].replace('\t', '  '))
+				description = str(sel[1].replace('\t', '  '))
 			except:
 				pass
 		for cb in self.onChangedEntry:
-			cb(name, desc)
+			cb(name, description)
 
 	def updateList(self, result=None, retval=None, extra_args=None):
 		scanning = _("Please wait while scanning for devices...")
@@ -252,8 +247,8 @@ class VIXDevicesPanel(Screen):
 	def updateList2(self):
 		self.activityTimer.stop()
 		self.list = []
-		Type = "A"
-		getProcPartitions(self.list, Type)
+		SystemInfo["MountManager"] = True
+		getProcPartitions(self.list)
 		self['list'].list = self.list
 		self['lab1'].hide()
 
@@ -300,7 +295,7 @@ class VIXDevicesPanel(Screen):
 			parts = sel[1].split()
 			self.device = parts[5]
 			self.mountp = parts[3]
-			print '[MountManager1]saveMypoints: device = %s, mountp=%s' %(self.device, self.mountp)
+			# print '[MountManager1]saveMypoints: device = %s, mountp=%s' %(self.device, self.mountp)
 			self.Console.ePopen('umount ' + self.device)
 			if self.mountp.find('/media/hdd') < 0:
 				self.Console.ePopen('umount /media/hdd')
@@ -312,7 +307,7 @@ class VIXDevicesPanel(Screen):
 		self.device = extra_args[0]
 		self.mountp = extra_args[1]
 		self.device_uuid = 'UUID=' + result.split('UUID=')[1].split(' ')[0].replace('"', '')
-		print '[MountManager1]add_fstab: device = %s, mountp=%s, UUID=%s' %(self.device, self.mountp, self.device_uuid)
+		# print '[MountManager1]add_fstab: device = %s, mountp=%s, UUID=%s' %(self.device, self.mountp, self.device_uuid)
 		if not path.exists(self.mountp):
 			mkdir(self.mountp, 0755)
 		file('/etc/fstab.tmp', 'w').writelines([l for l in file('/etc/fstab').readlines() if '/media/hdd' not in l])
@@ -372,8 +367,8 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		self.activityTimer.stop()
 		self.list = []
 		list2 = []
-		Type = "B"
-		getProcPartitions(self.list, Type)
+		SystemInfo["MountManager"] = False
+		getProcPartitions(self.list)
 		self['config'].list = self.list
 		self['config'].l.setList(self.list)
 		self['Linconn'].hide()
