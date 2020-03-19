@@ -8,7 +8,7 @@ import urllib, urllib2, json
 from enigma import eTimer, fbClass
 
 from . import _, PluginLanguageDomain
-import Components.Task
+
 from Components.ActionMap import ActionMap
 from Components.Button import Button
 from Components.ChoiceList import ChoiceList, ChoiceEntryComponent
@@ -19,20 +19,18 @@ from Components.Label import Label
 from Components.MenuList import MenuList
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
-from Screens.Console import Console as ScreenConsole
+import Components.Task
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Screens.Setup import Setup
 from Screens.Standby import TryQuitMainloop
 from Screens.TaskView import JobView
 from Tools.BoundFunction import boundFunction
-from Tools.Directories import fileExists, fileCheck, pathExists, fileHas
+from Tools.Directories import fileExists, pathExists, fileHas
 import Tools.CopyFiles
 from Tools.HardwareInfo import HardwareInfo
-from Tools.Multiboot import GetImagelist, GetCurrentImage, GetCurrentKern, GetCurrentRoot
+from Tools.Multiboot import GetImagelist, GetCurrentImage
 from Tools.Notifications import AddPopupWithCallback
-
-RAMCHEKFAILEDID = 'RamCheckFailedNotification'
 
 hddchoices = []
 for p in harddiskmanager.getMountedPartitions():
@@ -144,7 +142,6 @@ class VIXImageManager(Screen):
 		self.imagelist = {}
 		self.getImageList = None
 		self.onChangedEntry = []
-		self.oldlist = None
 		self.emlist = []
 		self['list'] = MenuList(self.emlist)
 		self.populate_List()
@@ -161,11 +158,6 @@ class VIXImageManager(Screen):
 		self["backupstatus"].setText(str(backuptext))
 		if not self.selectionChanged in self["list"].onSelectionChanged:
 			self["list"].onSelectionChanged.append(self.selectionChanged)
-
-	def createSummary(self):
-		from Screens.PluginBrowser import PluginBrowserSummary
-
-		return PluginBrowserSummary
 
 	def selectionChanged(self):
 		item = self["list"].getCurrent()
@@ -199,7 +191,6 @@ class VIXImageManager(Screen):
 		if self.BackupDirectory == " ":
 			return
 		images = listdir(self.BackupDirectory)
-		self.oldlist = images
 		del self.emlist[:]
 		mtimes = []
 		for fil in images:
@@ -1215,7 +1206,6 @@ class ImageBackup(Screen):
 				with open(self.MAINDEST + '/reboot.update', 'w') as fileout:
 					line = "This file forces a reboot after the update."
 					fileout.write(line)
-			imagecreated = True
 		elif getBrandOEM() in ('xtrend', 'gigablue', 'octagon', 'odin', 'xp', 'ini'):
 			if getBrandOEM() in ('xtrend', 'octagon', 'odin', 'ini'):
 				with open(self.MAINDEST + '/noforce', 'w') as fileout:
@@ -1390,7 +1380,7 @@ class ImageManagerDownload(Screen):
 				self.urlb = self.urli.replace("login", "%s") %config.imagemanager.imagefeed_DevL.value 
 				imagecat = [5.3, 5.4]
 		elif "www.openvix" in self.urli:
-			imagecat = [5.3, 5.4]
+			imagecat = [5.4]
 
 		if not self.Pli and not self.imagesList:
 			for version in reversed(sorted(imagecat)):
