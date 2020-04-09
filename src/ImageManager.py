@@ -459,7 +459,7 @@ class VIXImageManager(Screen):
 			CMD = "/usr/bin/ofgwrite -r -k '%s'" % MAINDEST	
 									#normal non multiboot receiver
 			if SystemInfo["canMultiBoot"]:
- 				if SystemInfo["HasHiSi"]:									#SF8008 type receiver with SD card multiboot
+ 				if SystemInfo["HasHiSi"] and SystemInfo["HasRootSubdir"] is False:									#SF8008 type receiver with SD card multiboot
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 				else:
 					CMD = "/usr/bin/ofgwrite -r -k -m%s '%s'" % (self.multibootslot, MAINDEST)
@@ -478,9 +478,9 @@ class VIXImageManager(Screen):
 		fbClass.getInstance().unlock()
 		print '[ImageManager] ofgwrite retval :', retval
 		if retval == 0:
-			if SystemInfo["HasHiSi"] and self.HasSDmmc is False:
+			if SystemInfo["HasHiSi"] and SystemInfo["HasRootSubdir"]is False and self.HasSDmmc is False:
 				self.session.open(TryQuitMainloop, 2)
-			elif SystemInfo["canMultiBoot"]:
+			if SystemInfo["canMultiBoot"]:
 				print "[ImageManager] slot %s result %s\n" %(self.multibootslot, result)
 				self.container = Console()
 				if pathExists('/tmp/startupmount'):
