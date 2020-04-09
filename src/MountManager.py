@@ -131,7 +131,7 @@ def buildPartitionInfo(partition, List):
 
 	description = ""
 	mediamount = _("None")
-	filetype = _("unavailable")
+	format = _("unavailable")
 	rw = _("None")
 
 	with open("/proc/mounts", "r") as f:
@@ -139,7 +139,7 @@ def buildPartitionInfo(partition, List):
 			if line.find(partition) != -1:
 				parts = line.strip().split()
 				mediamount = parts[1]		# media mount e.g. /media/xxxxx
-				filetype = parts[2]		# device type e.g. ext4 
+				format = parts[2]		# format e.g. ext4 
 				rw = parts[3]			# read/write
 				break
 
@@ -165,9 +165,9 @@ def buildPartitionInfo(partition, List):
 				rw = " R/O"
 			else:
 				rw = ""
-			description += "\t" + _("Mount: ") + mediamount + "\n" + _("Device: ") + "/dev/" + partition + "\t" + _("Type: ") + filetype + rw
+			description += "\t" + _("Mount: ") + mediamount + "\n" + _("Device: ") + "/dev/" + partition + "\t" + _("Type: ") + format + rw
 			png = LoadPixmap(mypixmap)
-			res = (name, description, png)
+			partitionInfo = (name, description, png)
 		else:
 			Gmedia=[("/media/" + device, "/media/" + device),
 					   ("/media/hdd", "/media/hdd"),
@@ -177,15 +177,15 @@ def buildPartitionInfo(partition, List):
 					   ("/media/usb2", "/media/usb2"),
 					   ("/media/usb3", "/media/usb3"),
 					   ("/media/sdcard", "/media/sdcard")]
-			item = NoSave(ConfigSelection(default="/media/" + partition, choices=Gmedia))
-			if filetype == "Linux":
-				filetype = "ext4"
+			item = NoSave(ConfigSelection(default="/media/%s" % (partition), choices=Gmedia))
+			if format == "Linux":
+				format = "ext4"
 			else:
-				filetype = "auto"
+				format = "auto"
 			item.value = mediamount.strip()
 			text = name + " " + description + " /dev/" + partition
-			res = getConfigListEntry(text, item, partition, filetype)
-		List.append(res)
+			partitionInfo = getConfigListEntry(text, item, partition, format)
+		List.append(partitionInfo)
 
 
 class VIXDevicesPanel(Screen):
@@ -246,7 +246,7 @@ class VIXDevicesPanel(Screen):
 		self.list = []
 		self["list"] = List(self.list)
 		self["list"].onSelectionChanged.append(self.selectionChanged)
-		self["actions"] = ActionMap(["WizardActions", "ColorActions", "MenuActions"], {"back": self.close, "green": self.SetupMounts, "red": self.saveMymounts, "yellow": self.Unmount, "blue": self.Mount, "menu": self.close})
+		self["actions"] = ActionMap(["WizardActions", "ColorActions", "MenuActions"], {"back": self.close, "green": self.SetupMounts, "red": self.saveMounts, "yellow": self.Unmount, "blue": self.Mount, "menu": self.close})
 		self.Console = Console()
 		self.activityTimer = eTimer()
 		self.activityTimer.timeout.get().append(self.findPartitions)
@@ -323,25 +323,25 @@ class VIXDevicesPanel(Screen):
 				return -1
 	
 
-	def saveMymounts(self):
+	def saveMounts(self):
 		sel = self["list"].getCurrent()
 		if sel:
 			parts = sel[1].split()
 			self.device = parts[5]
 			self.mountp = parts[3]
-			# print "[MountManager1]saveMymounts: device = %s, mountp=%s" %(self.device, self.mountp)
+			# print "[MountManager1]saveMounts: device = %s, mountp=%s" %(self.device, self.mountp)
 			self.Console.ePopen("umount " + self.device)
 			if self.mountp.find("/media/hdd") < 0:
 				self.Console.ePopen("umount /media/hdd")
-				self.Console.ePopen("/sbin/blkid | grep " + self.device, self.add_fstab, [self.device, self.mountp])
+				self.Console.ePopen("/sbin/blkid | grep " + self.device, self.addFstab, [self.device, self.mountp])
 			else:
 				self.session.open(MessageBox, _("This device is already mounted as HDD."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 
-	def add_fstab(self, result=None, retval=None, extra_args=None):
+	def addFstab(self, result=None, retval=None, extra_args=None):
 		self.device = extra_args[0]
 		self.mountp = extra_args[1]
 		self.device_uuid = "UUID=" + result.split("UUID=")[1].split(" ")[0].replace('"', '')
-		# print "[MountManager1]add_fstab: device = %s, mountp=%s, UUID=%s" %(self.device, self.mountp, self.device_uuid)
+		# print "[MountManager1]addFstab: device = %s, mountp=%s, UUID=%s" %(self.device, self.mountp, self.device_uuid)
 		if not path.exists(self.mountp):
 			mkdir(self.mountp, 0755)
 		file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if "/media/hdd" not in l])
@@ -386,7 +386,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		self["key_green"] = Label(_("Save"))
 		self["key_red"] = Label(_("Cancel"))
 		self["Linconn"] = Label()
-		self["actions"] = ActionMap(["WizardActions", "ColorActions"], {"green": self.saveMounts, "red": self.close, "back": self.close})
+		self["actions"] = ActionMap(["WizardActions", "ColorActions"], {"green": self.saveconfMounts, "red": self.close, "back": self.close})
 		self.Console = Console()
 		self.activityTimer = eTimer()
 		self.activityTimer.timeout.get().append(self.findconfPartitions)
@@ -406,13 +406,13 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		self["config"].l.setList(self.list)
 		self["Linconn"].hide()
 
-	def saveMounts(self):
+	def saveconfMounts(self):
 		for x in self["config"].list:
 			self.device = x[2]
 			self.mountp = x[1].value
 			self.type = x[3]
 			self.Console.ePopen("umount " + self.device)
-			self.Console.ePopen("/sbin/blkid | grep " + self.device + " && opkg list-installed ntfs-3g", self.add_fstab, [self.device, self.mountp])
+			self.Console.ePopen("/sbin/blkid | grep " + self.device + " && opkg list-installed ntfs-3g", self.addconfFstab, [self.device, self.mountp])
 		message = _("Updating mount locations...")
 		ybox = self.session.openWithCallback(self.delay, MessageBox, message, type=MessageBox.TYPE_INFO, timeout=5, enable_input=False)
 		ybox.setTitle(_("Please wait."))
@@ -422,7 +422,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		ybox = self.session.openWithCallback(self.restartBox, MessageBox, message, MessageBox.TYPE_YESNO)
 		ybox.setTitle(_("Restart %s %s.") % (getMachineBrand(), getMachineName()))
 
-	def add_fstab(self, result=None, retval=None, extra_args=None):
+	def addconfFstab(self, result=None, retval=None, extra_args=None):
 		# print "[MountManager] RESULT:", result
 		if result:
 			self.device = extra_args[0]
