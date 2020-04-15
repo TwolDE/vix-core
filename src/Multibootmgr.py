@@ -62,10 +62,7 @@ class MultiBoot(Screen):
 		self["labe14"] = StaticText(_("Use the cursor keys to select an installed image and then Erase button."))
 		self["labe15"] = StaticText(_("Note: slot list does not show current image or empty slots."))
 		self["key_green"] = StaticText(_("Erase"))
-		if SystemInfo["HasHiSi"]:
-			self["key_yellow"] = StaticText(_("Init SDcard"))
-		else:
-			self["key_yellow"] = StaticText("")
+		self["key_yellow"] = StaticText("")
 		self["config"] = ChoiceList(list=[ChoiceEntryComponent('',((_("Retrieving image slots - Please wait...")), "Queued"))])
 		imagedict = []
 		self.getImageList = None
@@ -75,7 +72,7 @@ class MultiBoot(Screen):
 		{
 			"red": boundFunction(self.close, None),
 			"green": self.erase,
-			"yellow": self.format,
+			"yellow": boundFunction(self.close, None),
 			"ok": self.erase,
 			"cancel": boundFunction(self.close, None),
 			"up": self.keyUp,

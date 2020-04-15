@@ -350,6 +350,7 @@ class VIXImageManager(Screen):
 		self.sel = self["list"].getCurrent()
 		if not self.sel:
 			return
+		self.HasSDmmc = False
 		self.multibootslot = 1
 		self.MTDKERNEL = getMachineMtdKernel()
 		self.MTDROOTFS = getMachineMtdRoot()
@@ -1421,7 +1422,6 @@ class ImageManagerDownload(Screen):
 			self.imagesList = self.jsonlist
 		if self.Pli and not self.jsonlist and not self.imagesList:
 			return
-
 
 		for categorie in reversed(sorted(self.imagesList.keys())):
 			if categorie in self.expanded:
