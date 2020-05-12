@@ -363,21 +363,15 @@ class VIXImageManager(Screen):
 			self.message = _("Recording(s) are in progress or coming up in few seconds!\nDo you still want to flash image\n%s?") % self.sel
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
-		if SystemInfo["canMultiBoot"]:
-			if SystemInfo["HasHiSi"]:
-				if pathExists("/dev/sda4"):
-					self.HasSDmmc = True
-				self.getImageList = GetImagelist(self.keyRestore1)
+		if SystemInfo["canMultiBoot"] is False:
+			if config.imagemanager.autosettingsbackup.value:
+				self.doSettingsBackup()
 			else:
-				self.getImageList = GetImagelist(self.keyRestore1)
-		elif config.imagemanager.autosettingsbackup.value:
-			self.doSettingsBackup()
-		else:
-			self.keyRestore3()
-
-	def keyRestore1(self, imagedict):
-		self.imagelist = imagedict
-		self.getImageList = None
+				self.keyRestore3()
+		if SystemInfo["HasHiSi"]:
+			if pathExists("/dev/sda4"):
+				self.HasSDmmc = True
+		imagedict = GetImagelist()
 		choices = []
 		HIslot = len(imagedict) + 1
 		currentimageslot = GetCurrentImage()
