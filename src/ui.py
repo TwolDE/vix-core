@@ -141,9 +141,6 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "mount-manager":
 					from MountManager import VIXDevicesPanel
 					self.session.open(VIXDevicesPanel, self.menu_path)
-				elif currentEntry == "script-runner":
-					from ScriptRunner import VIXScriptRunner
-					self.session.open(VIXScriptRunner, None, self.menu_path)
 
 	def closeRecursive(self):
 		self.close(True)
