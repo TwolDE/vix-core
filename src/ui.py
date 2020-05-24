@@ -1,14 +1,15 @@
-# for localized messages
 from os import listdir, path, mkdir
 
 from . import _
-from Screens.Screen import Screen
+
 from Components.ActionMap import NumberActionMap
+from Components.config import config
 from Components.Sources.StaticText import StaticText
 from Components.Sources.List import List
-from Screens.ParentalControlSetup import ProtectedScreen
-from Components.config import config
 from Components.SystemInfo import SystemInfo
+from Screens.ParentalControlSetup import ProtectedScreen
+from Screens.Screen import Screen
+
 
 class VIXMenu(Screen, ProtectedScreen):
 	skin = """
@@ -42,21 +43,21 @@ class VIXMenu(Screen, ProtectedScreen):
 		Screen.__init__(self, session)
 		ProtectedScreen.__init__(self)
 		screentitle = _("ViX")
-		self.menu_path = _("Main menu")+' / '+_("Setup")+' / '
-		if config.usage.show_menupath.value == 'large':
+		self.menu_path = _("Main menu")+" / "+_("Setup")+" / "
+		if config.usage.show_menupath.value == "large":
 			self.menu_path += screentitle
 			title = self.menu_path
 			self["menu_path_compressed"] = StaticText("")
-			self.menu_path += ' / '
-		elif config.usage.show_menupath.value == 'small':
+			self.menu_path += " / "
+		elif config.usage.show_menupath.value == "small":
 			title = screentitle
 			condtext = ""
-			if self.menu_path and not self.menu_path.endswith(' / '):
+			if self.menu_path and not self.menu_path.endswith(" / "):
 				condtext = self.menu_path + " >"
 			elif self.menu_path:
 				condtext = self.menu_path[:-3] + " >"
 			self["menu_path_compressed"] = StaticText(condtext)
-			self.menu_path += screentitle + ' / '
+			self.menu_path += screentitle + " / "
 		else:
 			title = screentitle
 			self["menu_path_compressed"] = StaticText("")
@@ -66,7 +67,7 @@ class VIXMenu(Screen, ProtectedScreen):
 		if self.menu == 0:
 			self.list.append(("backup-manager", _("Backup settings"), _("Manage settings backup."), None))
 			self.list.append(("image-manager", _("ViX Image Manager"), _("Backup/Flash/ReBoot system image."), None))
-			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
+			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK"s from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
  			if SystemInfo["HasH9SD"]:
 				self.list.append(("H9SDcard manager", _("H9SDcard Manager"), _("Move Nand root to SD card"), None))

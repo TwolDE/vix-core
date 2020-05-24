@@ -5,10 +5,11 @@ from boxbranding import getBoxType, getImageDistro
 from . import _
 
 from Components.config import config, ConfigBoolean, configfile
-from Plugins.Plugin import PluginDescriptor
+
 from BackupManager import BackupManagerautostart
 from ImageManager import ImageManagerautostart
 from IPKInstaller import IpkgInstaller
+from Plugins.Plugin import PluginDescriptor
 from SoftcamManager import SoftcamAutostart
 
 config.misc.restorewizardrun = ConfigBoolean(default=False)
@@ -19,11 +20,11 @@ def setLanguageFromBackup(backupfile):
 		import tarfile
 		tar = tarfile.open(backupfile)
 		for member in tar.getmembers():
-			if member.name == 'etc/enigma2/settings':
+			if member.name == "etc/enigma2/settings":
 				for line in tar.extractfile(member):
-					if line.startswith('config.osd.language'):
+					if line.startswith("config.osd.language"):
 						print line
-						languageToSelect = line.strip().split('=')[1]
+						languageToSelect = line.strip().split("=")[1]
 						print languageToSelect
 						if languageToSelect:
 							from Components.Language import language
@@ -51,10 +52,10 @@ def checkConfigBackup():
 					files = []
 				if len(files):
 					for file in files:
-						if file.endswith('.tar.gz') and "vix" in file.lower():
+						if file.endswith(".tar.gz") and "vix" in file.lower():
 							list.append((path.join(devpath, file)))
  		if len(list):
-			print '[RestoreWizard] Backup Image:', list[0]
+			print "[RestoreWizard] Backup Image:", list[0]
 			backupfile = list[0]
 			if path.isfile(backupfile):
 				setLanguageFromBackup(backupfile)

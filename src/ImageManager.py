@@ -41,17 +41,17 @@ for p in harddiskmanager.getMountedPartitions():
 				continue
 		if p.mountpoint != "/":
 			hddchoices.append((p.mountpoint, d))
-config.imagemanager = ConfigSubsection()
 defaultprefix = getImageDistro() + "-" + getBoxType()
-config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
+config.imagemanager = ConfigSubsection()
+config.imagemanager.autosettingsbackup = ConfigYesNo(default=True)
 config.imagemanager.backuplocation = ConfigSelection(choices=hddchoices)
-config.imagemanager.schedule = ConfigYesNo(default=False)
-config.imagemanager.scheduletime = ConfigClock(default=0)  # 1:00
-config.imagemanager.repeattype = ConfigSelection(default="daily", choices=[("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
 config.imagemanager.backupretry = ConfigNumber(default=30)
 config.imagemanager.backupretrycount = NoSave(ConfigNumber(default=0))
+config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
 config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default=0))
-config.imagemanager.autosettingsbackup = ConfigYesNo(default=True)
+config.imagemanager.repeattype = ConfigSelection(default="daily", choices=[("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
+config.imagemanager.schedule = ConfigYesNo(default=False)
+config.imagemanager.scheduletime = ConfigClock(default=0)  # 1:00
 config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
