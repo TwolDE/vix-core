@@ -224,7 +224,7 @@ class VIXBackupManager(Screen):
 										  "menu": self.createSetup,
 										  }, -1)
 
-			self["lab1"].setText(_("Device: none available") + "\n" + _("Press "Menu" to select a storage device"))
+			self["lab1"].setText(_("Device: none available") + "\n" + _("Press 'Menu' to select a storage device"))
 		else:
 			self["myactions"] = ActionMap(["ColorActions", "OkCancelActions", "DirectionActions", "MenuActions", "TimerEditActions"],
 										  {
@@ -934,7 +934,7 @@ class VIXBackupManagerMenu(Setup):
 		self["key_red"] = Button(_("Cancel"))
 		self["key_green"] = Button(_("OK"))
 		self["key_yellow"] = Button(_("Choose files"))
-		self["key_blue"] = Button(_("Choose local IPK"s folder"))
+		self["key_blue"] = Button(_("Choose local IPK's folder"))
 
 	def chooseFiles(self):
 		self.session.openWithCallback(self.backupfiles_choosen, BackupSelection, self.menu_path)
@@ -1233,7 +1233,7 @@ class BackupFiles(Screen):
 				mkdir(self.BackupDirectory, 0755)
 		except Exception, e:
 			print str(e)
-			print "[BackupManager] Device: " + config.backupmanager.backuplocation.value + ", i don"t seem to have write access to this device."
+			print "[BackupManager] Device: " + config.backupmanager.backuplocation.value + ", i don't seem to have write access to this device."
 
 		s = statvfs(self.BackupDevice)
 		free = (s.f_bsize * s.f_bavail) / (1024 * 1024)

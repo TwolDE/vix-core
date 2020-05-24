@@ -184,7 +184,7 @@ class VIXSoftcamManager(Screen):
 		configfile.save()
 
 	def showActivecam(self):
-		scanning = _("Wait please while scanning\nfor softcam"s...")
+		scanning = _("Wait please while scanning\nfor softcam's...")
 		self["activecam"].setText(scanning)
 		self.activityTimer.start(10)
 
@@ -195,11 +195,11 @@ class VIXSoftcamManager(Screen):
 			active.append(x[0][0])
 		activelist = ",".join(active)
 		if activelist:
-			self.Console.ePopen("ps.procps -C " + activelist + " | grep -v "CMD" | sed "s/</ /g" | awk "{print $4}" | awk "{a[$1] = $0} END { for (x in a) { print a[x] } }"", self.showActivecam2)
+			self.Console.ePopen("ps.procps -C " + activelist + " | grep -v 'CMD' | sed 's/</ /g' | awk '{print $4}' | awk '{a[$1] = $0} END { for (x in a) { print a[x] } }'", self.showActivecam2)
 		else:
 			self["activecam"].setText("")
 			self["activecam"].show()
-		# self.Console.ePopen("ps.procps | grep softcams | grep -v "grep" | sed "s/</ /g" | awk "{print $5}" | awk "{a[$1] = $0} END { for (x in a) { print a[x] } }" | awk -F"[/]" "{print $4}"", self.showActivecam2)
+		# self.Console.ePopen("ps.procps | grep softcams | grep -v 'grep' | sed 's/</ /g' | awk '{print $5}' | awk '{a[$1] = $0} END { for (x in a) { print a[x] } }' | awk -F'[/] '{print $4}'", self.showActivecam2)
 
 	def showActivecam2(self, result, retval, extra_args):
 		if retval == 0:
@@ -234,7 +234,7 @@ class VIXSoftcamManager(Screen):
 						if self.currentactivecam.lower().find("mgcam") < 0:
 							self.session.openWithCallback(self.showActivecam, VIXStartCam, self.sel[0])
 						else:
-							self.session.open(MessageBox, _("CCcam can"t run whilst MGcamd is running"), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
+							self.session.open(MessageBox, _("CCcam can't run whilst MGcamd is running"), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 				elif selcam.lower().startswith("hypercam"):
 					if not path.exists("/etc/hypercam.cfg"):
 						self.session.open(MessageBox, _("No config files found, please setup Hypercam first\nin /etc/hypercam.cfg."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
@@ -250,7 +250,7 @@ class VIXSoftcamManager(Screen):
 						if self.currentactivecam.lower().find("cccam") < 0:
 							self.session.open(MessageBox, _("No config files found, please setup MGcamd first\nin /usr/keys."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 						else:
-							self.session.open(MessageBox, _("MGcamd can"t run whilst CCcam is running."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
+							self.session.open(MessageBox, _("MGcamd can't run whilst CCcam is running."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 					else:
 						self.session.openWithCallback(self.showActivecam, VIXStartCam, self.sel[0])
 				elif selcam.lower().startswith("scam"):
@@ -291,7 +291,7 @@ class VIXSoftcamManager(Screen):
 				if self.currentactivecam.lower().find("mgcam") < 0:
 					self.session.openWithCallback(self.showActivecam, VIXStartCam, self.sel[0])
 				else:
-					self.session.open(MessageBox, _("CCcam can"t run whilst MGcamd is running."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
+					self.session.open(MessageBox, _("CCcam can't run whilst MGcamd is running."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 			elif selectedcam.lower().startswith("cccam") and path.exists("/etc/CCcam.cfg") == False:
 				self.session.open(MessageBox, _("No config files found, please setup CCcam first\nin /etc/CCcam.cfg."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 			elif selectedcam.lower().startswith("oscam") and path.exists("/etc/tuxbox/config/oscam.conf") == True:
@@ -306,7 +306,7 @@ class VIXSoftcamManager(Screen):
 				if self.currentactivecam.lower().find("cccam") < 0:
 					self.session.open(MessageBox, _("No config files found, please setup MGcamd first\nin /usr/keys."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 				else:
-					self.session.open(MessageBox, _("MGcamd can"t run whilst CCcam is running."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
+					self.session.open(MessageBox, _("MGcamd can't run whilst CCcam is running."), MessageBox.TYPE_INFO, timeout=10, close_on_any_key=True)
 			elif selectedcam.lower().startswith("scam"):
 				self.session.openWithCallback(self.showActivecam, VIXStartCam, self.sel[0])
 			elif not selectedcam.lower().startswith("cccam") or selectedcam.lower().startswith("oscam") or selectedcam.lower().startswith("mgcamd"):
@@ -765,7 +765,7 @@ class SoftcamAutoPoller:
 								output.close()
 								self.Console.ePopen("killall -9 " + softcamcheck)
 								sleep(1)
-								self.Console.ePopen("ps.procps | grep softcams | grep -v grep | awk "NR==1" | awk "{print $5}"| awk  -F"[/]" "{print $4}" > /tmp/oscamRuningCheck.tmp")
+								self.Console.ePopen("ps.procps | grep softcams | grep -v grep | awk 'NR==1' | awk '{print $5}'| awk  -F'[/]' '{print $4}' > /tmp/oscamRuningCheck.tmp")
 								sleep(2)
 								file = open("/tmp/oscamRuningCheck.tmp")
 								cccamcheck_process = file.read()
@@ -820,7 +820,7 @@ class SoftcamAutoPoller:
 									print "[SoftcamManager] " + softcamcheck + " is responding like it should"
 									output = open("/tmp/cam.check.log", "a")
 									now = datetime.now()
-									output.write(now.strftime("%Y-%m-%d %H:%M") + ": " + softcamcheck + " is responding like it should\n")
+									output.write(now.strftime("%Y-%m-%d %H:%M") + ": ' + softcamcheck + ' is responding like it should\n")
 									output.close()
 								else:
 									print "[SoftcamManager] " + softcamcheck + " is frozen, Restarting..."
@@ -837,23 +837,23 @@ class SoftcamAutoPoller:
 								print "[SoftcamManager] Telnet info not allowed, can not check if frozen"
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
-								output.write(now.strftime("%Y-%m-%d %H:%M") + ":  Webinfo info not allowed, can not check if frozen,\n\tplease enable "ALLOW WEBINFO: YES"\n")
+								output.write(now.strftime("%Y-%m-%d %H:%M") + ":  Webinfo info not allowed, can not check if frozen,\n\tplease enable 'ALLOW WEBINFO: YES'\n")
 								output.close()
 							else:
-								print "[SoftcamManager] Webinfo info not setup, please enable "ALLOW WEBINFO= YES""
+								print "[SoftcamManager] Webinfo info not setup, please enable 'ALLOW WEBINFO= YES'"
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
-								output.write(now.strftime("%Y-%m-%d %H:%M") + ":  Telnet info not setup, can not check if frozen,\n\tplease enable "ALLOW WEBINFO: YES"\n")
+								output.write(now.strftime("%Y-%m-%d %H:%M") + ":  Telnet info not setup, can not check if frozen,\n\tplease enable 'ALLOW WEBINFO: YES'\n")
 								output.close()
 
 					elif softcamcheck_process == "":
-						print "[SoftcamManager] Couldn"t find " + softcamcheck + " running, Starting " + softcamcheck
+						print "[SoftcamManager] Couldn't find " + softcamcheck + " running, Starting " + softcamcheck
 						output = open("/tmp/cam.check.log", "a")
 						now = datetime.now()
 						output.write(now.strftime("%Y-%m-%d %H:%M") + ": Couldn't find " + softcamcheck + " running, Starting " + softcamcheck + "\n")
 						output.close()
 						if softcamcheck.lower().startswith("oscam"):
-							self.Console.ePopen("ps.procps | grep softcams | grep -v grep | awk "NR==1" | awk "{print $5}"| awk  -F"[/]" "{print $4}" > /tmp/softcamRuningCheck.tmp")
+							self.Console.ePopen("ps.procps | grep softcams | grep -v grep | awk 'NR==1' | awk '{print $5}'| awk  -F'[/]' '{print $4}' > /tmp/softcamRuningCheck.tmp")
 							# sleep(2)
 							file = open("/tmp/softcamRuningCheck.tmp")
 							cccamcheck_process = file.read()
