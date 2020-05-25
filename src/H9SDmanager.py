@@ -35,20 +35,20 @@ class H9SDmanager(Screen):
 		self.skinName = "H9SDmanager"
 		screentitle = _("H9 SDcard/USB manager")
 		self.menu_path = menu_path
-		if config.usage.show_menupath.value == 'large':
+		if config.usage.show_menupath.value == "large":
 			self.menu_path += screentitle
 			title = self.menu_path
 			self["menu_path_compressed"] = StaticText("")
-			self.menu_path += ' / '
-		elif config.usage.show_menupath.value == 'small':
+			self.menu_path += " / "
+		elif config.usage.show_menupath.value == "small":
 			title = screentitle
 			condtext = ""
-			if self.menu_path and not self.menu_path.endswith(' / '):
+			if self.menu_path and not self.menu_path.endswith(" / "):
 				condtext = self.menu_path + " >"
 			elif self.menu_path:
 				condtext = self.menu_path[:-3] + " >"
 			self["menu_path_compressed"] = StaticText(condtext)
-			self.menu_path += screentitle + ' / '
+			self.menu_path += screentitle + " / "
 		else:
 			title = screentitle
 			self["menu_path_compressed"] = StaticText("")
@@ -79,10 +79,10 @@ class H9SDmanager(Screen):
 			cmdlist.append("opkg install rsync")
 			cmdlist.append("umount /dev/mmcblk0p1")
 			cmdlist.append("dd if=/dev/zero of=/dev/mmcblk0p1 bs=1M count=150")
-			cmdlist.append('mkfs.ext4 -L "H9-ROOTFS" /dev/mmcblk0p1')
+			cmdlist.append("mkfs.ext4 -L 'H9-ROOTFS' /dev/mmcblk0p1")
 #			cmdlist.append("parted -s /dev/mmcblk0 rm 1")
-#			cmdlist.append('parted -s /dev/mmcblk0 mklabel gpt')
-#			cmdlist.append('parted -s /dev/mmcblk0 mkpart rootfs2 ext4 0% 100%')
+#			cmdlist.append("parted -s /dev/mmcblk0 mklabel gpt")
+#			cmdlist.append("parted -s /dev/mmcblk0 mkpart rootfs2 ext4 0% 100%")
 			cmdlist.append("mkdir /tmp/mmc")
 			cmdlist.append("mount /dev/mmcblk0p1 /tmp/mmc")
 			cmdlist.append("mkdir /tmp/root")
@@ -106,8 +106,8 @@ class H9SDmanager(Screen):
 			cmdlist.append("opkg install rsync")
 			cmdlist.append("umount /dev/mmcblk0p1")
 			cmdlist.append("dd if=/dev/zero of=/dev/sda1 bs=1M count=150")
-			cmdlist.append('mkfs.ext4 -L "H9-ROOTFS" /dev/sda1')
-#			cmdlist.append('mkfs.ext4 -L "rootfs2" /dev/sda1')
+			cmdlist.append("mkfs.ext4 -L 'H9-ROOTFS' /dev/sda1")
+#			cmdlist.append("mkfs.ext4 -L 'rootfs2' /dev/sda1")
 			cmdlist.append("mkdir /tmp/mmc")
 			cmdlist.append("mount /dev/mmcblk0p1 /tmp/mmc")
 			cmdlist.append("mkdir /tmp/root")
