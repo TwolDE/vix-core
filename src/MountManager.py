@@ -370,7 +370,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		<widget name="key_red" position="25,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1"/>
 		<widget name="key_green" position="175,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
 		<widget name="config" position="30,60" size="580,275" scrollbarMode="showOnDemand"/>
-		<widget name="Linconn" position="30,375" size="580,20" font="Regular;18" halign="center" valign="center" backgroundColor="#9f1313"/>
+		<widget name="lab1" position="30,375" size="580,20" font="Regular;18" halign="center" valign="center" backgroundColor="#9f1313"/>
 	</screen>"""
 
 	def __init__(self, session, menu_path):
@@ -392,10 +392,10 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 
 		self["key_green"] = Label(_("Save"))
 		self["key_red"] = Label(_("Cancel"))
-		self["Linconn"] = Label()
+		self["lab1"] = Label()
 		self["actions"] = ActionMap(["WizardActions", "ColorActions"], {
-			"green": self.saveconfMounts,
 			"red": self.close,
+			"green": self.saveconfMounts,
 			"back": self.close
 		})
 		self.Console = Console()
@@ -405,7 +405,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 
 	def setconfTimer(self, result=None, retval=None, extra_args=None):
 		scanning = _("Please wait while scanning your %s %s devices...") % (getMachineBrand(), getMachineName())
-		self["Linconn"].setText(scanning)
+		self["lab1"].setText(scanning)
 		self.activityTimer.start(10)
 
 	def findconfPartitions(self):
@@ -415,7 +415,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		getProcPartitions(self.list)
 		self["config"].list = self.list
 		self["config"].l.setList(self.list)
-		self["Linconn"].hide()
+		self["lab1"].hide()
 
 	def saveconfMounts(self):
 		for x in self["config"].list:
