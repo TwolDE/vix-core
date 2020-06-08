@@ -32,7 +32,7 @@ class VIXScriptRunner(IpkgInstaller):
 			if path.exists('/usr/scripts') and not path.exists('/usr/script'):
 				rename('/usr/scripts', '/usr/script')
 			if not path.exists('/usr/script'):
-				mkdir('/usr/script', 0755)
+				mkdir('/usr/script', 0o755)
 			f = listdir('/usr/script')
 			for line in f:
 				parts = line.split()

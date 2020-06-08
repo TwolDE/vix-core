@@ -21,7 +21,7 @@ from Screens.MessageBox import MessageBox
 from time import time, strftime, localtime
 from Tools.Directories import fileExists, fileCheck
 from os import path, system, makedirs, listdir, walk, statvfs, remove
-import commands
+import subprocess
 import datetime
 from boxbranding import getBoxType, getMachineBrand, getMachineName, getDriverDate, getImageVersion, getImageBuild, getBrandOEM, getMachineBuild, getImageFolder, getMachineUBINIZE, getMachineMKUBIFS, getMachineMtdKernel, getMachineMtdRoot, getMachineKernelFile, getMachineRootFile, getImageFileSystem, getMachineMake
 
@@ -34,7 +34,7 @@ if getMachineBuild() in ('h9','vuzero4k','u5','u5pvr','sf5008','et13000','et1x00
 def Freespace(dev):
 	statdev = statvfs(dev)
 	space = (statdev.f_bavail * statdev.f_frsize) / 1024
-	print "[FULL BACKUP] Free space on %s = %i kilobytes" %(dev, space)
+	print("[FULL BACKUP] Free space on %s = %i kilobytes" %(dev, space))
 	return space
 
 class ImageBackup(Screen):
@@ -103,19 +103,19 @@ class ImageBackup(Screen):
 			self.MTDBOOT = "none"
 			self.EMMCIMG = "none"
 
-		print "[ImageBackup] BOX MACHINEBUILD = >%s<" %self.MACHINEBUILD
-		print "[ImageBackup] BOX MACHINENAME = >%s<" %self.MACHINENAME
-		print "[ImageBackup] BOX MACHINEBRAND = >%s<" %self.MACHINEBRAND
-		print "[ImageBackup] BOX MODEL = >%s<" %self.MODEL
-		print "[ImageBackup] OEM MODEL = >%s<" %self.OEM
-		print "[ImageBackup] IMAGEFOLDER = >%s<" %self.IMAGEFOLDER
-		print "[ImageBackup] UBINIZE = >%s<" %self.UBINIZE_ARGS
-		print "[ImageBackup] MKUBIFS = >%s<" %self.MKUBIFS_ARGS
-		print "[ImageBackup] MTDBOOT = >%s<" %self.MTDBOOT
-		print "[ImageBackup] MTDKERNEL = >%s<" %self.MTDKERNEL
-		print "[ImageBackup] MTDROOTFS = >%s<" %self.MTDROOTFS
-		print "[ImageBackup] ROOTFSTYPE = >%s<" %self.ROOTFSTYPE
-		print "[ImageBackup] EMMCIMG = >%s<" %self.EMMCIMG
+		print("[ImageBackup] BOX MACHINEBUILD = >%s<" %self.MACHINEBUILD)
+		print("[ImageBackup] BOX MACHINENAME = >%s<" %self.MACHINENAME)
+		print("[ImageBackup] BOX MACHINEBRAND = >%s<" %self.MACHINEBRAND)
+		print("[ImageBackup] BOX MODEL = >%s<" %self.MODEL)
+		print("[ImageBackup] OEM MODEL = >%s<" %self.OEM)
+		print("[ImageBackup] IMAGEFOLDER = >%s<" %self.IMAGEFOLDER)
+		print("[ImageBackup] UBINIZE = >%s<" %self.UBINIZE_ARGS)
+		print("[ImageBackup] MKUBIFS = >%s<" %self.MKUBIFS_ARGS)
+		print("[ImageBackup] MTDBOOT = >%s<" %self.MTDBOOT)
+		print("[ImageBackup] MTDKERNEL = >%s<" %self.MTDKERNEL)
+		print("[ImageBackup] MTDROOTFS = >%s<" %self.MTDROOTFS)
+		print("[ImageBackup] ROOTFSTYPE = >%s<" %self.ROOTFSTYPE)
+		print("[ImageBackup] EMMCIMG = >%s<" %self.EMMCIMG)
 
 		self.list = self.list_files("/boot")
 		self["key_green"] = Button("USB")
@@ -199,8 +199,8 @@ class ImageBackup(Screen):
 		cmdline = cmdline.lstrip("/dev/")
 		self.MTDROOTFS = cmdline
 		self.MTDKERNEL = cmdline[:-1] + str(int(cmdline[-1:]) -1)
-		print "[ImageBackup] Multiboot rootfs ", self.MTDROOTFS
-		print "[ImageBackup] Multiboot kernel ", self.MTDKERNEL
+		print("[ImageBackup] Multiboot rootfs ", self.MTDROOTFS)
+		print("[ImageBackup] Multiboot kernel ", self.MTDKERNEL)
 
 	def read_startup(self, FILE):
 		self.file = FILE
@@ -233,7 +233,7 @@ class ImageBackup(Screen):
 				if not dir == 'hdd' and not dir == 'net':
 					for file in listdir("/media/" + dir):
 						if file.find("backupstick") > -1:
-							print "[ImageBackup] USB-DEVICE found on: /media/%s" % dir
+							print("[ImageBackup] USB-DEVICE found on: /media/%s" % dir)
 							return "/media/" + dir
 			break
 		return "XX"
@@ -272,10 +272,10 @@ class ImageBackup(Screen):
 		self.MAINDEST = "%s/%s" %(self.DIRECTORY,self.IMAGEFOLDER)
 		self.EXTRA = "%s/fullbackup_%s/%s/%s" % (self.DIRECTORY, self.MODEL, self.DATE, self.IMAGEFOLDER)
 		self.EXTRAOLD = "%s/fullbackup_%s/%s/%s" % (self.DIRECTORY, self.MODEL, self.DATE, self.MODEL)
-		print "[ImageBackup] SHOWNAME: ", self.SHOWNAME
-		print "[ImageBackup] MAINDESTOLD: ", self.MAINDESTOLD
-		print "[ImageBackup] EXTRA: ", self.EXTRA
-		print "[ImageBackup] EXTRAOLD: ", self.EXTRAOLD
+		print("[ImageBackup] SHOWNAME: ", self.SHOWNAME)
+		print("[ImageBackup] MAINDESTOLD: ", self.MAINDESTOLD)
+		print("[ImageBackup] EXTRA: ", self.EXTRA)
+		print("[ImageBackup] EXTRAOLD: ", self.EXTRAOLD)
 
 		self.message = "echo -e '\n"
 		self.message += (_("Fullback for %s\n" %self.SHOWNAME)).upper()
@@ -420,7 +420,7 @@ class ImageBackup(Screen):
 
 	def doFullBackupCB(self):
 		if HaveGZkernel:
-			ret = commands.getoutput(' gzip -d %s/vmlinux.gz -c > /tmp/vmlinux.bin' % self.WORKDIR)
+			ret = subprocess.getoutput(' gzip -d %s/vmlinux.gz -c > /tmp/vmlinux.bin' % self.WORKDIR)
 			if ret:
 				text = "Kernel dump error\n"
 				text += "Please Flash your Kernel new and Backup again"
@@ -500,15 +500,15 @@ class ImageBackup(Screen):
 		file_found = True
 
 		if not path.exists("%s/%s" % (self.MAINDEST, self.ROOTFSBIN)):
-			print '[ImageBackup] ROOTFS bin file not found'
+			print('[ImageBackup] ROOTFS bin file not found')
 			file_found = False
 
 		if not path.exists("%s/%s" % (self.MAINDEST, self.KERNELBIN)):
-			print '[ImageBackup] KERNEL bin file not found'
+			print('[ImageBackup] KERNEL bin file not found')
 			file_found = False
 
 		if path.exists("%s/noforce" % self.MAINDEST):
-			print '[ImageBackup] NOFORCE bin file not found'
+			print('[ImageBackup] NOFORCE bin file not found')
 			file_found = False
 
 		if SystemInfo["canMultiBoot"] and not self.list[self.selection] == "Recovery":
@@ -614,7 +614,7 @@ class ImageBackup(Screen):
 		AboutText += _("Last update:\t%s") % getEnigmaVersionString() + "\n\n"
 
 		AboutText += _("[Enigma2 Settings]\n")
-		AboutText += commands.getoutput("cat /etc/enigma2/settings")
+		AboutText += subprocess.getoutput("cat /etc/enigma2/settings")
 		AboutText += _("\n\n[User - bouquets (TV)]\n")
 		try:
 			f = open("/etc/enigma2/bouquets.tv","r")
@@ -650,6 +650,6 @@ class ImageBackup(Screen):
 			AboutText += "Error reading bouquets.radio"
 
 		AboutText += _("\n[Installed Plugins]\n")
-		AboutText += commands.getoutput("opkg list_installed | grep enigma2-plugin-")
+		AboutText += subprocess.getoutput("opkg list_installed | grep enigma2-plugin-")
 
 		return AboutText

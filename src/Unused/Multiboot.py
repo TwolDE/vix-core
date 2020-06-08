@@ -108,7 +108,7 @@ class MultiBoot(Screen):
 			f.close()
 			return True
 		except IOError:
-			print "[MultiBootStartup] write error file: %s" %FILE 
+			print("[MultiBootStartup] write error file: %s" %FILE) 
 			return False
 
 	def readlineFile(self, FILE):
@@ -263,32 +263,32 @@ class MultiBoot(Screen):
 				cmd4 = "rootwait"
 				bootmode = temp[7].split("%s_4.boxmode=" %getMachineBuild())[1].replace("'",'')
 			setmode = self.optionsList[self.option][0].split('=')[1]
-			print "[MultiBootStartup] ENTRY %s cmdx %s cmd4 %s bootmode %s setmode %s" %(ENTRY, cmdx, cmd4, bootmode, setmode)
+			print("[MultiBootStartup] ENTRY %s cmdx %s cmd4 %s bootmode %s setmode %s" %(ENTRY, cmdx, cmd4, bootmode, setmode))
 			if self.option_enabled: 
-				print "[MultiBootStartup] self.option_enabled TRUE"
+				print("[MultiBootStartup] self.option_enabled TRUE")
 			#verify entries
 			if cmdx != len(temp) or 'boot' != temp[0] or 'rw' != temp[5] or cmd4 != temp[6] or kernel != root-kernel-1:
-				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with not matching entries!"
+				print("[MultiBootStartup] Command line in '/boot/STARTUP' - problem with not matching entries!")
 				ret = True
 			#verify length
 			elif ('boxmode' not in ENTRY and len(ENTRY) > 96) or ('boxmode' in ENTRY and len(ENTRY) > 115):
-				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with line length!"
+				print("[MultiBootStartup] Command line in '/boot/STARTUP' - problem with line length!")
 				ret = True
 			#verify boxmode
 			elif bootmode != setmode and not self.option_enabled:
-				print "[MultiBootStartup] Command line in '/boot/STARTUP' - problem with unsupported boxmode!"
+				print("[MultiBootStartup] Command line in '/boot/STARTUP' - problem with unsupported boxmode!")
 				ret = True
 			#verify device
 			elif not device in Harddisk.getextdevices("ext4"):
-				print "[MultiBootStartup] Command line in '/boot/STARTUP' - boot device not exist!"
+				print("[MultiBootStartup] Command line in '/boot/STARTUP' - boot device not exist!")
 				ret = True
 		except:
-			print "[MultiBootStartup] Command line in '/boot/STARTUP' - unknown problem!"
+			print("[MultiBootStartup] Command line in '/boot/STARTUP' - unknown problem!")
 			ret = True
 		return ret
 
 	def save(self):
-		print "[MultiBootStartup] select new startup: ", self.list[self.selection]
+		print("[MultiBootStartup] select new startup: ", self.list[self.selection])
 		ret = system("cp -f '/boot/%s' /boot/STARTUP" %self.list[self.selection])
 		if ret:
 			self.session.open(MessageBox, _("File '/boot/%s' copy to '/boot/STARTUP' failed!") %self.list[self.selection], MessageBox.TYPE_ERROR)
@@ -336,7 +336,7 @@ class MultiBoot(Screen):
 
 		message = _("Do you want to reboot now with selected image?")
 		if failboot:
-			print "[MultiBootStartup] wrong bootsettings: " + boot
+			print("[MultiBootStartup] wrong bootsettings: " + boot)
 			if '/dev/mmcblk0p3' in Harddisk.getextdevices("ext4"):
 				if self.writeFile('/boot/STARTUP', "boot emmcflash0.kernel1 'brcm_cma=440M@328M brcm_cma=192M@768M root=/dev/mmcblk0p3 rw rootwait'"):
 					txt = _("Next boot will start from Image 1.")
@@ -378,7 +378,7 @@ class MultiBoot(Screen):
 		self["config"].setText(_("Select Image: %s") %self.list[self.selection])
 
 	def saveGB(self):
-		print "[MultiBootStartup] select new startup: ", self.list[self.selection]
+		print("[MultiBootStartup] select new startup: ", self.list[self.selection])
 		system("cp -f /boot/%s /boot/STARTUP"%self.list[self.selection])
 		restartbox = self.session.openWithCallback(self.restartBOX,MessageBox,_("Do you want to reboot now with selected image?"), MessageBox.TYPE_YESNO)
 

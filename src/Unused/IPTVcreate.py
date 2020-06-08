@@ -96,7 +96,7 @@ class IPTVcreate(Screen):
 			title = screentitle
 			self["menu_path_compressed"] = StaticText("")
 		Screen.setTitle(self, title)
-		print "[IPTVcreate] Start Enabled"
+		print("[IPTVcreate] Start Enabled")
 		self['statusbar'] = Label()
 		self.Prov = 1
         	self.update_status()
@@ -107,7 +107,7 @@ class IPTVcreate(Screen):
 		
 		
 	def Config_List(self):
-            	print "[IPTVcreate] Display Menu"
+            	print("[IPTVcreate] Display Menu")
 		self["key_red"] = Button(_("Exit"))
 		self["key_green"] = Button(_("Setup"))
 		self["key_yellow"] = Label("%s" %config.IPTVcreate.Provname.value)
@@ -126,11 +126,11 @@ class IPTVcreate(Screen):
                                                                               
                 
        	def createSetup(self):
-            	print "[IPTVcreate] Update Config"
+            	print("[IPTVcreate] Update Config")
 		self.session.openWithCallback(self.configOK, Setup, 'IPTVcreate', 'SystemPlugins/ViX', self.menu_path, PluginLanguageDomain)
                  
 	def configOK(self, test=None):
-            	print "[IPTVcreate] Config OK"
+            	print("[IPTVcreate] Config OK")
 
     	def Prov1(self):
 		self.Prov = 1
@@ -172,15 +172,15 @@ class IPTVcreate(Screen):
 		    sys.argv.append('-bd')
 		if config.IPTVcreate.Uninstall.value:
 		    sys.argv.append('-U')
-		print "[IPTVcreate] Start Manual IPTV Import Enabled"
+		print("[IPTVcreate] Start Manual IPTV Import Enabled")
 		e2m3u2bouquet.main(sys.argv)
-		print "[IPTVcreate] Manual IPTV Import Complete"
+		print("[IPTVcreate] Manual IPTV Import Complete")
 		config.IPTVcreate.last_update.value = int(time())
 		config.IPTVcreate.last_update.save()
 		self.update_status()
 
 	def update_status(self):
-		print "[IPTVcreate] Update status %s" % (config.IPTVcreate.last_update.value) 
+		print("[IPTVcreate] Update status %s" % (config.IPTVcreate.last_update.value)) 
 	  	if config.IPTVcreate.last_update.value != 0:
 			t = localtime(config.IPTVcreate.last_update.value)
 			updatetext = _("Last channel update: ") + strftime(_("%a %e %b  %-H:%M"), t)
@@ -197,7 +197,7 @@ class AutoStartTimer:
 		self.update()
 
 	def get_wake_time(self):
-		print "[IPTVcreate] AutoStartTimer -> get_wake_time"
+		print("[IPTVcreate] AutoStartTimer -> get_wake_time")
 		if config.IPTVcreate.autobouquetupdate.value and config.IPTVcreate.updateinterval.value:
 		    interval = int(config.IPTVcreate.updateinterval.value)
 		    nowt = time()
@@ -206,12 +206,12 @@ class AutoStartTimer:
 		    return -1
 
 	def update(self, atLeast=0):
-		print "[IPTVcreate] AutoStartTimer -> update"
+		print("[IPTVcreate] AutoStartTimer -> update")
 		self.timer.stop()
 		wake = self.get_wake_time()
 		nowt = time()
 		now = int(nowt)
-		print "[IPTVcreate] wake {} now {}".format(wake, now)
+		print("[IPTVcreate] wake {} now {}".format(wake, now))
 		if wake > 0:
 		    next = wake - now
 		    self.timer.startLongTimer(next)
@@ -222,13 +222,13 @@ class AutoStartTimer:
 	def on_timer(self):
 		self.timer.stop()
 		now = int(time())
-		print "[IPTVcreate] on_timer occured at {}".format(now)
-		print "[IPTVcreate] Starting bouquet update because auto update bouquet schedule is enabled"
+		print("[IPTVcreate] on_timer occured at {}".format(now))
+		print("[IPTVcreate] Starting bouquet update because auto update bouquet schedule is enabled")
 		do_update()
 		self.update()
 
 	def get_status(self):
-		print "[IPTVcreate] AutoStartTimer -> getStatus"
+		print("[IPTVcreate] AutoStartTimer -> getStatus")
 
 
 def do_update():
@@ -263,15 +263,15 @@ def do_update():
 	    sys.argv.append('-bd')
 	if config.IPTVcreate.Uninstall.value:
 	    sys.argv.append('-U')
-	print "[IPTVcreate] Start Timer IPTV Import Enabled"
+	print("[IPTVcreate] Start Timer IPTV Import Enabled")
 	e2m3u2bouquet.main(sys.argv)
-	print "[IPTVcreate] Timer IPTV Import Complete"
+	print("[IPTVcreate] Timer IPTV Import Complete")
 	config.IPTVcreate.last_update.value = int(time())
 	config.IPTVcreate.last_update.save()
 
 
 def main(session, **kwargs):
-    print "[IPTVcreate] Timer main"
+    print("[IPTVcreate] Timer main")
     session.openWithCallback(done_configuring, IPTVcreate)
 
 
@@ -279,7 +279,7 @@ def done_configuring():
     """Check for new config values for auto start
     """
     global autoStartTimer
-    print "[IPTVcreate] Done configuring"
+    print("[IPTVcreate] Done configuring")
     if autoStartTimer is not None:
 	autoStartTimer.update()
     return
@@ -290,14 +290,14 @@ def on_boot_start_check():
     config option autobouquetupdateatboot is true
     """
     now = int(time())
-    print "[IPTVcreate] Starting bouquet update because auto update bouquet at start enabled"
+    print("[IPTVcreate] Starting bouquet update because auto update bouquet at start enabled")
     do_update()
 
 
 def IPTVcreateautostart(reason, session=None, **kwargs):
     global autoStartTimer
     global _session
-    print "[IPTVcreate] autostart {} occured at {}".format(reason, time())
+    print("[IPTVcreate] autostart {} occured at {}".format(reason, time()))
     if reason == 0 and _session is None:
 	if session is not None:
 	    _session = session
@@ -309,6 +309,6 @@ def IPTVcreateautostart(reason, session=None, **kwargs):
 
 
 def get_next_wakeup():
-    print "[IPTVcreate] get_next_wakeup"
+    print("[IPTVcreate] get_next_wakeup")
     return -1
 

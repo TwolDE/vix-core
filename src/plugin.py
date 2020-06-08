@@ -6,26 +6,26 @@ from . import _
 
 from Components.config import config, ConfigBoolean, configfile
 
-from BackupManager import BackupManagerautostart
-from ImageManager import ImageManagerautostart
-from IPKInstaller import IpkgInstaller
+from .BackupManager import BackupManagerautostart
+from .ImageManager import ImageManagerautostart
+from .IPKInstaller import IpkgInstaller
 from Plugins.Plugin import PluginDescriptor
-from SoftcamManager import SoftcamAutostart
+from .SoftcamManager import SoftcamAutostart
 
 config.misc.restorewizardrun = ConfigBoolean(default=False)
 
 def setLanguageFromBackup(backupfile):
 	try:
-		print backupfile
+		print(backupfile)
 		import tarfile
 		tar = tarfile.open(backupfile)
 		for member in tar.getmembers():
 			if member.name == "etc/enigma2/settings":
 				for line in tar.extractfile(member):
 					if line.startswith("config.osd.language"):
-						print line
+						print(line)
 						languageToSelect = line.strip().split("=")[1]
-						print languageToSelect
+						print(languageToSelect)
 						if languageToSelect:
 							from Components.Language import language
 							language.activateLanguage(languageToSelect)
@@ -55,15 +55,15 @@ def checkConfigBackup():
 						if file.endswith(".tar.gz") and "vix" in file.lower():
 							list.append((path.join(devpath, file)))
  		if len(list):
-			print "[RestoreWizard] Backup Image:", list[0]
+			print("[RestoreWizard] Backup Image:", list[0])
 			backupfile = list[0]
 			if path.isfile(backupfile):
 				setLanguageFromBackup(backupfile)
 			return True
 		else:
 			return None
-	except IOError, e:
-		print "[ViX] unable to use device (%s)..." % str(e)
+	except IOError as e:
+		print("[ViX] unable to use device (%s)..." % str(e))
 		return None
 
 if config.misc.firstrun.value and not config.misc.restorewizardrun.value:
@@ -74,7 +74,7 @@ if config.misc.firstrun.value and not config.misc.restorewizardrun.value:
 
 
 def VIXMenu(session):
-	import ui
+	from . import ui
 	return ui.VIXMenu(session)
 
 def UpgradeMain(session, **kwargs):
@@ -86,11 +86,11 @@ def startSetup(menuid):
 	return [(_("ViX"), UpgradeMain, "vix_menu", 1010)]
 
 def RestoreWizard(*args, **kwargs):
-	from RestoreWizard import RestoreWizard
+	from .RestoreWizard import RestoreWizard
 	return RestoreWizard(*args, **kwargs)
 
 def SoftcamManager(session):
-	from SoftcamManager import VIXSoftcamManager
+	from .SoftcamManager import VIXSoftcamManager
 	return VIXSoftcamManager(session)
 
 def SoftcamMenu(session, **kwargs):
@@ -102,28 +102,28 @@ def SoftcamSetup(menuid):
 	return []
 
 def BackupManager(session):
-	from BackupManager import VIXBackupManager
+	from .BackupManager import VIXBackupManager
 	return VIXBackupManager(session)
 
 def BackupManagerMenu(session, **kwargs):
 	session.open(BackupManager)
 
 def ImageManager(session):
-	from ImageManager import VIXImageManager
+	from .ImageManager import VIXImageManager
 	return VIXImageManager(session)
 
 def ImageMangerMenu(session, **kwargs):
 	session.open(ImageManager)
 
 def H9SDmanager(session):
-	from H9SDmanager import H9SDmanager
+	from .H9SDmanager import H9SDmanager
 	return H9SDmanager(session)
 
 def H9SDmanagerMenu(session, **kwargs):
 	session.open(H9SDmanager)
 
 def MountManager(session):
-	from MountManager import VIXDevicesPanel
+	from .MountManager import VIXDevicesPanel
 	return VIXDevicesPanel(session)
 
 def MountManagerMenu(session, **kwargs):

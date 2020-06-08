@@ -42,7 +42,7 @@ def SoftcamAutostart(reason, session=None, **kwargs):
 	"""called with reason=1 to during shutdown, with reason=0 at startup?"""
 	global softcamautopoller
 	if reason == 0:
-		print "[SoftcamManager] AutoStart Enabled"
+		print("[SoftcamManager] AutoStart Enabled")
 		if path.exists("/tmp/SoftcamsDisableCheck"):
 			remove("/tmp/SoftcamsDisableCheck")
 		softcamautopoller = SoftcamAutoPoller()
@@ -150,7 +150,7 @@ class VIXSoftcamManager(Screen):
 		if cams:
 			current = self["list"].getCurrent()[0]
 			selcam = current[0]
-			print "[SoftcamManager] Selectedcam: " + str(selcam)
+			print("[SoftcamManager] Selectedcam: " + str(selcam))
 			if self.currentactivecam.find(selcam) < 0:
 				self["key_green"].setText(_("Start"))
 			else:
@@ -206,7 +206,7 @@ class VIXSoftcamManager(Screen):
 			self.currentactivecamtemp = result
 			self.currentactivecam = "".join([s for s in self.currentactivecamtemp.splitlines(True) if s.strip("\r\n")])
 			self.currentactivecam = self.currentactivecam.replace("\n", ", ")
-			print "[SoftcamManager] Active: " + self.currentactivecam.replace("\n", ", ")
+			print("[SoftcamManager] Active: " + self.currentactivecam.replace("\n", ", "))
 			if path.exists("/tmp/SoftcamsScriptsRunning"):
 				file = open("/tmp/SoftcamsScriptsRunning")
 				SoftcamsScriptsRunning = file.read()
@@ -216,7 +216,7 @@ class VIXSoftcamManager(Screen):
 			self["activecam"].setText(self.currentactivecam)
 			self["activecam"].show()
 		else:
-			print "[SoftcamManager] RESULT FAILED: " + str(result)
+			print("[SoftcamManager] RESULT FAILED: " + str(result))
 		self.selectionChanged()
 
 	def keyStart(self):
@@ -278,7 +278,7 @@ class VIXSoftcamManager(Screen):
 		else:
 			if retval == 0:
 				stopcam = str(result)
-				print "[SoftcamManager] Stopping " + selectedcam + " PID " + stopcam.replace("\n", "")
+				print("[SoftcamManager] Stopping " + selectedcam + " PID " + stopcam.replace("\n", ""))
 				output = open("/tmp/cam.check.log", "a")
 				now = datetime.now()
 				output.write(now.strftime("%Y-%m-%d %H:%M") + ": Stopping: " + selectedcam + "\n")
@@ -286,7 +286,7 @@ class VIXSoftcamManager(Screen):
 				self.Console.ePopen("kill -9 " + stopcam.replace("\n", ""))
 				sleep(4)
 			else:
-				print "[SoftcamManager] RESULT FAILED: " + str(result)
+				print("[SoftcamManager] RESULT FAILED: " + str(result))
 			if selectedcam.lower().startswith("cccam") and path.exists("/etc/CCcam.cfg") == True:
 				if self.currentactivecam.lower().find("mgcam") < 0:
 					self.session.openWithCallback(self.showActivecam, VIXStartCam, self.sel[0])
@@ -365,7 +365,7 @@ class VIXStartCam(Screen):
 				line = startselectedcam + "\n"
 				fileout.write(line)
 				fileout.close()
-			print "[SoftcamManager] Starting " + startselectedcam
+			print("[SoftcamManager] Starting " + startselectedcam)
 			output = open("/tmp/cam.check.log", "a")
 			now = datetime.now()
 			output.write(now.strftime("%Y-%m-%d %H:%M") + ": Starting " + startselectedcam + "\n")
@@ -387,7 +387,7 @@ class VIXStartCam(Screen):
 					fileread.close()
 					filewrite.close()
 					rename("/tmp/SoftcamsDisableCheck.tmp", "/tmp/SoftcamsDisableCheck")
-			print "[SoftcamManager] Starting " + startselectedcam
+			print("[SoftcamManager] Starting " + startselectedcam)
 			output = open("/tmp/cam.check.log", "a")
 			now = datetime.now()
 			output.write(now.strftime("%Y-%m-%d %H:%M") + ": Starting " + startselectedcam + "\n")
@@ -459,7 +459,7 @@ class VIXStopCam(Screen):
 			self.curpix = 0
 			self.count = 0
 			self["connect"].setPixmapNum(0)
-			print "[SoftcamManager] Stopping " + stopselectedcam
+			print("[SoftcamManager] Stopping " + stopselectedcam)
 			output = open("/tmp/cam.check.log", "a")
 			now = datetime.now()
 			output.write(now.strftime("%Y-%m-%d %H:%M") + ": Stopping " + stopselectedcam + "\n")
@@ -473,7 +473,7 @@ class VIXStopCam(Screen):
 				file.close()
 				finddata = data.find(stopselectedcam)
 				if data.find(stopselectedcam) >= 0:
-					print "[SoftcamManager] Temporarily disabled timed check for " + stopselectedcam
+					print("[SoftcamManager] Temporarily disabled timed check for " + stopselectedcam)
 					output = open("/tmp/cam.check.log", "a")
 					now = datetime.now()
 					output.write(now.strftime("%Y-%m-%d %H:%M") + ": Temporarily disabled timed check for " + stopselectedcam + "\n")
@@ -498,7 +498,7 @@ class VIXStopCam(Screen):
 				file.close()
 				finddata = data.find(stopselectedcam)
 				if data.find(stopselectedcam) >= 0:
-					print "[SoftcamManager] Temporarily disabled timed check for " + stopselectedcam
+					print("[SoftcamManager] Temporarily disabled timed check for " + stopselectedcam)
 					output = open("/tmp/cam.check.log", "a")
 					now = datetime.now()
 					output.write(now.strftime("%Y-%m-%d %H:%M") + ": Temporarily disabled timed check for " + stopselectedcam + "\n")
@@ -507,7 +507,7 @@ class VIXStopCam(Screen):
 					line = stopselectedcam + "\n"
 					fileout.write(line)
 					fileout.close()
-			print "[SoftcamManager] Stopping " + stopselectedcam + " PID " + stopcam.replace("\n", "")
+			print("[SoftcamManager] Stopping " + stopselectedcam + " PID " + stopcam.replace("\n", ""))
 			output = open("/tmp/cam.check.log", "a")
 			now = datetime.now()
 			output.write(now.strftime("%Y-%m-%d %H:%M") + ": Stopping " + stopselectedcam + "\n")
@@ -578,15 +578,15 @@ class SoftcamAutoPoller:
 	def __init__(self):
 		# Init Timer
 		if not path.exists("/usr/softcams"):
-			mkdir("/usr/softcams", 0755)
+			mkdir("/usr/softcams", 0o755)
 		if not path.exists("/etc/scce"):
-			mkdir("/etc/scce", 0755)
+			mkdir("/etc/scce", 0o755)
 		if not path.exists("/etc/tuxbox/config"):
-			mkdir("/etc/tuxbox/config", 0755)
+			mkdir("/etc/tuxbox/config", 0o755)
 		if not path.islink("/var/tuxbox"):
 			symlink("/etc/tuxbox", "/var/tuxbox")
 		if not path.exists("/usr/keys"):
-			mkdir("/usr/keys", 0755)
+			mkdir("/usr/keys", 0o755)
 		if not path.islink("/var/keys"):
 			symlink("/usr/keys", "/var/keys")
 		if not path.islink("/etc/keys"):
@@ -694,14 +694,14 @@ class SoftcamAutoPoller:
 							line = softcamcheck + "\n"
 							fileout.write(line)
 							fileout.close()
-							print "[SoftcamManager] Starting " + softcamcheck
+							print("[SoftcamManager] Starting " + softcamcheck)
 							self.Console.ePopen("/usr/softcams/" + softcamcheck + " start")
 					else:
 						fileout = open("/tmp/SoftcamsScriptsRunning", "w")
 						line = softcamcheck + "\n"
 						fileout.write(line)
 						fileout.close()
-						print "[SoftcamManager] Starting " + softcamcheck
+						print("[SoftcamManager] Starting " + softcamcheck)
 						self.Console.ePopen("/usr/softcams/" + softcamcheck + " start")
 			else:
 				if path.exists("/tmp/SoftcamsDisableCheck"):
@@ -722,7 +722,7 @@ class SoftcamAutoPoller:
 							remove("/tmp/status.html")
 						if path.exists("/tmp/index.html"):
 							remove("/tmp/index.html")
-						print "[SoftcamManager] " + softcamcheck + " already running"
+						print("[SoftcamManager] " + softcamcheck + " already running")
 						output = open("/tmp/cam.check.log", "a")
 						now = datetime.now()
 						output.write(now.strftime("%Y-%m-%d %H:%M") + ": " + softcamcheck + " running OK\n")
@@ -738,7 +738,7 @@ class SoftcamAutoPoller:
 								if line.find("httpport") != -1:
 									port = re.sub("\D", "", line)
 							f.close()
-							print "[SoftcamManager] Checking if " + softcamcheck + " is frozen"
+							print("[SoftcamManager] Checking if " + softcamcheck + " is frozen")
 							if port == "":
 								port = "16000"
 							self.Console.ePopen("wget -T 1 http://127.0.0.1:" + port + "/status.html -O /tmp/status.html &> /tmp/frozen")
@@ -747,18 +747,18 @@ class SoftcamAutoPoller:
 							frozen = f.read()
 							f.close()
 							if frozen.find("Unauthorized") != -1 or frozen.find("Authorization Required") != -1 or frozen.find("Forbidden") != -1 or frozen.find("Connection refused") != -1 or frozen.find("100%") != -1 or path.exists("/tmp/status.html"):
-								print "[SoftcamManager] " + softcamcheck + " is responding like it should"
+								print("[SoftcamManager] " + softcamcheck + " is responding like it should")
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
 								output.write(now.strftime("%Y-%m-%d %H:%M") + ": " + softcamcheck + " is responding like it should\n")
 								output.close()
 							else:
-								print "[SoftcamManager] " + softcamcheck + " is frozen, Restarting..."
+								print("[SoftcamManager] " + softcamcheck + " is frozen, Restarting...")
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
 								output.write(now.strftime("%Y-%m-%d %H:%M") + ": " + softcamcheck + " is frozen, Restarting...\n")
 								output.close()
-								print "[SoftcamManager] Stopping " + softcamcheck
+								print("[SoftcamManager] Stopping " + softcamcheck)
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
 								output.write(now.strftime("%Y-%m-%d %H:%M") + ": AutoStopping: " + softcamcheck + "\n")
@@ -773,7 +773,7 @@ class SoftcamAutoPoller:
 								cccamcheck_process = cccamcheck_process.replace("\n", "")
 								if cccamcheck_process.lower().find("cccam") != -1:
 									try:
-										print "[SoftcamManager] Stopping ", cccamcheck_process
+										print("[SoftcamManager] Stopping ", cccamcheck_process)
 										output = open("/tmp/cam.check.log", "a")
 										now = datetime.now()
 										output.write(now.strftime("%Y-%m-%d %H:%M") + ": AutoStopping: " + cccamcheck_process + "\n")
@@ -781,7 +781,7 @@ class SoftcamAutoPoller:
 										self.Console.ePopen("killall -9 /usr/softcams/" + str(cccamcheck_process))
 									except:
 										pass
-								print "[SoftcamManager] Starting " + softcamcheck
+								print("[SoftcamManager] Starting " + softcamcheck)
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
 								output.write(now.strftime("%Y-%m-%d %H:%M") + ": AutoStarting: " + softcamcheck + "\n")
@@ -808,7 +808,7 @@ class SoftcamAutoPoller:
 									port = re.sub("\D", "", line)
 							f.close()
 							if allow.lower().find("yes") != -1:
-								print "[SoftcamManager] Checking if " + softcamcheck + " is frozen"
+								print("[SoftcamManager] Checking if " + softcamcheck + " is frozen")
 								if port == "":
 									port = "16001"
 								self.Console.ePopen("wget -T 1 http://127.0.0.1:" + port + " -O /tmp/index.html &> /tmp/frozen")
@@ -817,37 +817,37 @@ class SoftcamAutoPoller:
 								frozen = f.read()
 								f.close()
 								if frozen.find("Unauthorized") != -1 or frozen.find("Authorization Required") != -1 or frozen.find("Forbidden") != -1 or frozen.find("Connection refused") != -1 or frozen.find("100%") != -1 or path.exists("/tmp/index.html"):
-									print "[SoftcamManager] " + softcamcheck + " is responding like it should"
+									print("[SoftcamManager] " + softcamcheck + " is responding like it should")
 									output = open("/tmp/cam.check.log", "a")
 									now = datetime.now()
 									output.write(now.strftime("%Y-%m-%d %H:%M") + ": ' + softcamcheck + ' is responding like it should\n")
 									output.close()
 								else:
-									print "[SoftcamManager] " + softcamcheck + " is frozen, Restarting..."
+									print("[SoftcamManager] " + softcamcheck + " is frozen, Restarting...")
 									output = open("/tmp/cam.check.log", "a")
 									now = datetime.now()
 									output.write(now.strftime("%Y-%m-%d %H:%M") + ": " + softcamcheck + " is frozen, Restarting...\n")
 									output.close()
-									print "[SoftcamManager] Stopping " + softcamcheck
+									print("[SoftcamManager] Stopping " + softcamcheck)
 									self.Console.ePopen("killall -9 " + softcamcheck)
 									sleep(1)
-									print "[SoftcamManager] Starting " + softcamcheck
+									print("[SoftcamManager] Starting " + softcamcheck)
 									self.Console.ePopen("ulimit -s 512;/usr/softcams/" + softcamcheck)
 							elif allow.lower().find("no") != -1:
-								print "[SoftcamManager] Telnet info not allowed, can not check if frozen"
+								print("[SoftcamManager] Telnet info not allowed, can not check if frozen")
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
 								output.write(now.strftime("%Y-%m-%d %H:%M") + ":  Webinfo info not allowed, can not check if frozen,\n\tplease enable 'ALLOW WEBINFO: YES'\n")
 								output.close()
 							else:
-								print "[SoftcamManager] Webinfo info not setup, please enable 'ALLOW WEBINFO= YES'"
+								print("[SoftcamManager] Webinfo info not setup, please enable 'ALLOW WEBINFO= YES'")
 								output = open("/tmp/cam.check.log", "a")
 								now = datetime.now()
 								output.write(now.strftime("%Y-%m-%d %H:%M") + ":  Telnet info not setup, can not check if frozen,\n\tplease enable 'ALLOW WEBINFO: YES'\n")
 								output.close()
 
 					elif softcamcheck_process == "":
-						print "[SoftcamManager] Couldn't find " + softcamcheck + " running, Starting " + softcamcheck
+						print("[SoftcamManager] Couldn't find " + softcamcheck + " running, Starting " + softcamcheck)
 						output = open("/tmp/cam.check.log", "a")
 						now = datetime.now()
 						output.write(now.strftime("%Y-%m-%d %H:%M") + ": Couldn't find " + softcamcheck + " running, Starting " + softcamcheck + "\n")
@@ -861,7 +861,7 @@ class SoftcamAutoPoller:
 							file.close()
 							if cccamcheck_process.find("cccam") >= 0 or cccamcheck_process.find("CCcam") >= 0:
 								try:
-									print "[SoftcamManager] Stopping ", cccamcheck_process
+									print("[SoftcamManager] Stopping ", cccamcheck_process)
 									output = open("/tmp/cam.check.log", "a")
 									now = datetime.now()
 									output.write(now.strftime("%Y-%m-%d %H:%M") + ": AutoStopping: " + cccamcheck_process + "\n")

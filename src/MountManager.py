@@ -38,7 +38,7 @@ def readFile(filename):
 			data = fd.read().strip()
 	except (IOError, OSError) as err:
 		if err.errno != errno.ENOENT:  # No such file or directory.
-			print "[MountManager] Error: Failed to read file! ", err
+			print("[MountManager] Error: Failed to read file! ", err)
 		data = None
 	return data
 
@@ -350,7 +350,7 @@ class VIXDevicesPanel(Screen):
 		self.device_uuid = "UUID=" + result.split("UUID=")[1].split(" ")[0].replace('"', '')
 		# print "[MountManager1]addFstab: device = %s, mountp=%s, UUID=%s" %(self.device, self.mountp, self.device_uuid)
 		if not path.exists(self.mountp):
-			mkdir(self.mountp, 0755)
+			mkdir(self.mountp, 0o755)
 		file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if "/media/hdd" not in l])
 		rename("/etc/fstab.tmp", "/etc/fstab")
 		file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if self.device not in l])
@@ -448,7 +448,7 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 			elif self.device_type.startswith("ntfs") and result.find("ntfs-3g") == -1:
 				self.device_type = "ntfs"
 			if not path.exists(self.mountp):
-				mkdir(self.mountp, 0755)
+				mkdir(self.mountp, 0o755)
 			file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if self.device not in l])
 			rename("/etc/fstab.tmp", "/etc/fstab")
 			file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if self.device_uuid not in l])

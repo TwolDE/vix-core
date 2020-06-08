@@ -128,19 +128,19 @@ class VIXMenu(Screen, ProtectedScreen):
 			currentEntry = current[0]
 			if self.menu == 0:
 				if currentEntry == "backup-manager":
-					from BackupManager import VIXBackupManager
+					from .BackupManager import VIXBackupManager
 					self.session.open(VIXBackupManager, self.menu_path)
 				elif currentEntry == "image-manager":
-					from ImageManager import VIXImageManager
+					from .ImageManager import VIXImageManager
 					self.session.open(VIXImageManager, self.menu_path)
 				elif currentEntry == "H9SDcard manager":
-					from H9SDmanager import H9SDmanager
+					from .H9SDmanager import H9SDmanager
 					self.session.open(H9SDmanager, self.menu_path)
 				elif currentEntry == "ipkg-install":
-					from IPKInstaller import VIXIPKInstaller
+					from .IPKInstaller import VIXIPKInstaller
 					self.session.open(VIXIPKInstaller, self.menu_path)
 				elif currentEntry == "mount-manager":
-					from MountManager import VIXDevicesPanel
+					from .MountManager import VIXDevicesPanel
 					self.session.open(VIXDevicesPanel, self.menu_path)
 
 	def closeRecursive(self):

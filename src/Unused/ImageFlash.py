@@ -18,7 +18,7 @@ from Screens.TaskView import JobView
 from Tools.Downloader import downloadWithProgress
 from Tools.Directories import fileExists, fileCheck
 from enigma import fbClass
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import os
 import shutil
 import math
@@ -42,7 +42,7 @@ ofgwritePath = '/usr/bin/ofgwrite'
 def Freespace(dev):
 	statdev = os.statvfs(dev)
 	space = (statdev.f_bavail * statdev.f_frsize) / 1024
-	print "[Flash Online] Free space on %s = %i kilobytes" %(dev, space)
+	print("[Flash Online] Free space on %s = %i kilobytes" %(dev, space))
 	return space
 
 class ImageFlash(Screen):
@@ -120,7 +120,7 @@ class ImageFlash(Screen):
 			else:
 				self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(" ",1)[0]
 				self.multi = self.multi[-1:]
-			print "[Flash Online] MULTI:",self.multi
+			print("[Flash Online] MULTI:",self.multi)
 
 	def check_hdd(self):
 		if not os.path.exists("/media/hdd"):
@@ -177,9 +177,9 @@ class ImageFlash(Screen):
 			else:
 				self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(" ",1)[0]
 				self.multi = self.multi[-1:]
-			print "[Flash Online] MULTI:",self.multi
+			print("[Flash Online] MULTI:",self.multi)
 			self.devrootfs = self.find_rootfs_dev(self.list[self.selection])
-			print "[Flash Online] MULTI rootfs ", self.devrootfs
+			print("[Flash Online] MULTI rootfs ", self.devrootfs)
 
 	def read_startup(self, FILE):
 		self.file = FILE
@@ -277,7 +277,7 @@ class doFlashImage(Screen):
 			return
 		sel = self["imageList"].l.getCurrentSelection()
 		if sel == None:
-			print"Nothing to select !!"
+			print("Nothing to select !!")
 			return
 		self.filename = sel
 		self.session.openWithCallback(self.RemoveCB, MessageBox, _("Do you really want to delete\n%s ?") % (sel), MessageBox.TYPE_YESNO)
@@ -300,7 +300,7 @@ class doFlashImage(Screen):
 	def green(self, ret = None):
 		self.sel = self["imageList"].l.getCurrentSelection()
 		if self.sel == None:
-			print"Nothing to select !!"
+			print("Nothing to select !!")
 			return
 
 		self.feedurl = feedurl_ViX
@@ -309,21 +309,21 @@ class doFlashImage(Screen):
 		self.hide()
 		if self.Online:
 			url = self.feedurl+'/'+self.boxtype+'/' + "/" + self.sel
-			print "[Flash Online] Download image: >%s<" % url
+			print("[Flash Online] Download image: >%s<" % url)
 			try:
-				u = urllib2.urlopen(url)
+				u = urllib.request.urlopen(url)
 				f = open(self.filename, 'wb')
 				meta = u.info()
 				file_size = int(meta.getheaders("Content-Length")[0])
-				print "Downloading: %s Bytes: %s" % (self.sel, file_size)
+				print("Downloading: %s Bytes: %s" % (self.sel, file_size))
 				f.close()
 				job = ImageDownloadJob(url, self.filename, self.sel)
 				job.afterEvent = "close"
 				job_manager.AddJob(job)
 				job_manager.failed_jobs = []
 				self.session.openWithCallback(self.ImageDownloadCB, JobView, job, backgroundable = False, afterEventChangeable = False)
-			except urllib2.URLError as e:
-				print "[Flash Online] Download failed !!\n%s" % e
+			except urllib.error.URLError as e:
+				print("[Flash Online] Download failed !!\n%s" % e)
 				self.session.openWithCallback(self.ImageDownloadCB, MessageBox, _("Download Failed !!" + "\n%s" % e), type = MessageBox.TYPE_ERROR)
 				self.close()
 		else:
@@ -351,7 +351,7 @@ class doFlashImage(Screen):
 			self.show()
 
 	def unzip_image(self, filename, path):
-		print "Unzip %s to %s" %(filename,path)
+		print("Unzip %s to %s" %(filename,path))
 		self.session.openWithCallback(self.cmdFinished, Console, title = _("Unzipping files, Please wait ..."), cmdlist = ['unzip ' + filename + ' -o -d ' + path, "sleep 3"], closeOnSuccess = True)
 
 	def cmdFinished(self):
@@ -359,7 +359,7 @@ class doFlashImage(Screen):
 		self.Start_Flashing()
 
 	def Start_Flashing(self):
-		print "Start Flashing"
+		print("Start Flashing")
 		cmdlist = []
 		if os.path.exists(ofgwritePath):
 			text = _("Flashing: ")
@@ -431,7 +431,7 @@ class doFlashImage(Screen):
 
 	def DeviceBrowserClosed(self, path, filename, binorzip):
 		if path:
-			print path, filename, binorzip
+			print(path, filename, binorzip)
 			strPath = str(path)
 			if strPath[-1] == '/':
 				strPath = strPath[:-1]
@@ -462,7 +462,7 @@ class doFlashImage(Screen):
 
 			from bs4 import BeautifulSoup
 			url = self.feedurl+'/'+self.boxtype+'/'
-			conn = urllib2.urlopen(url)
+			conn = urllib.request.urlopen(url)
 			the_page = conn.read()
 
 			soup = BeautifulSoup(the_page)
@@ -517,10 +517,10 @@ class ImageDownloadTask(Task):
 		self.download = downloadWithProgress(self.url,self.path)
 		self.download.addProgress(self.download_progress)
 		self.download.start().addCallback(self.download_finished).addErrback(self.download_failed)
-		print "[ImageDownloadTask] downloading", self.url, "to", self.path
+		print("[ImageDownloadTask] downloading", self.url, "to", self.path)
 
 	def abort(self):
-		print "[ImageDownloadTask] aborting", self.url
+		print("[ImageDownloadTask] aborting", self.url)
 		if self.download:
 			self.download.stop()
 		self.aborted = True
@@ -580,7 +580,7 @@ class DeviceBrowser(Screen, HelpableScreen):
 		self.onClose.append(self.removeHotplug)
 
 	def hotplugCB(self, dev, action):
-		print "[hotplugCB]", dev, action
+		print("[hotplugCB]", dev, action)
 		self.updateButton()
 
 	def updateButton(self):
@@ -591,7 +591,7 @@ class DeviceBrowser(Screen, HelpableScreen):
 			self["key_green"].text = ""
 
 	def removeHotplug(self):
-		print "[removeHotplug]"
+		print("[removeHotplug]")
 		hotplugNotifier.remove(self.hotplugCB)
 
 	def ok(self):
@@ -602,7 +602,7 @@ class DeviceBrowser(Screen, HelpableScreen):
 				self.filelist.descent()
 
 	def use(self):
-		print "[use]", self["filelist"].getCurrentDirectory(), self["filelist"].getFilename()
+		print("[use]", self["filelist"].getCurrentDirectory(), self["filelist"].getFilename())
 		if self["filelist"].getFilename() is not None and self["filelist"].getCurrentDirectory() is not None:
 			if self["filelist"].getFilename().endswith(".bin") or self["filelist"].getFilename().endswith(".jffs2"):
 				self.close(self["filelist"].getCurrentDirectory(), self["filelist"].getFilename(), 0)

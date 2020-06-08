@@ -27,7 +27,7 @@ def SwapAutostart(reason, session=None, **kwargs):
 	global startswap
 	if reason == 0:
 		if config.vixsettings.swapautostart.value:
-			print "[SwapManager] autostart"
+			print("[SwapManager] autostart")
 			startswap = StartSwap()
 			startswap.start()
 
@@ -51,7 +51,7 @@ class StartSwap:
 					rename('/etc/fstab.tmp', '/etc/fstab')
 					tmpfile.close()
 					fstabfile.close()
-					print "[SwapManager] Found a SWAP partition:", swap_place
+					print("[SwapManager] Found a SWAP partition:", swap_place)
 		else:
 			devicelist = []
 			for p in harddiskmanager.getMountedPartitions():
@@ -65,15 +65,15 @@ class StartSwap:
 					for filename in glob(device[1] + '/swap*'):
 						if path.exists(filename):
 							swap_place = filename
-							print "[SwapManager] Found a SWAP file on ", swap_place
+							print("[SwapManager] Found a SWAP file on ", swap_place)
 
 		f = file('/proc/swaps')
 		swapfile = f.read()
 		if swapfile.find(swap_place) == -1:
-			print "[SwapManager] Starting SWAP file on ", swap_place
+			print("[SwapManager] Starting SWAP file on ", swap_place)
 			system('swapon ' + swap_place)
 		else:
-			print "[SwapManager] SWAP file is already active on ", swap_place
+			print("[SwapManager] SWAP file is already active on ", swap_place)
 		f.close()
 
 class VIXSwap(Screen):
