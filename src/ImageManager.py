@@ -1,5 +1,13 @@
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+from __future__ import print_function
+
+# required methods: Request, urlopen, HTTPError, URLError
+try: # python 3
+	from urllib.request import urlopen, Request, urlretrieve # raises ImportError in Python 2
+	from urllib.error import HTTPError, URLError # raises ImportError in Python 2
+except ImportError: # Python 2
+	from urllib2 import Request, urlopen, HTTPError, URLError
+	from urllib import urlretrieve
+
 import json
 
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
@@ -1349,7 +1357,7 @@ class ImageManagerDownload(Screen):
 		from bs4 import BeautifulSoup
 		self.imagesList = {}
 		self.jsonlist = {}
-		list = []
+		xlist = []
 		self.boxtype = getMachineMake()
 		model = HardwareInfo().get_device_name()
 		if model == "dm8000":
@@ -1371,9 +1379,9 @@ class ImageManagerDownload(Screen):
 				newversion = _("Image Version %s") % version
 				countimage = []
 				try:
-					conn = urllib.request.urlopen(self.urlBox)
+					conn = urlopen(self.urlBox)
 					html = conn.read()
-				except urllib.error.HTTPError as e:
+				except HTTPError as e:
 					print("[ImageManager] HTTP download ERROR: %s" % e.code)
 					continue
 
@@ -1408,7 +1416,7 @@ class ImageManagerDownload(Screen):
 			if not self.jsonlist:
 				try:
 					urljson = path.join(self.urlDistro, model)
-					self.jsonlist = dict(json.load(urllib.request.urlopen("%s" % urljson)))
+					self.jsonlist = dict(json.load(urlopen("%s" % urljson)))
 				except Exception:
 					print("[ImageManager] OpenPli/OpenATV no model: %s in downloads" % model)
 					return
@@ -1417,16 +1425,19 @@ class ImageManagerDownload(Screen):
 			return
 
 		for categorie in reversed(sorted(self.imagesList.keys())):
+			# print("[ImageManager] [GetImageDistro] category '%s', self.expanded '%s'" % (categorie, self.expanded))
 			if categorie in self.expanded:
-				list.append(ChoiceEntryComponent("expanded", ((str(categorie)), "Expander")))
+				xlist.append(ChoiceEntryComponent("expanded", ((str(categorie)), "Expander")))
 				for image in reversed(sorted(self.imagesList[categorie].keys())):
-					list.append(ChoiceEntryComponent("verticalline", ((str(self.imagesList[categorie][image]["name"])), str(self.imagesList[categorie][image]["link"]))))
+					xlist.append(ChoiceEntryComponent("verticalline", ((str(self.imagesList[categorie][image]["name"])), str(self.imagesList[categorie][image]["link"]))))
 			else:
+				# print("[ImageManager] [GetImageDistro] keys: %s" % list(self.imagesList[categorie].keys()))
 				for image in list(self.imagesList[categorie].keys()):
-					list.append(ChoiceEntryComponent("expandable", ((str(categorie)), "Expander")))
+					xlist.append(ChoiceEntryComponent("expandable", ((str(categorie)), "Expander")))
 					break
-		if list:
-			self["list"].setList(list)
+		if xlist:
+			# print("[ImageManager] [GetImageDistro] xlist: %s" % xlist)
+			self["list"].setList(xlist)
 			if self.setIndex:
 				self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
 				if self["list"].l.getCurrentSelection()[0][1] == "Expander":
@@ -1492,8 +1503,8 @@ class ImageManagerDownload(Screen):
 			print("[ImageManager] [getImageDistro] self.urlBox= %s, self.urlDistro= %s fileurl= %s fileloc= %s" % (self.urlBox, self.urlDistro, fileurl, fileloc))
 			if "Dev" in self.urlDistro:
 				try:
-					urllib.request.urlretrieve("%s" % fileurl, "%s" % fileloc)
-				except urllib.HTTPError as e:
+					urlretrieve("%s" % fileurl, "%s" % fileloc)
+				except HTTPError as e:
 					print("[ImageManager] HTTP download ERROR: %s" % e.code)
 			else:
 				Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace("_usb", ""))

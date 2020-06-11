@@ -1,4 +1,5 @@
 # for localized messages
+from __future__ import print_function
 import re
 from os import path, makedirs, remove, rename, symlink, mkdir, listdir
 from datetime import datetime
