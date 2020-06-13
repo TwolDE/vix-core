@@ -252,7 +252,7 @@ class VIXImageManager(Screen):
 			else:
 				self.BackupDirectory = config.imagemanager.backuplocation.value + "imagebackups/"
 				s = statvfs(config.imagemanager.backuplocation.value)
-				free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
+				free = (s.f_bsize * s.f_bavail) // (1024 * 1024)
 				self["lab1"].setText(_("Device: ") + config.imagemanager.backuplocation.value + " " + _("Free space:") + " " + str(free) + _("MB") + "\n" + _("Select an image to flash:"))
 			try:
 				if not path.exists(self.BackupDirectory):
@@ -808,7 +808,7 @@ class ImageBackup(Screen):
 			print("[ImageManager] Device: " + config.imagemanager.backuplocation.value + ", i don't seem to have write access to this device.")
 
 		s = statvfs(self.BackupDevice)
-		free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
+		free = (s.f_bsize * s.f_bavail) // (1024 * 1024)
 		if int(free) < 200:
 			AddPopupWithCallback(
 				self.BackupComplete,

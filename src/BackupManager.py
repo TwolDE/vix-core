@@ -1237,7 +1237,7 @@ class BackupFiles(Screen):
 			print("[BackupManager] Device: " + config.backupmanager.backuplocation.value + ", i don't seem to have write access to this device.")
 
 		s = statvfs(self.BackupDevice)
-		free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
+		free = (s.f_bsize * s.f_bavail) // (1024 * 1024)
 		if int(free) < 50:
 			self.session.open(MessageBox, _("The backup location does not have enough free space."), MessageBox.TYPE_INFO, timeout=10)
 		else:
