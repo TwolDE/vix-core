@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import
+
 from os import listdir, path, stat
 from boxbranding import getMachineBrand, getMachineName, getImageDistro
 from . import _
@@ -130,7 +132,7 @@ class RestoreWizard(WizardLanguage, Rc):
 			self.buildListfinishedCB(False)
 		elif self.NextStep is "settingrestorestarted":
 			self.Console.ePopen("tar -xzvf " + self.fullbackupfilename + " tmp/ExtraInstalledPlugins tmp/backupkernelversion tmp/backupimageversion -C /", self.settingsRestore_Started)
-			self.buildListRef = self.session.openWithCallback(self.buildListfinishedCB, MessageBox, _("Please wait while the system gathers information..."), type=MessageBox.TYPE_INFO, enable_input=False, wizard=True)
+			self.buildListRef = self.session.openWithCallback(self.buildListfinishedCB, MessageBox, _("Please wait while the system gathers information..."), type=MessageBox.TYPE_INFO, enable_input=False, wizard=True)nt
 			self.buildListRef.setTitle(_("Restore wizard"))
 		elif self.NextStep is "plugindetection":
 			print("[RestoreWizard] Stage 2: Restoring plugins")

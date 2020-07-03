@@ -1,4 +1,5 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
+
 import errno
 from os import mkdir, path, remove, rename, statvfs, system
 import re
@@ -43,7 +44,7 @@ def readFile(filename):
 		data = None
 	return data
 
-def getProcPartitions(list):
+def getProcPartitions(bplist):
 	partitions = []
 	with open("/proc/partitions", "r") as fd:
 		for line in fd.readlines():
@@ -74,10 +75,10 @@ def getProcPartitions(list):
 					continue
 			if device in partitions:  # If device is already in partition list ignore it.
 				continue
-			buildPartitionInfo(device, list)
+			buildPartitionInfo(device, bplist)
 			partitions.append(device)
 
-def buildPartitionInfo(partition, list):
+def buildPartitionInfo(partition, bplist):
 	if re.search("mmcblk[0-1]p[0-3]", partition):
 		device = re.sub("p[0-9]", "", partition)
 	else:
@@ -172,7 +173,7 @@ def buildPartitionInfo(partition, list):
 			item.value = mediamount.strip()
 			text = name + " " + description + " /dev/" + partition
 			partitionInfo = getConfigListEntry(text, item, partition, format)
-		list.append(partitionInfo)
+		bplist.append(partitionInfo)
 
 
 class VIXDevicesPanel(Screen):
@@ -293,10 +294,10 @@ class VIXDevicesPanel(Screen):
 
 	def findPartitions(self):
 		self.activityTimer.stop()
-		self.list = []
+		self.bplist = []
 		SystemInfo["MountManager"] = True
-		getProcPartitions(self.list)
-		self["list"].list = self.list
+		getProcPartitions(self.bplist)
+		self["list"].list = self.bplist
 		self["lab1"].hide()
 
 	def setupMounts(self):
@@ -352,11 +353,11 @@ class VIXDevicesPanel(Screen):
 		# print "[MountManager1]addFstab: device = %s, mountp=%s, UUID=%s" %(self.device, self.mountp, self.device_uuid)
 		if not path.exists(self.mountp):
 			mkdir(self.mountp, 0o755)
-		file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if "/media/hdd" not in l])
+		open("/etc/fstab.tmp", "w").writelines([l for l in open("/etc/fstab").readlines() if "/media/hdd" not in l])
 		rename("/etc/fstab.tmp", "/etc/fstab")
-		file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if self.device not in l])
+		open("/etc/fstab.tmp", "w").writelines([l for l in open("/etc/fstab").readlines() if self.device not in l])
 		rename("/etc/fstab.tmp", "/etc/fstab")
-		file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if self.device_uuid not in l])
+		open("/etc/fstab.tmp", "w").writelines([l for l in open("/etc/fstab").readlines() if self.device_uuid not in l])
 		rename("/etc/fstab.tmp", "/etc/fstab")
 		with open("/etc/fstab", "a") as fd:
 			line = self.device_uuid + "\t/media/hdd\tauto\tdefaults\t0 0\n"
@@ -411,11 +412,11 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 
 	def findconfPartitions(self):
 		self.activityTimer.stop()
-		self.list = []
+		self.bplist = []
 		SystemInfo["MountManager"] = False
-		getProcPartitions(self.list)
-		self["config"].list = self.list
-		self["config"].l.setList(self.list)
+		getProcPartitions(self.bplist)
+		self["config"].list = self.bplist
+		self["config"].l.setList(self.bplist)
 		self["lab1"].hide()
 
 	def saveconfMounts(self):
@@ -450,9 +451,9 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 				self.device_type = "ntfs"
 			if not path.exists(self.mountp):
 				mkdir(self.mountp, 0o755)
-			file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if self.device not in l])
+			open("/etc/fstab.tmp", "w").writelines([l for l in open("/etc/fstab").readlines() if self.device not in l])
 			rename("/etc/fstab.tmp", "/etc/fstab")
-			file("/etc/fstab.tmp", "w").writelines([l for l in file("/etc/fstab").readlines() if self.device_uuid not in l])
+			open("/etc/fstab.tmp", "w").writelines([l for l in open("/etc/fstab").readlines() if self.device_uuid not in l])
 			rename("/etc/fstab.tmp", "/etc/fstab")
 			with open("/etc/fstab", "a") as fd:
 				line = self.device_uuid + "\t" + self.mountp + "\t" + self.device_type + "\tdefaults\t0 0\n"

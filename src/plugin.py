@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import
+
 # for localized messages
 from os import listdir, path, walk, stat
 from boxbranding import getBoxType, getImageDistro

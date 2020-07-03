@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import
+
 # for localized messages
 from __future__ import print_function
 import re

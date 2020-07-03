@@ -1,4 +1,5 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
+
 from datetime import date, datetime
 from os import path, stat, mkdir, listdir, remove, statvfs, chmod
 from time import localtime, time, strftime, mktime
@@ -349,8 +350,9 @@ class VIXBackupManager(Screen):
 			self.session.open(MessageBox, _("Backup in progress,\nPlease wait for it to finish, before trying again."), MessageBox.TYPE_INFO, timeout=10)
 
 	def settingsRestoreCheck(self, result, retval, extra_args=None):
-		if path.exists("/tmp/backupimageversion"):
-			imageversion = file("/tmp/backupimageversion").read()
+		if path.exists("/tmp/backupimageversion"):		
+			with open("/tmp/backupimageversion", "r") as fd:
+				imageversion = fd.read()
 			print("[BackupManager] Backup Image:", imageversion)
 			print("[BackupManager] Current Image:", about.getVersionString())
 			if imageversion == about.getVersionString() or isRestorableSettings(imageversion):
@@ -518,8 +520,10 @@ class VIXBackupManager(Screen):
 		if self.feeds == "OK":
 			print("[BackupManager] Restoring Stage 3: Feeds are OK")
 			if path.exists("/tmp/backupkernelversion") and path.exists("/tmp/backupimageversion"):
-				kernelversion = file("/tmp/backupkernelversion").read()
-				imageversion = file("/tmp/backupimageversion").read()
+				with open("/tmp/backupimageversion", "r") as fd:
+					imageversion = fd.read()
+				with open("/tmp/backupkernelversion", "r") as fd:
+					kernelversion = fd.read()
 				print("[BackupManager] Backup Image:", imageversion)
 				print("[BackupManager] Current Image:", about.getVersionString())
 				print("[BackupManager] Backup Kernel:", kernelversion)
@@ -575,7 +579,8 @@ class VIXBackupManager(Screen):
 				if line:
 					parts = line.strip().split()
 					plugins.append(parts[0])
-			tmppluginslist = open("/tmp/ExtraInstalledPlugins", "r").readlines()
+			with open("/tmp/ExtraInstalledPlugins", "r") as fd:
+				tmppluginslist = fd.readlines()
 			for line in tmppluginslist:
 				if line:
 					parts = line.strip().split()
@@ -591,13 +596,15 @@ class VIXBackupManager(Screen):
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(" ", "%20")
 				self.plugfiles = self.thirdpartyPluginsLocation.split("/",3)
 			elif path.exists("/tmp/3rdPartyPluginsLocation"):
-				self.thirdpartyPluginsLocation = open("/tmp/3rdPartyPluginsLocation", "r").readlines()
+				with open("/tmp/3rdPartyPluginsLocation", "r") as fd:
+					self.thirdpartyPluginsLocation = fd.readlines()
 				self.thirdpartyPluginsLocation = "".join(self.thirdpartyPluginsLocation)
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace("\n", "")
 				self.thirdpartyPluginsLocation = self.thirdpartyPluginsLocation.replace(" ", "%20")
 				self.plugfiles = self.thirdpartyPluginsLocation.split("/",3)
 			print("[BackupManager] thirdpartyPluginsLocation split = %s" %self.plugfiles)
-			tmppluginslist2 = open("/tmp/3rdPartyPlugins", "r").readlines()
+			with open("/tmp/3rdPartyPlugins", "r") as fd:
+				tmppluginslist2 = fd.readlines()
 			available = None
 			for line in tmppluginslist2:
 				if line:
@@ -1296,14 +1303,14 @@ class BackupFiles(Screen):
 
 	def Stage4(self):
 		if config.backupmanager.xtraplugindir.value and path.exists(config.backupmanager.xtraplugindir.value):
-			output = open("/tmp/3rdPartyPlugins", "w")
-			for file in listdir(config.backupmanager.xtraplugindir.value):
-				if file.endswith(".ipk"):
-					parts = file.strip().split("_")
-					output.write(parts[0] + "\n")
-			output = open("/tmp/3rdPartyPluginsLocation", "w")
-			output.write(config.backupmanager.xtraplugindir.value)
-			output.close()
+			with open("/tmp/3rdPartyPlugins", "w") as output:
+				for file in listdir(config.backupmanager.xtraplugindir.value):
+					if file.endswith(".ipk"):
+						parts = file.strip().split("_")
+						output.write(parts[0] + "\n")
+			with open("/tmp/3rdPartyPluginsLocation", "w") as output:
+				output.write(config.backupmanager.xtraplugindir.value)
+				output.close()
 		self.Stage4Completed = True
 
 # Filename for backup list

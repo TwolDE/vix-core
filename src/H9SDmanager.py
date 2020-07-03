@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 from boxbranding import getMachineBuild
 from Components.ActionMap import ActionMap
 from Components.ChoiceList import ChoiceList, ChoiceEntryComponent
