@@ -1,4 +1,4 @@
-from __future__ import print_function, absolute_import
+from __future__ import print_function, absolute_import, division
 
 # required methods: Request, urlopen, HTTPError, URLError
 try: # python 3
@@ -113,28 +113,9 @@ class VIXImageManager(Screen):
 		</applet>
 	</screen>"""
 
-	def __init__(self, session, menu_path=""):
+	def __init__(self, session):
 		Screen.__init__(self, session)
-		screentitle = _("Image manager")
-		self.menu_path = menu_path
-		if config.usage.show_menupath.value == "large":
-			self.menu_path += screentitle
-			title = self.menu_path
-			self["menu_path_compressed"] = StaticText("")
-			self.menu_path += " / "
-		elif config.usage.show_menupath.value == "small":
-			title = screentitle
-			condtext = ""
-			if self.menu_path and not self.menu_path.endswith(" / "):
-				condtext = self.menu_path + " >"
-			elif self.menu_path:
-				condtext = self.menu_path[:-3] + " >"
-			self["menu_path_compressed"] = StaticText(condtext)
-			self.menu_path += screentitle + " / "
-		else:
-			title = screentitle
-			self["menu_path_compressed"] = StaticText("")
-		Screen.setTitle(self, title)
+		self.setTitle(_("Image manager"))
 
 		self["lab1"] = Label()
 		self["backupstatus"] = Label()
@@ -1308,20 +1289,9 @@ class ImageManagerDownload(Screen):
 		</applet>
 	</screen>"""
 
-	def __init__(self, session, menu_path, BackupDirectory, urlDistro):
+	def __init__(self, session, BackupDirectory, urlDistro):
 		Screen.__init__(self, session)
-		screentitle = _("Downloads")
-		if config.usage.show_menupath.value == "large":
-			menu_path += screentitle
-			title = menu_path
-			self["menu_path_compressed"] = StaticText("")
-		elif config.usage.show_menupath.value == "small":
-			title = screentitle
-			self["menu_path_compressed"] = StaticText(menu_path + " >" if not menu_path.endswith(" / ") else menu_path[:-3] + " >" or "")
-		else:
-			title = screentitle
-			self["menu_path_compressed"] = StaticText("")
-		Screen.setTitle(self, title)
+		self.setTitle(_("Downloads"))
 		self.Pli = False
 		self.urlDistro = urlDistro
 		self.BackupDirectory = BackupDirectory
@@ -1374,9 +1344,9 @@ class ImageManagerDownload(Screen):
 				return
 			else:
 				self.urlBox = self.urlDistro.replace("login", "%s") % config.imagemanager.imagefeed_DevL.value
-				imagecat = [5.3, 5.4]
+				imagecat = [5.3, 5.4, 5.5]
 		elif "www.openvix" in self.urlDistro:
-			imagecat = [5.3, 5.4]
+			imagecat = [5.3, 5.4, 5.5]
 
 		if not self.Pli and not self.imagesList:
 			for version in reversed(sorted(imagecat)):
