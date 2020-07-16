@@ -218,7 +218,6 @@ class VIXDevicesPanel(Screen):
 	def __init__(self, session):
 		Screen.__init__(self, session)
 		self.setTitle(_("Mount manager"))
-
 		if VIXDevicesPanel.skin is None:
 			# The skin template is designed for a HD screen so the scaling factor is 720.
 			VIXDevicesPanel.skin = VIXDevicesPanel.skinTemplate % tuple([x * getDesktop(0).size().height() / 720 for x in VIXDevicesPanel.scaleData])
@@ -282,7 +281,8 @@ class VIXDevicesPanel(Screen):
 		self["lab1"].hide()
 
 	def setupMounts(self):
-		self.session.openWithCallback(self.setTimer, VIXDevicePanelConf, self.menu_path)
+		self.session.openWithCallback(self.updateList, VIXDevicePanelConf)
+
 
 	def unmount(self):
 		sel = self["list"].getCurrent()
@@ -361,7 +361,6 @@ class VIXDevicePanelConf(Screen, ConfigListScreen):
 		self.list = []
 		ConfigListScreen.__init__(self, self.list)
 		self.setTitle(_("Choose where to mount your devices to:"))
-
 		self["key_green"] = Label(_("Save"))
 		self["key_red"] = Label(_("Cancel"))
 		self["lab1"] = Label()

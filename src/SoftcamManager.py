@@ -122,7 +122,7 @@ class VIXSoftcamManager(Screen):
 
 	def createSetup(self):
 		from Screens.Setup import Setup
-		self.session.open(Setup, "vixsoftcammanager", "SystemPlugins/ViX", self.menu_path, PluginLanguageDomain)
+		self.session.open(Setup, 'vixsoftcammanager', 'SystemPlugins/ViX', PluginLanguageDomain)
 
 	def selectionChanged(self):
 		cams = []
@@ -303,7 +303,7 @@ class VIXSoftcamManager(Screen):
 				self.session.openWithCallback(self.showActivecam, VIXStartCam, self.sel[0])
 
 	def showLog(self):
-		self.session.open(VIXSoftcamLog, self.menu_path)
+		self.session.open(VIXSoftcamLog)
 
 	def myclose(self):
 		self.close()

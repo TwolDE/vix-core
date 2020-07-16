@@ -128,7 +128,6 @@ class VIXBackupManager(Screen):
 
 	def __init__(self, session):
 		Screen.__init__(self, session)
-		screentitle =  _("Backup manager")
 		self.setTitle(_("Backup manager"))
 
 		self["lab1"] = Label()
@@ -250,13 +249,13 @@ class VIXBackupManager(Screen):
 				self["lab1"].setText(_("Device: ") + config.backupmanager.backuplocation.value + "\n" + _("There is a problem with this device. Please reformat it and try again."))
 
 	def createSetup(self):
-		self.session.openWithCallback(self.setupDone, VIXBackupManagerMenu, "vixbackupmanager", "SystemPlugins/ViX", self.menu_path, PluginLanguageDomain)
+		self.session.openWithCallback(self.setupDone, VIXBackupManagerMenu, 'vixbackupmanager', 'SystemPlugins/ViX', PluginLanguageDomain)
 
 	def showLog(self):
 		self.sel = self["list"].getCurrent()
 		if self.sel:
 			filename = self.BackupDirectory + self.sel
-			self.session.open(VIXBackupManagerLogView, self.menu_path, filename)
+			self.session.open(VIXBackupManagerLogView, filename)
 
 	def setupDone(self, test=None):
 		if config.backupmanager.folderprefix.value == "":
@@ -903,10 +902,10 @@ class VIXBackupManagerMenu(Setup):
 		self["key_blue"] = Button(_("Choose local IPK's folder"))
 
 	def chooseFiles(self):
-		self.session.openWithCallback(self.backupfiles_choosen, BackupSelection, self.menu_path)
+		self.session.openWithCallback(self.backupfiles_choosen, BackupSelection)
 
 	def chooseXtraPluginDir(self):
-		self.session.open(XtraPluginsSelection, self.menu_path)
+		self.session.open(XtraPluginsSelection)
 
 	def backupfiles_choosen(self, ret):
 		self.backupdirs = " ".join(config.backupmanager.backupdirs.value)

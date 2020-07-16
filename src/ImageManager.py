@@ -246,7 +246,7 @@ class VIXImageManager(Screen):
 				self["lab1"].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("There is a problem with this device. Please reformat it and try again."))
 
 	def createSetup(self):
-		self.session.openWithCallback(self.setupDone, Setup, "viximagemanager", "SystemPlugins/ViX", self.menu_path, PluginLanguageDomain)
+		self.session.openWithCallback(self.setupDone, Setup, "viximagemanager", "SystemPlugins/ViX", PluginLanguageDomain)
 
 	def doDownload(self):
 		try:
@@ -262,7 +262,7 @@ class VIXImageManager(Screen):
 		if retval:
 			retval -= 1
 			self.urlDistro = self.urlchoices[retval]
-			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.menu_path, self.BackupDirectory, self.urlDistro)
+			self.session.openWithCallback(self.refreshList, ImageManagerDownload, self.BackupDirectory, self.urlDistro)
 
 	def setupDone(self, test=None):
 		if config.imagemanager.folderprefix.value == "":
@@ -1336,7 +1336,7 @@ class ImageManagerDownload(Screen):
 		model = HardwareInfo().get_device_name()
 		if model == "dm8000":
 			model = getMachineMake()
-		imagecat = [6.4]
+		imagecat = [6.4, 6.5]
 		self.urlBox = path.join(self.urlDistro, self.boxtype, "")
 
 		if "Dev" in self.urlDistro:
@@ -1355,8 +1355,8 @@ class ImageManagerDownload(Screen):
 				try:
 					conn = urlopen(self.urlBox)
 					html = conn.read()
-				except HTTPError as e:
-					print("[ImageManager] HTTP download ERROR: %s" % e.code)
+				except Exception:
+					print("[ImageManager] OpenViX HTTP download ERROR")
 					continue
 
 				if "Dev" in self.urlDistro:
