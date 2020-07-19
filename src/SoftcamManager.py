@@ -1,14 +1,12 @@
 from __future__ import print_function, absolute_import
 
-# for localized messages
-from __future__ import print_function
 import re
 from os import path, makedirs, remove, rename, symlink, mkdir, listdir
 from datetime import datetime
 from time import time, sleep
 from enigma import eTimer
 
-from . import _, PluginLanguageDomain
+from src import _, PluginLanguageDomain
 
 from Components.ActionMap import ActionMap
 from Components.Button import Button

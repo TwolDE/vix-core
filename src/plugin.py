@@ -4,15 +4,15 @@ from __future__ import print_function, absolute_import
 from os import listdir, path, walk, stat
 from boxbranding import getBoxType, getImageDistro
 
-from . import _
+from src import _
 
 from Components.config import config, ConfigBoolean, configfile
-
-from .BackupManager import BackupManagerautostart
-from .ImageManager import ImageManagerautostart
-from .IPKInstaller import IpkgInstaller
 from Plugins.Plugin import PluginDescriptor
-from .SoftcamManager import SoftcamAutostart
+
+from src.BackupManager import BackupManagerautostart
+from src.ImageManager import ImageManagerautostart
+from src.IPKInstaller import IpkgInstaller
+from src.SoftcamManager import SoftcamAutostart
 
 config.misc.restorewizardrun = ConfigBoolean(default=False)
 
@@ -76,7 +76,7 @@ if config.misc.firstrun.value and not config.misc.restorewizardrun.value:
 
 
 def VIXMenu(session):
-	from . import ui
+	from src import ui
 	return ui.VIXMenu(session)
 
 def UpgradeMain(session, **kwargs):
@@ -88,11 +88,11 @@ def startSetup(menuid):
 	return [(_("ViX"), UpgradeMain, "vix_menu", 1010)]
 
 def RestoreWizard(*args, **kwargs):
-	from .RestoreWizard import RestoreWizard
+	from src.RestoreWizard import RestoreWizard
 	return RestoreWizard(*args, **kwargs)
 
 def SoftcamManager(session):
-	from .SoftcamManager import VIXSoftcamManager
+	from src.SoftcamManager import VIXSoftcamManager
 	return VIXSoftcamManager(session)
 
 def SoftcamMenu(session, **kwargs):
@@ -104,28 +104,28 @@ def SoftcamSetup(menuid):
 	return []
 
 def BackupManager(session):
-	from .BackupManager import VIXBackupManager
+	from src.BackupManager import VIXBackupManager
 	return VIXBackupManager(session)
 
 def BackupManagerMenu(session, **kwargs):
 	session.open(BackupManager)
 
 def ImageManager(session):
-	from .ImageManager import VIXImageManager
+	from src.ImageManager import VIXImageManager
 	return VIXImageManager(session)
 
 def ImageMangerMenu(session, **kwargs):
 	session.open(ImageManager)
 
 def H9SDmanager(session):
-	from .H9SDmanager import H9SDmanager
+	from src.H9SDmanager import H9SDmanager
 	return H9SDmanager(session)
 
 def H9SDmanagerMenu(session, **kwargs):
 	session.open(H9SDmanager)
 
 def MountManager(session):
-	from .MountManager import VIXDevicesPanel
+	from src.MountManager import VIXDevicesPanel
 	return VIXDevicesPanel(session)
 
 def MountManagerMenu(session, **kwargs):

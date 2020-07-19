@@ -2,9 +2,9 @@ from __future__ import print_function, absolute_import
 
 from os import listdir, path, stat
 from boxbranding import getMachineBrand, getMachineName, getImageDistro
-from . import _
+from src import _
+from src.BackupManager import isRestorableSettings, isRestorablePlugins, isRestorableKernel
 
-from .BackupManager import isRestorableSettings, isRestorablePlugins, isRestorableKernel
 from Components.About import about
 from Components.config import config, configfile
 from Components.Console import Console
@@ -13,8 +13,6 @@ from Screens.MessageBox import MessageBox
 from Screens.Rc import Rc
 from Screens.WizardLanguage import WizardLanguage
 from Tools.Directories import fileExists, resolveFilename, SCOPE_PLUGINS
-
-
 
 class RestoreWizard(WizardLanguage, Rc):
 	def __init__(self, session):

@@ -2,7 +2,7 @@ from __future__ import print_function, absolute_import
 
 from os import listdir, path, mkdir
 
-from . import _
+from src import _
 
 from Components.ActionMap import NumberActionMap
 from Components.config import config
@@ -52,7 +52,7 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("image-manager", _("ViX Image Manager"), _("Backup/Flash/ReBoot system image."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
- 			if SystemInfo["HasH9SD"]:
+			if SystemInfo["HasH9SD"]:
 				self.list.append(("H9SDcard manager", _("H9SDcard Manager"), _("Move Nand root to SD card"), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
@@ -82,7 +82,6 @@ class VIXMenu(Screen, ProtectedScreen):
 	
 	def createSummary(self):
 		from Screens.PluginBrowser import PluginBrowserSummary
-
 		return PluginBrowserSummary
 
 	def selectionChanged(self):

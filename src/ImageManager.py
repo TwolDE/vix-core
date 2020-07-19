@@ -16,7 +16,7 @@ from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, sta
 from shutil import rmtree, move, copy, copyfile
 from time import localtime, time, strftime, mktime
 
-from . import _, PluginLanguageDomain
+from src import _, PluginLanguageDomain
 from Components.ActionMap import ActionMap
 from Components.Button import Button
 from Components.ChoiceList import ChoiceList, ChoiceEntryComponent
