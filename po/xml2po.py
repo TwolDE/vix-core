@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from builtins import str
+from future.types import bytes, dict, int, range, str
 
 import sys
 import os
