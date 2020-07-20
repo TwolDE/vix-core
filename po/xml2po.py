@@ -34,7 +34,7 @@ class parseXML(ContentHandler, LexicalHandler):
 	def startElement(self, name, attrs):
 		for x in ["text", "title", "value", "caption", "summary", "description"]:
 			try:
-				k = str(attrs[x])
+				k = builtins.str(attrs[x])
 				if k.strip() != "" and not self.ishex.match(k):
 					attrlist.add((k, self.last_comment))
 					self.last_comment = None
@@ -68,7 +68,7 @@ for arg in sys.argv[1:]:
 		if c:
 			for l in c.split('\n'):
 				print("#. ", l)
-		print('msgid "' + str(k) + '"')
+		print('msgid "' + builtins.str(k) + '"')
 		print('msgstr ""')
 
 	attrlist = set()
