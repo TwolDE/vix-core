@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-import six
+from builtins import str
 
 import sys
 import os
@@ -31,7 +31,7 @@ class parseXML(ContentHandler, LexicalHandler):
 	def startElement(self, name, attrs):
 		for x in ["text", "title", "value", "caption", "summary", "description"]:
 			try:
-				k = six.ensure_str(attrs[x])
+				k = str(attrs[x])
 				if k.strip() != "" and not self.ishex.match(k):
 					attrlist.add((k, self.last_comment))
 					self.last_comment = None
@@ -65,7 +65,7 @@ for arg in sys.argv[1:]:
 		if c:
 			for l in c.split('\n'):
 				print("#. ", l)
-		print('msgid "' + six.ensure_str(k) + '"')
+		print('msgid "' + str(k) + '"')
 		print('msgstr ""')
 
 	attrlist = set()
