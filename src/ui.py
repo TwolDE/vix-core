@@ -1,8 +1,8 @@
-from __future__ import print_function, absolute_import
+from __future__ import print_function
 
 from os import listdir, path, mkdir
 
-from src import _
+from . import _
 
 from Components.ActionMap import NumberActionMap
 from Components.config import config
@@ -110,19 +110,19 @@ class VIXMenu(Screen, ProtectedScreen):
 			currentEntry = current[0]
 			if self.menu == 0:
 				if currentEntry == "backup-manager":
-					from BackupManager import VIXBackupManager
+					from .BackupManager import VIXBackupManager
 					self.session.open(VIXBackupManager)
 				elif currentEntry == "image-manager":
-					from ImageManager import VIXImageManager
+					from .ImageManager import VIXImageManager
 					self.session.open(VIXImageManager)
 				elif currentEntry == "H9SDcard manager":
-					from H9SDmanager import H9SDmanager
+					from .H9SDmanager import H9SDmanager
 					self.session.open(H9SDmanager)
 				elif currentEntry == "ipkg-install":
-					from IPKInstaller import VIXIPKInstaller
+					from .IPKInstaller import VIXIPKInstaller
 					self.session.open(VIXIPKInstaller)
 				elif currentEntry == "mount-manager":
-					from MountManager import VIXDevicesPanel
+					from .MountManager import VIXDevicesPanel
 					self.session.open(VIXDevicesPanel)
 
 	def closeRecursive(self):

@@ -1,4 +1,4 @@
-from __future__ import print_function, absolute_import
+from __future__ import print_function
 
 import errno
 from os import mkdir, path, remove, rename, statvfs, system
@@ -8,7 +8,7 @@ from time import sleep
 from boxbranding import getMachineBrand, getMachineName, getMachineBuild
 from enigma import eTimer, getDesktop
 
-from src import _
+from . import _
 
 from Components.ActionMap import ActionMap
 from Components.Label import Label

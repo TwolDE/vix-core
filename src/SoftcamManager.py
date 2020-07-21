@@ -1,4 +1,4 @@
-from __future__ import print_function, absolute_import
+from __future__ import print_function
 
 import re
 from os import path, makedirs, remove, rename, symlink, mkdir, listdir
@@ -6,7 +6,7 @@ from datetime import datetime
 from time import time, sleep
 from enigma import eTimer
 
-from src import _, PluginLanguageDomain
+from . import _, PluginLanguageDomain
 
 from Components.ActionMap import ActionMap
 from Components.Button import Button

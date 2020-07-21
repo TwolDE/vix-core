@@ -1,4 +1,4 @@
-from __future__ import print_function, absolute_import, division
+from __future__ import print_function, division
 
 # required methods: Request, urlopen, HTTPError, URLError
 try: # python 3
@@ -16,7 +16,7 @@ from os import path, stat, system, mkdir, makedirs, listdir, remove, rename, sta
 from shutil import rmtree, move, copy, copyfile
 from time import localtime, time, strftime, mktime
 
-from src import _, PluginLanguageDomain
+from . import _, PluginLanguageDomain
 from Components.ActionMap import ActionMap
 from Components.Button import Button
 from Components.ChoiceList import ChoiceList, ChoiceEntryComponent
@@ -252,9 +252,9 @@ class VIXImageManager(Screen):
 		try:
 			urlopen('http://google.co.uk', timeout=1)
 			self.choices = [("Local", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4), ("ViXDev", 5)]
-				self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
-				self.message = _("Do you want to change download url")
-				self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
+			self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
+			self.message = _("Do you want to change download url")
+			self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
 		except:
 			self.session.open(MessageBox, _("No internet connection detected!"), MessageBox.TYPE_INFO, timeout=10)
 

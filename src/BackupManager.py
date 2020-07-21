@@ -1,11 +1,11 @@
-from __future__ import print_function, absolute_import
+from __future__ import print_function
 
 from datetime import date, datetime
 from os import path, stat, mkdir, listdir, remove, statvfs, chmod
 from time import localtime, time, strftime, mktime
 import tarfile, glob
 from enigma import eTimer, eEnv, eDVBDB, quitMainloop
-from src import _, PluginLanguageDomain
+from . import _, PluginLanguageDomain
 
 from boxbranding import getBoxType, getImageType, getImageDistro, getImageVersion, getImageBuild, getImageDevBuild, getMachineBrand, getMachineName
 from Components.About import about

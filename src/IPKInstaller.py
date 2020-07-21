@@ -1,8 +1,8 @@
 # for localized messages
-from __future__ import absolute_import
+from __future__ import print_function
 from os import listdir, path
 
-from src import _
+from . import _
 
 from Components.ActionMap import ActionMap
 from Components.Button import Button
