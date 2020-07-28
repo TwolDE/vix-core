@@ -473,17 +473,18 @@ class VIXBackupManager(Screen):
 		self.Console.ePopen("opkg update", self.Stage2Complete)
 
 	def Stage2Complete(self, result, retval, extra_args):
-		print("[BackupManager] Restoring Stage 2: Result ", result)
-		if result.find("wget returned 4") != -1: # probably no network adaptor connected
+		result2 = result.decode("utf8") 
+		print("[BackupManager] Restoring Stage 2: Result ", result2)
+		if result2.find("wget returned 4") != -1: # probably no network adaptor connected
 			self.feeds = "NONETWORK" 
 			self.Stage2Completed = True
-		if result.find("wget returned 8") != -1 or result.find("wget returned 1") != -1 or result.find("wget returned 255") != -1 or result.find("404 Not Found") != -1: # Server issued an error response, or there was a wget generic error code.
+		if result2.find("wget returned 8") != -1 or result2.find("wget returned 1") != -1 or result2.find("wget returned 255") != -1 or result2.find("404 Not Found") != -1: # Server issued an error response, or there was a wget generic error code.
 			self.feeds = "DOWN"
 			self.Stage2Completed = True
-		elif result.find("bad address") != -1: # probably DNS lookup failed
+		elif result2.find("bad address") != -1: # probably DNS lookup failed
 			self.feeds = "BAD"
 			self.Stage2Completed = True
-		elif result.find("Collected errors") != -1: # none of the above errors. What condition requires this to loop? Maybe double key press.
+		elif result2.find("Collected errors") != -1: # none of the above errors. What condition requires this to loop? Maybe double key press.
 			AddPopupWithCallback(self.Stage2,
 								 _("A background update check is in progress, please try again."),
 								 MessageBox.TYPE_INFO,
@@ -555,7 +556,7 @@ class VIXBackupManager(Screen):
 		plugins = []
 		if path.exists("/tmp/ExtraInstalledPlugins") and self.kernelcheck:
 			self.pluginslist = []
-			for line in result.split("\n"):
+			for line in result.decode("utf8").split("\n"):
 				if line:
 					parts = line.strip().split()
 					plugins.append(parts[0])
