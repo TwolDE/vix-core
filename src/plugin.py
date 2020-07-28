@@ -55,7 +55,7 @@ def checkConfigBackup():
 					for file in files:
 						if file.endswith(".tar.gz") and "vix" in file.lower():
 							list.append((path.join(devpath, file)))
- 		if len(list):
+		if len(list):
 			print("[RestoreWizard] Backup Image:", list[0])
 			backupfile = list[0]
 			if path.isfile(backupfile):

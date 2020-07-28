@@ -1210,7 +1210,8 @@ class BackupFiles(Screen):
 	def Stage2Complete(self, result, retval, extra_args):
 		if result:
 			plugins_out = []
-			opkg_status_list = result.split("\n\n")
+			print("[BackupManager] result=%s, retval=%s" % (result, retval))
+			opkg_status_list = result.decode("utf8").split("\n\n")
 			for opkg_status in opkg_status_list:
 				plugin = ""
 				opkg_status_split = opkg_status.split("\n")
@@ -1338,9 +1339,8 @@ class BackupFiles(Screen):
 					emlist = emlist[0:len(emlist)-config.backupmanager.number_to_keep.value]
 					for fil in emlist:
 						remove(self.BackupDirectory + fil)
-	    	except:
-	    		pass
-
+		except:
+			pass
 		if config.backupmanager.schedule.value:
 			atLeast = 60
 			autoBackupManagerTimer.backupupdate(atLeast)

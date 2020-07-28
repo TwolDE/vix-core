@@ -1,4 +1,5 @@
 from __future__ import print_function
+import six
 
 import errno
 from os import mkdir, path, remove, rename, statvfs, system
@@ -330,7 +331,7 @@ class VIXDevicesPanel(Screen):
 	def addFstab(self, result=None, retval=None, extra_args=None):
 		self.device = extra_args[0]
 		self.mountp = extra_args[1]
-		self.device_uuid = "UUID=" + result.split("UUID=")[1].split(" ")[0].replace('"', '')
+		self.device_uuid = "UUID=" + six.ensure_str(result).split("UUID=")[1].split(" ")[0].replace('"', '')
 		# print "[MountManager1]addFstab: device = %s, mountp=%s, UUID=%s" %(self.device, self.mountp, self.device_uuid)
 		if not path.exists(self.mountp):
 			mkdir(self.mountp, 0o755)
