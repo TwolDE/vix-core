@@ -1211,8 +1211,8 @@ class BackupFiles(Screen):
 	def Stage2Complete(self, result, retval, extra_args):
 		if result:
 			plugins_out = []
-			print("[BackupManager] result=%s, retval=%s" % (result, retval))
 			opkg_status_list = result.decode("utf8").split("\n\n")
+			print("[BackupManager] result=%s, retval=%s" % (opkg_status_list, retval))
 			for opkg_status in opkg_status_list:
 				plugin = ""
 				opkg_status_split = opkg_status.split("\n")
