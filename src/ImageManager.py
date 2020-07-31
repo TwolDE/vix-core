@@ -1481,7 +1481,9 @@ class ImageManagerDownload(Screen):
 				except HTTPError as e:
 					print("[ImageManager] HTTP download ERROR: %s" % e.code)
 			else:
-				Tools.CopyFiles.downloadFile(fileurl, fileloc, selectedimage.replace("_usb", ""))
+				url_encode = "utf-8"
+				b_url = fileurl.encode(url_encode)
+				Tools.CopyFiles.downloadFile(b_url, fileloc, selectedimage.replace("_usb", ""))
 				for job in Components.Task.job_manager.getPendingJobs():
 					if job.name.startswith(_("Downloading")):
 						break
