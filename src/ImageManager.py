@@ -249,14 +249,10 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.setupDone, Setup, "viximagemanager", "SystemPlugins/ViX", PluginLanguageDomain)
 
 	def doDownload(self):
-		try:
-			urlopen('http://google.co.uk', timeout=1)
-			self.choices = [("Local", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4), ("ViXDev", 5)]
-			self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
-			self.message = _("Do you want to change download url")
-			self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
-		except:
-			self.session.open(MessageBox, _("No internet connection detected!"), MessageBox.TYPE_INFO, timeout=10)
+		self.choices = [("Local", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4), ("ViXDev", 5)]
+		self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
+		self.message = _("Do you want to change download url")
+		self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
 
 	def doDownload2(self, retval):
 		if retval:
