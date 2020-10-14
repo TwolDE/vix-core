@@ -41,7 +41,7 @@ class VIXMenu(Screen, ProtectedScreen):
 			<widget source="status" render="Label" position="5,360" zPosition="10" size="600,50" halign="center" valign="center" font="Regular;22" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
 		</screen>"""
 
-	def __init__(self, session, args=0):
+	def __init__(self, session, args = 0):
 		Screen.__init__(self, session)
 		ProtectedScreen.__init__(self)
 		self.setTitle(_("ViX"))
@@ -52,7 +52,9 @@ class VIXMenu(Screen, ProtectedScreen):
 			self.list.append(("image-manager", _("ViX Image Manager"), _("Backup/Flash/ReBoot system image."), None))
 			self.list.append(("ipkg-install", _("Install local extension"), _("Install IPK's from your tmp folder."), None))
 			self.list.append(("mount-manager", _("Mount manager"), _("Manage your devices mount points."), None))
-			if SystemInfo["HasH9SD"]:
+			self.list.append(("script-runner", _("Script runner"), _("Run your shell scripts."), None))
+			self.list.append(("swap-manager", _("SWAP manager"), _("Create and Manage your SWAP files."), None))
+ 			if SystemInfo["HasH9SD"]:
 				self.list.append(("H9SDcard manager", _("H9SDcard Manager"), _("Move Nand root to SD card"), None))
 		self["menu"] = List(self.list)
 		self["key_red"] = StaticText(_("Close"))
@@ -99,7 +101,7 @@ class VIXMenu(Screen, ProtectedScreen):
 		idx = 0
 		self["menu"].index = idx
 
-	def go(self, num=None):
+	def go(self, num = None):
 		if num is not None:
 			num -= 1
 			if not num < self["menu"].count():
@@ -124,6 +126,12 @@ class VIXMenu(Screen, ProtectedScreen):
 				elif currentEntry == "mount-manager":
 					from .MountManager import VIXDevicesPanel
 					self.session.open(VIXDevicesPanel)
+				elif currentEntry == "script-runner":
+					from .ScriptRunner import VIXScriptRunner
+					self.session.open(VIXScriptRunner, None)
+				elif currentEntry == "swap-manager":
+					from .SwapManager import VIXSwap
+					self.session.open(VIXSwap)
 
 	def closeRecursive(self):
 		self.close(True)

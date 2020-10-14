@@ -12,7 +12,11 @@ from Components.config import config, ConfigBoolean, configfile
 from .BackupManager import BackupManagerautostart
 from .ImageManager import ImageManagerautostart
 from .IPKInstaller import IpkgInstaller
+from .ScriptRunner import ScriptRunnerAutostart
 from .SoftcamManager import SoftcamAutostart
+from .SwapManager import SwapAutostart
+from .IPKInstaller import IpkgInstaller
+
 config.misc.restorewizardrun = ConfigBoolean(default=False)
 
 def setLanguageFromBackup(backupfile):
@@ -130,6 +134,20 @@ def MountManager(session):
 def MountManagerMenu(session, **kwargs):
 	session.open(MountManager)
 
+def ScriptRunner(session):
+	from .ScriptRunner import VIXScriptRunner
+	return VIXScriptRunner(session)
+
+def ScriptRunnerMenu(session, **kwargs):
+	session.open(ScriptRunner)
+
+def SwapManager(session):
+	from .SwapManager import VIXSwap
+	return VIXSwap(session)
+
+def SwapManagerMenu(session, **kwargs):
+	session.open(SwapManager)
+
 def filescan_open(list, session, **kwargs):
 	filelist = [x.path for x in list]
 	session.open(IpkgInstaller, filelist)  # list
@@ -153,7 +171,10 @@ def Plugins(**kwargs):
 			 PluginDescriptor(where=PluginDescriptor.WHERE_MENU, fnc=SoftcamSetup)]
 	if config.softcammanager.showinextensions.value:
 		plist.append(PluginDescriptor(name=_("Softcam manager"), where=PluginDescriptor.WHERE_EXTENSIONSMENU, fnc=SoftcamMenu))
+	if config.scriptrunner.showinextensions.value:
+		plist.append(PluginDescriptor(name=_("Script runner"), where=PluginDescriptor.WHERE_EXTENSIONSMENU, fnc=ScriptRunnerMenu))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_AUTOSTART, fnc=SoftcamAutostart))
+	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_AUTOSTART, fnc=SwapAutostart))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=ImageManagerautostart))
 	plist.append(PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=BackupManagerautostart))
 	if config.misc.firstrun.value and not config.misc.restorewizardrun.value and backupAvailable == 1:
@@ -161,4 +182,7 @@ def Plugins(**kwargs):
 	plist.append(PluginDescriptor(name=_("Ipkg"), where=PluginDescriptor.WHERE_FILESCAN, needsRestart=False, fnc=filescan))
 	plist.append(PluginDescriptor(name=_("ViX Backup manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=BackupManagerMenu))
 	plist.append(PluginDescriptor(name=_("ViX Image manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ImageMangerMenu))
+	plist.append(PluginDescriptor(name=_("ViX Mount manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=MountManagerMenu))
+	plist.append(PluginDescriptor(name=_("ViX Script runner"), where=PluginDescriptor.WHERE_VIXMENU, fnc=ScriptRunnerMenu))
+	plist.append(PluginDescriptor(name=_("ViX SWAP manager"), where=PluginDescriptor.WHERE_VIXMENU, fnc=SwapManagerMenu))
 	return plist

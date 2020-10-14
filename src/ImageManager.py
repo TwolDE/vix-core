@@ -1329,31 +1329,31 @@ class ImageManagerDownload(Screen):
 		self.jsonlist = {}
 		xlist = []
 		self.boxtype = getMachineMake()
-		model = HardwareInfo().get_device_name()
-		if model == "dm8000":
-			model = getMachineMake()
-		imagecat = [6.4, 6.5]
-		self.urlBox = path.join(self.urlDistro, self.boxtype, "")
-
+		if "pli" in self.urlDistro:
+			self.boxtype = HardwareInfo().get_device_name()
+			if self.boxtype == "dm8000":
+				self.boxtype = getMachineMake()
+		versions = [6.4, 6.5]
 		if "Dev" in self.urlDistro:
 			if "login:pswd" in config.imagemanager.imagefeed_DevL.value:
 				return
 			else:
 				self.urlBox = self.urlDistro.replace("login", "%s") % config.imagemanager.imagefeed_DevL.value
-				imagecat = [5.3, 5.4, 5.5]
+				versions = [5.4, 5.5]
 		elif "www.openvix" in self.urlDistro:
-			imagecat = [5.3, 5.4, 5.5]
+			versions = [4.2, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5]
 
 		if not self.Pli and not self.imagesList:
-			for version in reversed(sorted(imagecat)):
-				newversion = _("Image Version %s") % version
-				countimage = []
+#			versions = [4.2, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5]
+			subfolders = ('', 'Archives') # i.e. check root folder and "Archives" folder. Images will appear in the UI in this order.
+			for subfolder in subfolders:
+				tmp_image_list = []
+				fullUrl = subfolder and path.join(self.urlDistro, self.boxtype, subfolder, "") or path.join(self.urlDistro, self.boxtype, "")
 				try:
-					conn = urlopen(self.urlBox)
+					conn = urlopen(fullUrl)
 					html = conn.read()
-				except Exception:
-					print("[ImageManager] OpenViX HTTP download ERROR")
-					continue
+				except (HTTPError, URLError) as e:
+					print "[ImageManager] HTTPError: %s %s" % (getattr(e, "code", ""), getattr(e, "reason", ""))
 
 				if "Dev" in self.urlDistro:
 					lines = html.split("\n")
@@ -1369,12 +1369,14 @@ class ImageManagerDownload(Screen):
 					for tag in links:
 						link = tag.get("href", None)
 						if link is not None and link.endswith("zip") and link.find(getMachineMake()) != -1 and link.find("recovery") == -1:
-							countimage.append(str(link))
-				if len(countimage) >= 1:
-					self.imagesList[newversion] = {}
-					for image in countimage:
+							tmp_image_list.append(str(link))
+				for version in sorted(versions, reverse=True):
+					newversion = _("Image Version %s%s") % (version, " (%s)" % subfolder if subfolder else "")
+					for image in tmp_image_list:
 						# print "[ImageManager] image:%s, version:%s " % (image, version)
 						if "%s" % version in image:
+							if newversion not in self.imagesList:
+								self.imagesList[newversion] = {}
 							self.imagesList[newversion][image] = {}
 							self.imagesList[newversion][image]["name"] = image
 							if "Dev" in self.urlDistro:
