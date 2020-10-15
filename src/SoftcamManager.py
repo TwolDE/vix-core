@@ -308,9 +308,9 @@ class VIXSoftcamManager(Screen):
 
 class VIXStartCam(Screen):
 	skin = """
-	<screen name="VIXStartCam" position="center,center" size="484, 150" title="Starting Softcam">
-		<widget name="connect" position="217, 0" size="64,64" zPosition="2" pixmaps="ViX_HD_Common/busy/busy1.png,ViX_HD_Common/busy/busy2.png,ViX_HD_Common/busy/busy3.png,ViX_HD_Common/busy/busy4.png,ViX_HD_Common/busy/busy5.png,ViX_HD_Common/busy/busy6.png,ViX_HD_Common/busy/busy7.png,ViX_HD_Common/busy/busy8.png,ViX_HD_Common/busy/busy9.png,ViX_HD_Common/busy/busy9.png,ViX_HD_Common/busy/busy10.png,ViX_HD_Common/busy/busy11.png,ViX_HD_Common/busy/busy12.png,ViX_HD_Common/busy/busy13.png,ViX_HD_Common/busy/busy14.png,ViX_HD_Common/busy/busy15.png,ViX_HD_Common/busy/busy17.png,ViX_HD_Common/busy/busy18.png,ViX_HD_Common/busy/busy19.png,ViX_HD_Common/busy/busy20.png,ViX_HD_Common/busy/busy21.png,ViX_HD_Common/busy/busy22.png,ViX_HD_Common/busy/busy23.png,ViX_HD_Common/busy/busy24.png"  transparent="1" alphatest="blend"/>
-		<widget name="lab1" position="10, 80" halign="center" size="460, 60" zPosition="1" font="Regular;20" valign="top" transparent="1"/>
+	<screen name = "VIXStartCam" position = "center, center" size = "484, 150" title = "Starting Softcam">
+		<widget name = "connect" position = "217, 0" size = "64, 64" zPosition = "2" pixmaps = "ViX_HD_Common/busy/busy1.png, ViX_HD_Common/busy/busy2.png, ViX_HD_Common/busy/busy3.png, ViX_HD_Common/busy/busy4.png, ViX_HD_Common/busy/busy5.png, ViX_HD_Common/busy/busy6.png, ViX_HD_Common/busy/busy7.png, ViX_HD_Common/busy/busy8.png, ViX_HD_Common/busy/busy9.png, ViX_HD_Common/busy/busy9.png, ViX_HD_Common/busy/busy10.png, ViX_HD_Common/busy/busy11.png, ViX_HD_Common/busy/busy12.png, ViX_HD_Common/busy/busy13.png, ViX_HD_Common/busy/busy14.png, ViX_HD_Common/busy/busy15.png, ViX_HD_Common/busy/busy17.png, ViX_HD_Common/busy/busy18.png, ViX_HD_Common/busy/busy19.png, ViX_HD_Common/busy/busy20.png, ViX_HD_Common/busy/busy21.png, ViX_HD_Common/busy/busy22.png, ViX_HD_Common/busy/busy23.png, ViX_HD_Common/busy/busy24.png"  transparent = "1" alphatest = "blend"/>
+		<widget name = "lab1" position = "10, 80" halign = "center" size = "460, 60" zPosition = "1" font = "Regular;20" valign = "top" transparent = "1"/>
 	</screen>"""
 
 	def __init__(self, session, selectedcam):
@@ -380,15 +380,15 @@ class VIXStartCam(Screen):
 			output.write(now.strftime("%Y-%m-%d %H:%M") + ": Starting " + startselectedcam + "\n")
 			output.close()
 			if startselectedcam.lower().startswith("hypercam"):
-				self.Console.ePopen("ulimit -s 512;/usr/softcams/" + startselectedcam + " -c /etc/hypercam.cfg")
+				self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + startselectedcam + " -c /etc/hypercam.cfg")
 			elif startselectedcam.lower().startswith("oscam"):
-				self.Console.ePopen("ulimit -s 512;/usr/softcams/" + startselectedcam + " -b")
+				self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + startselectedcam + " -b")
 			elif startselectedcam.lower().startswith("gbox"):
-				self.Console.ePopen("ulimit -s 512;/usr/softcams/" + startselectedcam)
+				self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + startselectedcam)
 				sleep(3)
 				self.Console.ePopen("start-stop-daemon --start --quiet --background --exec /usr/bin/gbox")
 			else:
-				self.Console.ePopen("ulimit -s 512;/usr/softcams/" + startselectedcam)
+				self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + startselectedcam)
 		self.activityTimer.start(1)
 
 	def updatepix(self):
@@ -762,7 +762,7 @@ class SoftcamAutoPoller:
 								now = datetime.now()
 								output.write(now.strftime("%Y-%m-%d %H:%M") + ": AutoStarting: " + softcamcheck + "\n")
 								output.close()
-								self.Console.ePopen("ulimit -s 512;/usr/softcams/" + softcamcheck + " -b")
+								self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + softcamcheck + " -b")
 								sleep(10)
 
 						elif softcamcheck.lower().startswith("cccam"):
@@ -808,7 +808,7 @@ class SoftcamAutoPoller:
 									self.Console.ePopen("killall -9 " + softcamcheck)
 									sleep(1)
 									print("[SoftcamManager] Starting " + softcamcheck)
-									self.Console.ePopen("ulimit -s 512;/usr/softcams/" + softcamcheck)
+									self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + softcamcheck)
 							elif allow.lower().find("no") != -1:
 								print("[SoftcamManager] Telnet info not allowed, can not check if frozen")
 								output = open("/tmp/cam.check.log", "a")
@@ -830,7 +830,7 @@ class SoftcamAutoPoller:
 						output.close()
 						if softcamcheck.lower().startswith("oscam"):
 							self.Console.ePopen("ps.procps | grep softcams | grep -v grep | awk 'NR==1' | awk '{print $5}'| awk  -F'[/]' '{print $4}' > /tmp/softcamRuningCheck.tmp")
-							# sleep(2)
+							sleep(2)
 							file = open("/tmp/softcamRuningCheck.tmp")
 							cccamcheck_process = file.read()
 							cccamcheck_process = cccamcheck_process.replace("\n", "")
@@ -845,15 +845,15 @@ class SoftcamAutoPoller:
 									self.Console.ePopen("killall -9 /usr/softcams/" + str(cccamcheck_process))
 								except:
 									pass
-							self.Console.ePopen("ulimit -s 512;/usr/softcams/" + softcamcheck + " -b")
-							# sleep(10)
+							self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + softcamcheck + " -b")
+							sleep(10)
 							remove("/tmp/softcamRuningCheck.tmp")
 						elif softcamcheck.lower().startswith("sbox"):
-							self.Console.ePopen("ulimit -s 512;/usr/softcams/" + softcamcheck)
+							self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + softcamcheck)
 							sleep(7)
 						elif softcamcheck.lower().startswith("gbox"):
-							self.Console.ePopen("ulimit -s 512;/usr/softcams/" + softcamcheck)
+							self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + softcamcheck)
 							sleep(3)
 							self.Console.ePopen("start-stop-daemon --start --quiet --background --exec /usr/bin/gbox")
 						else:
-							self.Console.ePopen("ulimit -s 512;/usr/softcams/" + softcamcheck)
+							self.Console.ePopen("ulimit -s 1024;/usr/softcams/" + softcamcheck)

@@ -51,24 +51,24 @@ for p in harddiskmanager.getMountedPartitions():
 			hddchoices.append((p.mountpoint, d))
 defaultprefix = getImageDistro() + "-" + getBoxType()
 config.imagemanager = ConfigSubsection()
-config.imagemanager.autosettingsbackup = ConfigYesNo(default=True)
-config.imagemanager.backuplocation = ConfigSelection(choices=hddchoices)
-config.imagemanager.backupretry = ConfigNumber(default=30)
-config.imagemanager.backupretrycount = NoSave(ConfigNumber(default=0))
-config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
-config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default=0))
-config.imagemanager.repeattype = ConfigSelection(default="daily", choices=[("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
-config.imagemanager.schedule = ConfigYesNo(default=False)
-config.imagemanager.scheduletime = ConfigClock(default=0)  # 1:00
-config.imagemanager.query = ConfigYesNo(default=True)
-config.imagemanager.lastbackup = ConfigNumber(default=0)
-config.imagemanager.number_to_keep = ConfigNumber(default=0)
-config.imagemanager.imagefeed_User = ConfigText(default="http://192.168.0.171/openvix-builds/", fixed_size=False)
-config.imagemanager.imagefeed_ViX = ConfigText(default="http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
-config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/json", fixed_size=False)
-config.imagemanager.imagefeed_Pli = ConfigText(default="http://downloads.openpli.org/json", fixed_size=False)
-config.imagemanager.imagefeed_Dev = ConfigText(default="ftp://login@176.31.181.161/***Dev_Images_5.2***", fixed_size=False)
-config.imagemanager.imagefeed_DevL = ConfigText(default="login:pswd", fixed_size=False)
+config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
+config.imagemanager.backuplocation = ConfigSelection(choices = hddchoices)
+config.imagemanager.backupretry = ConfigNumber(default = 30)
+config.imagemanager.backupretrycount = NoSave(ConfigNumber(default = 0))
+config.imagemanager.folderprefix = ConfigText(default = defaultprefix, fixed_size = False)
+config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default = 0))
+config.imagemanager.repeattype = ConfigSelection(default = "daily", choices = [("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
+config.imagemanager.schedule = ConfigYesNo(default = False)
+config.imagemanager.scheduletime = ConfigClock(default = 0)  # 1:00
+config.imagemanager.query = ConfigYesNo(default = True)
+config.imagemanager.lastbackup = ConfigNumber(default = 0)
+config.imagemanager.number_to_keep = ConfigNumber(default = 0)
+config.imagemanager.imagefeed_User = ConfigText(default = "http://192.168.0.171/openvix-builds/", fixed_size=False)
+config.imagemanager.imagefeed_ViX = ConfigText(default = "http://www.openvix.co.uk/openvix-builds/", fixed_size=False)
+config.imagemanager.imagefeed_ATV = ConfigText(default = "http://images.mynonpublic.com/openatv/json", fixed_size=False)
+config.imagemanager.imagefeed_Pli = ConfigText(default = "http://downloads.openpli.org/json", fixed_size=False)
+config.imagemanager.imagefeed_Dev = ConfigText(default = "ftp://login@176.31.181.161/***Dev_Images_5.2***", fixed_size=False)
+config.imagemanager.imagefeed_DevL = ConfigText(default = "login:pswd", fixed_size=False)
 
 autoImageManagerTimer = None
 
@@ -95,20 +95,20 @@ def ImageManagerautostart(reason, session=None, **kwargs):
 			autoImageManagerTimer.stop()
 
 class VIXImageManager(Screen):
-	skin = """<screen name="VIXImageManager" position="center,center" size="560,400">
-		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on"/>
-		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on"/>
-		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on"/>
-		<ePixmap pixmap="skin_default/buttons/blue.png" position="420,0" size="140,40" alphatest="on"/>
-		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1"/>
-		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
-		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1"/>
-		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1"/>
-		<ePixmap pixmap="skin_default/buttons/key_menu.png" position="0,40" size="35,25" alphatest="blend" transparent="1" zPosition="3"/>
-		<widget name="lab1" position="0,50" size="560,50" font="Regular; 18" zPosition="2" transparent="0" halign="center"/>
-		<widget name="list" position="10,105" size="540,260" scrollbarMode="showOnDemand"/>
-		<widget name="backupstatus" position="10,370" size="400,30" font="Regular;20" zPosition="5"/>
-		<applet type="onLayoutFinish">
+	skin = """<screen name = "VIXImageManager" position = "center, center" size = "560, 400">
+		<ePixmap pixmap = "skin_default/buttons/red.png" position = "0, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/green.png" position = "140, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/yellow.png" position = "280, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/blue.png" position = "420, 0" size = "140, 40" alphatest = "on"/>
+		<widget name = "key_red" position = "0, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#9f1313" transparent = "1"/>
+		<widget name = "key_green" position = "140, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#1f771f" transparent = "1"/>
+		<widget name = "key_yellow" position = "280, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#a08500" transparent = "1"/>
+		<widget name = "key_blue" position = "420, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#18188b" transparent = "1"/>
+		<ePixmap pixmap = "skin_default/buttons/key_menu.png" position = "0, 40" size = "35, 25" alphatest = "blend" transparent = "1" zPosition =" 3"/>
+		<widget name = "lab1" position = "0, 50" size = "560, 50" font = "Regular; 18" zPosition = "2" transparent = "0" halign = "center"/>
+		<widget nam = "list" position = "10, 105" size = "540, 260" scrollbarMode = "showOnDemand"/>
+		<widget name = "backupstatus" position = "10, 370" size = "400, 30" font = "Regular;20" zPosition = "5"/>
+		<applet type = "onLayoutFinish">
 			self["list"].instance.setItemHeight(25)
 		</applet>
 	</screen>"""
@@ -367,7 +367,7 @@ class VIXImageManager(Screen):
 		print("ImageManager", currentimageslot, self.imagelist)
 		for x in range(1, HIslot):
 			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]["imagename"]), (x)))
-		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list=choices, default=currentimageslot, simple=True)
+		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list = choices, default = currentimageslot, simple = True)
 
 	def keyRestore2(self, retval):
 		if retval:
@@ -615,23 +615,23 @@ class AutoImageManagerTimer:
 
 class ImageBackup(Screen):
 	skin = """
-	<screen name="VIXImageManager" position="center,center" size="560,400">
-		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on"/>
-		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on"/>
-		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on"/>
-		<ePixmap pixmap="skin_default/buttons/blue.png" position="420,0" size="140,40" alphatest="on"/>
-		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1"/>
-		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
-		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1"/>
-		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1"/>
-		<widget name="lab1" position="0,50" size="560,50" font="Regular; 18" zPosition="2" transparent="0" halign="center"/>
-		<widget name="list" position="10,105" size="540,260" scrollbarMode="showOnDemand"/>
-		<applet type="onLayoutFinish">
+	<screen name="VIXImageManager" position = "center,center" size = "560, 400">
+		<ePixmap pixmap = "skin_default/buttons/red.png" position = "0, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/green.png" position = "140, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/yellow.png" position = "280, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/blue.png" position = "420, 0" size = "140, 40" alphatest = "on"/>
+		<widget name = "key_red" position = "0, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#9f1313" transparent = "1"/>
+		<widget name = "key_green" position = "140, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#1f771f" transparent = "1"/>
+		<widget name = "key_yellow" position = "280, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#a08500" transparent = "1"/>
+		<widget name = "key_blue" position = "420, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#18188b" transparent = "1"/>
+		<widget name = "lab1" position = "0, 50" size = "560, 50" font = "Regular; 18" zPosition = "2" transparent = "0" halign = "center"/>
+		<widget name = "list" position = "10, 105" size = "540, 260" scrollbarMode = "showOnDemand"/>
+		<applet type = "onLayoutFinish">
 			self["list"].instance.setItemHeight(25)
 		</applet>
 	</screen>"""
 
-	def __init__(self, session, updatebackup=False):
+	def __init__(self, session, updatebackup = False):
 		Screen.__init__(self, session)
 		self.Console = Console()
 		self.BackupDevice = config.imagemanager.backuplocation.value
@@ -1269,18 +1269,18 @@ class ImageBackup(Screen):
 
 class ImageManagerDownload(Screen):
 	skin = """
-	<screen name="VIXImageManager" position="center,center" size="560,400">
-		<ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
-		<ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
-		<ePixmap pixmap="skin_default/buttons/yellow.png" position="280,0" size="140,40" alphatest="on" />
-		<ePixmap pixmap="skin_default/buttons/blue.png" position="420,0" size="140,40" alphatest="on" />
-		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
-		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
-		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1" />
-		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#18188b" transparent="1" />
-		<widget name="lab1" position="0,50" size="560,50" font="Regular; 18" zPosition="2" transparent="0" halign="center"/>
-		<widget name="list" position="10,105" size="540,260" scrollbarMode="showOnDemand" />
-		<applet type="onLayoutFinish">
+	<screen name = "VIXImageManager" position = "center, center" size = "560,400">
+		<ePixmap pixmap = "skin_default/buttons/red.png" position = "0, 0" size = "140, 40" alphatest = "on" />
+		<ePixmap pixmap = "skin_default/buttons/green.png" position = "140, 0" size = "140, 40" alphatest = "on" />
+		<ePixmap pixmap = "skin_default/buttons/yellow.png" position = "280, 0" size = "140, 40" alphatest = "on" />
+		<ePixmap pixmap = "skin_default/buttons/blue.png" position = "420, 0" size = "140, 40" alphatest = "on" />
+		<widget name = "key_red" position = "0, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#9f1313" transparent = "1" />
+		<widget name = "key_green" position = "140, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#1f771f" transparent = "1" />
+		<widget name = "key_yellow" position = "280, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#a08500" transparent = "1" />
+		<widget name = "key_blue" position = "420, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#18188b" transparent = "1" />
+		<widget name = "lab1" position = "0, 50" size = "560, 50" font = "Regular; 18" zPosition = "2" transparent = "0" halign = "center"/>
+		<widget name = "list" position = "10, 105" size = "540, 260" scrollbarMode = "showOnDemand" />
+		<applet type = "onLayoutFinish">
 			self["list"].instance.setItemHeight(25)
 		</applet>
 	</screen>"""
@@ -1395,11 +1395,10 @@ class ImageManagerDownload(Screen):
 		if self.Pli and not self.jsonlist and not self.imagesList:
 			return
 
-		for categorie in reversed(sorted(self.imagesList.keys())):
-			# print("[ImageManager] [GetImageDistro] category '%s', self.expanded '%s'" % (categorie, self.expanded))
+		for categorie in sorted(self.imagesList.keys(), reverse=True):
 			if categorie in self.expanded:
 				imglist.append(ChoiceEntryComponent("expanded", ((str(categorie)), "Expander")))
-				for image in reversed(sorted(self.imagesList[categorie].keys())):
+				for image in sorted(self.imagesList[categorie].keys(), reverse=True):
 					imglist.append(ChoiceEntryComponent("verticalline", ((str(self.imagesList[categorie][image]["name"])), str(self.imagesList[categorie][image]["link"]))))
 			else:
 				# print("[ImageManager] [GetImageDistro] keys: %s" % list(self.imagesList[categorie].keys()))
@@ -1489,7 +1488,7 @@ class ImageManagerDownload(Screen):
 
 	def showJobView(self, job):
 		Components.Task.job_manager.in_background = False
-		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable=False, backgroundable=True, afterEventChangeable=False, afterEvent="close")
+		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable = False, backgroundable = True, afterEventChangeable = False, afterEvent = "close")
 
 	def JobViewCB(self, in_background):
 		Components.Task.job_manager.in_background = in_background

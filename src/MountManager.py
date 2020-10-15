@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import division
 import six
 
 import errno
@@ -135,11 +136,11 @@ def buildPartitionInfo(partition, bplist):
 	else:
 		stat = statvfs(mediamount)
 		cap = int(stat.f_blocks * stat.f_bsize)
-		size = cap / 1000 / 1000
-		if ((float(size) / 1024) / 1024) >= 1:
-			description = _("Size: ") + str(round(((float(size) / 1024) / 1024), 2)) + _("TB")
+		size = cap // 1000 // 1000
+		if ((float(size) // 1024) // 1024) >= 1:
+			description = _("Size: ") + str(round(((float(size) // 1024) // 1024), 2)) + _("TB")
 		elif (size / 1024) >= 1:
-			description = _("Size: ") + str(round((float(size) / 1024), 2)) + _("GB")
+			description = _("Size: ") + str(round((float(size) // 1024), 2)) + _("GB")
 		elif size >= 1:
 			description = _("Size: ") + str(size) + _("MB")
 		else:
@@ -179,8 +180,8 @@ def buildPartitionInfo(partition, bplist):
 
 class VIXDevicesPanel(Screen):
 	skinTemplate = """
-	<screen position="center,center" size="%d,%d">
-		<widget source="list" render="Listbox" position="%d,%d" size="%d,%d" scrollbarMode="showOnDemand">
+	<screen position = "center, center" size = "%d, %d">
+		<widget source = "list" render = "Listbox" position = "%d, %d" size = "%d, %d" scrollbarMode = "showOnDemand">
 			<convert type="TemplatedMultiContent">
 				{
 				"template":
@@ -194,11 +195,11 @@ class VIXDevicesPanel(Screen):
 				}
 			</convert>
 		</widget>
-		<widget name="lab1" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" transparent="1" valign="center" zPosition="+1" />
-		<widget source="key_red" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_red" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
-		<widget source="key_green" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_green" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
-		<widget source="key_yellow" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_yellow" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
-		<widget source="key_blue" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_blue" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
+		<widget name = "lab1" position = "%d, %d" size = "%d, %d" font = "Regular;%d" halign = "center" transparent = "1" valign = "center" zPosition = "+1" />
+		<widget source = "key_red" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_red" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
+		<widget source = "key_green" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_green" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
+		<widget source = "key_yellow" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_yellow" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
+		<widget source = "key_blue" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_blue" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign="center" />
 	</screen>"""
 	scaleData = [
 		640, 495,
@@ -218,10 +219,10 @@ class VIXDevicesPanel(Screen):
 
 	def __init__(self, session):
 		Screen.__init__(self, session)
-		self.setTitle(_("Mount manager"))
 		if VIXDevicesPanel.skin is None:
 			# The skin template is designed for a HD screen so the scaling factor is 720.
 			VIXDevicesPanel.skin = VIXDevicesPanel.skinTemplate % tuple([x * getDesktop(0).size().height() / 720 for x in VIXDevicesPanel.scaleData])
+		self.setTitle(_("Mount manager"))
 		self["key_red"] = Label("")
 		self["key_green"] = Label(_("Setup mounts"))
 		self["key_yellow"] = Label(_("Un-mount"))
@@ -320,7 +321,7 @@ class VIXDevicesPanel(Screen):
 			parts = sel[1].split()
 			self.device = parts[5]
 			self.mountp = parts[3]
-			# print "[MountManager1]saveMounts: device = %s, mountp=%s" %(self.device, self.mountp)
+			# print "[MountManager1]saveMounts: device = %s, mountp = %s" %(self.device, self.mountp)
 			self.Console.ePopen("umount " + self.device)
 			if self.mountp.find("/media/hdd") < 0:
 				self.Console.ePopen("umount /media/hdd")
@@ -348,13 +349,13 @@ class VIXDevicesPanel(Screen):
 
 class VIXDevicePanelConf(Screen, ConfigListScreen):
 	skin = """
-	<screen position="center,center" size="640,460">
-		<ePixmap pixmap="skin_default/buttons/red.png" position="25,0" size="140,40" alphatest="on"/>
-		<ePixmap pixmap="skin_default/buttons/green.png" position="175,0" size="140,40" alphatest="on"/>
-		<widget name="key_red" position="25,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1"/>
-		<widget name="key_green" position="175,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
-		<widget name="config" position="30,60" size="580,275" scrollbarMode="showOnDemand"/>
-		<widget name="lab1" position="30,375" size="580,20" font="Regular;18" halign="center" valign="center" backgroundColor="#9f1313"/>
+	<screen position = "center, center" size = "640, 460">
+		<ePixmap pixmap = "skin_default/buttons/red.png" position = "25, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/green.png" position = "175, 0" size = "140, 40" alphatest = "on"/>
+		<widget name = "key_red" position = "25, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#9f1313" transparent = "1"/>
+		<widget name = "key_green" position = "175, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#1f771f" transparent = "1"/>
+		<widget name = "config" position = "30, 60" size = "580, 275" scrollbarMode = "showOnDemand"/>
+		<widget name = "lab1" position = "30, 375" size = "580, 20" font = "Regular;18" halign = "center" valign = "center" backgroundColor = "#9f1313"/>
 	</screen>"""
 
 	def __init__(self, session):
