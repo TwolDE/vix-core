@@ -1338,22 +1338,25 @@ class ImageManagerDownload(Screen):
 			if "login:pswd" in config.imagemanager.imagefeed_DevL.value:
 				return
 			else:
-				self.urlBox = self.urlDistro.replace("login", "%s") % config.imagemanager.imagefeed_DevL.value
+				self.urlDistro = self.urlDistro.replace("login", "%s") % config.imagemanager.imagefeed_DevL.value
 				versions = [5.4, 5.5]	# for Dev
 		elif "www.openvix" in self.urlDistro:
 			versions = [4.2, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5]
-
+		subfolders = ("", "Archives") # i.e. check root folder and "Archives" folder. Images will appear in the UI in this order.
 		if not self.Pli and not self.imagesList:
-			subfolders = ('', 'Archives') # i.e. check root folder and "Archives" folder. Images will appear in the UI in this order.
+			print("[ImageManager]1 urldistro: %s" % self.urlDistro)
 			for subfolder in subfolders:
+				print("[ImageManager]2 urldistro: %s" % self.urlDistro)
 				tmp_image_list = []
+				print("[ImageManager] subfolder: %s" % subfolder)
 				fullUrl = subfolder and path.join(self.urlDistro, self.boxtype, subfolder, "") or path.join(self.urlDistro, self.boxtype, "")
+				print("[ImageManager] fullUrl: %s" % fullUrl)
 				html = None
 				try:
 					conn = urlopen(fullUrl)
 					html = conn.read()
 				except (HTTPError, URLError) as e:
-					print "[ImageManager] HTTPError: %s %s" % (getattr(e, "code", ""), getattr(e, "reason", ""))
+					print("[ImageManager] HTTPError: %s %s" % (getattr(e, "code", ""), getattr(e, "reason", "")))
 				if "Dev" in self.urlDistro:
 					lines = html.split("\n")
 					for line in lines:
@@ -1470,7 +1473,7 @@ class ImageManagerDownload(Screen):
 			selectedimage = currentSelected[0][0]
 			fileurl = currentSelected[0][1]
 			fileloc = self.BackupDirectory + selectedimage
-			print("[ImageManager] [getImageDistro] self.urlBox= %s, self.urlDistro= %s fileurl= %s fileloc= %s" % (self.urlBox, self.urlDistro, fileurl, fileloc))
+#			print("[ImageManager] [getImageDistro] self.urlBox= %s, self.urlDistro= %s fileurl= %s fileloc= %s" % (self.urlBox, self.urlDistro, fileurl, fileloc))
 			if "Dev" in self.urlDistro:
 				try:
 					urlretrieve("%s" % fileurl, "%s" % fileloc)

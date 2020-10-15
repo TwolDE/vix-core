@@ -283,7 +283,7 @@ class VIXDevicesPanel(Screen):
 		self["lab1"].hide()
 
 	def setupMounts(self):
-		self.session.openWithCallback(self.updateList, VIXDevicePanelConf)
+		self.session.openWithCallback(self.setTimer, VIXDevicePanelConf)
 
 
 	def unmount(self):

@@ -7,7 +7,7 @@ from Components.ActionMap import ActionMap
 from Components.config import config, ConfigSubsection, ConfigYesNo
 from Components.PluginComponent import plugins
 from Components.Sources.StaticText import StaticText
-from IPKInstaller import IpkgInstaller
+from .IPKInstaller import IpkgInstaller
 from Screens.Console import Console
 from Screens.Screen import Screen
 from Screens.Setup import Setup

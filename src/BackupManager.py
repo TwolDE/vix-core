@@ -50,7 +50,7 @@ config.backupmanager.backupdirs = ConfigLocations(
 config.backupmanager.backuplocation = ConfigSelection(choices=hddchoices)
 config.backupmanager.backupretry = ConfigNumber(default = 30)
 config.backupmanager.backupretrycount = NoSave(ConfigNumber(default = 0))
-config.backupmanager.folderprefix = ConfigText(default =d efaultprefix, fixed_size = False)
+config.backupmanager.folderprefix = ConfigText(default = defaultprefix, fixed_size = False)
 config.backupmanager.lastlog = ConfigText(default ="  ", fixed_size = False)
 config.backupmanager.nextscheduletime = NoSave(ConfigNumber(default = 0))
 config.backupmanager.repeattype = ConfigSelection(default = "daily", choices = [("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
