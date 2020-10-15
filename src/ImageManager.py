@@ -1346,11 +1346,11 @@ class ImageManagerDownload(Screen):
 		if not self.Pli and not self.imagesList:
 			print("[ImageManager]1 urldistro: %s" % self.urlDistro)
 			for subfolder in subfolders:
-				print("[ImageManager]2 urldistro: %s" % self.urlDistro)
+#				print("[ImageManager]2 urldistro: %s" % self.urlDistro)
 				tmp_image_list = []
-				print("[ImageManager] subfolder: %s" % subfolder)
+#				print("[ImageManager] subfolder: %s" % subfolder)
 				fullUrl = subfolder and path.join(self.urlDistro, self.boxtype, subfolder, "") or path.join(self.urlDistro, self.boxtype, "")
-				print("[ImageManager] fullUrl: %s" % fullUrl)
+#				print("[ImageManager] fullUrl: %s" % fullUrl)
 				html = None
 				try:
 					conn = urlopen(fullUrl)
