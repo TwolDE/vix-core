@@ -48,25 +48,25 @@ config.backupmanager.backupdirs = ConfigLocations(
 	default=[eEnv.resolve("${sysconfdir}/enigma2/"), eEnv.resolve("${sysconfdir}/fstab"), eEnv.resolve("${sysconfdir}/hostname"), eEnv.resolve("${sysconfdir}/network/interfaces"), eEnv.resolve("${sysconfdir}/passwd"), eEnv.resolve("${sysconfdir}/shadow"), eEnv.resolve("${sysconfdir}/etc/shadow"),
 			 eEnv.resolve("${sysconfdir}/resolv.conf"), eEnv.resolve("${sysconfdir}/ushare.conf"), eEnv.resolve("${sysconfdir}/inadyn.conf"), eEnv.resolve("${sysconfdir}/tuxbox/config/"), eEnv.resolve("${sysconfdir}/wpa_supplicant.conf"), "/usr/softcams/"])
 config.backupmanager.backuplocation = ConfigSelection(choices=hddchoices)
-config.backupmanager.backupretry = ConfigNumber(default=30)
-config.backupmanager.backupretrycount = NoSave(ConfigNumber(default=0))
-config.backupmanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
-config.backupmanager.lastlog = ConfigText(default=" ", fixed_size=False)
-config.backupmanager.nextscheduletime = NoSave(ConfigNumber(default=0))
-config.backupmanager.repeattype = ConfigSelection(default="daily", choices=[("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
-config.backupmanager.schedule = ConfigYesNo(default=False)
-config.backupmanager.scheduletime = ConfigClock(default=0)  # 1:00
-config.backupmanager.showboxname = ConfigYesNo(default=False)
-config.backupmanager.xtraplugindir = ConfigDirectory(default="")
+config.backupmanager.backupretry = ConfigNumber(default = 30)
+config.backupmanager.backupretrycount = NoSave(ConfigNumber(default = 0))
+config.backupmanager.folderprefix = ConfigText(default =d efaultprefix, fixed_size = False)
+config.backupmanager.lastlog = ConfigText(default ="  ", fixed_size = False)
+config.backupmanager.nextscheduletime = NoSave(ConfigNumber(default = 0))
+config.backupmanager.repeattype = ConfigSelection(default = "daily", choices = [("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
+config.backupmanager.schedule = ConfigYesNo(default = False)
+config.backupmanager.scheduletime = ConfigClock(default = 0)  # 1:00
+config.backupmanager.showboxname = ConfigYesNo(default = False)
+config.backupmanager.xtraplugindir = ConfigDirectory(default = "")
 # Querying is enabled by default - asthat is what used to happen always
 #
-config.backupmanager.query = ConfigYesNo(default=True)
+config.backupmanager.query = ConfigYesNo(default = True)
 # If we do not yet have a record of a backup, assume it has never happened.
 #
-config.backupmanager.lastbackup = ConfigNumber(default=0)
+config.backupmanager.lastbackup = ConfigNumber(default = 0)
 # Max no. of backups to keep.  0 == keep them all
 #
-config.backupmanager.number_to_keep = ConfigNumber(default=0)
+config.backupmanager.number_to_keep = ConfigNumber(default = 0)
 
 
 def isRestorableSettings(imageversion):
