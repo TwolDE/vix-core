@@ -1289,7 +1289,7 @@ class ImageManagerDownload(Screen):
 	def __init__(self, session, BackupDirectory, urlDistro):
 		Screen.__init__(self, session)
 		self.setTitle(_("Downloads"))
-		self.Pli = False
+		self.parseJsonFormat = False
 		self.urlDistro = urlDistro
 		self.BackupDirectory = BackupDirectory
 		self["lab1"] = Label(_("Select an image to download for %s:" % getMachineMake()))
@@ -1300,9 +1300,9 @@ class ImageManagerDownload(Screen):
 		self.setIndex = 0
 		self.expanded = []
 		if "pli" in self.urlDistro:
-			self.Pli = True
+			self.parseJsonFormat = True
 		if "atv" in self.urlDistro:
-			self.Pli = True
+			self.parseJsonFormat = True
 		self["list"] = ChoiceList(list=[ChoiceEntryComponent("", ((_("No images found for selected download server...if password check validity")), "Waiter"))])
 		self.getImageDistro()
 
@@ -1344,7 +1344,7 @@ class ImageManagerDownload(Screen):
 		elif "www.openvix" in self.urlDistro:
 			versions = [4.2, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5]
 		subfolders = ("", "Archives") # i.e. check root folder and "Archives" folder. Images will appear in the UI in this order.
-		if not self.Pli and not self.imagesList:
+		if not self.parseJsonFormat and not self.imagesList: # OpenViX
 			print("[ImageManager]1 urldistro: %s" % self.urlDistro)
 			for subfolder in subfolders:
 #				print("[ImageManager]2 urldistro: %s" % self.urlDistro)
@@ -1387,7 +1387,7 @@ class ImageManagerDownload(Screen):
 							else:
 								self.imagesList[newversion][image]["link"] = "%s/%s/%s" % (self.urlDistro, self.boxtype, image)
 
-		if self.Pli and not self.imagesList:
+		if self.parseJsonFormat and not self.imagesList:
 			if not self.jsonlist:
 				try:
 					urljson = path.join(self.urlDistro, self.boxtype)
@@ -1396,7 +1396,7 @@ class ImageManagerDownload(Screen):
 					print("[ImageManager] OpenPli/OpenATV no model: %s in downloads" % self.boxtype)
 					return
 			self.imagesList = self.jsonlist
-		if self.Pli and not self.jsonlist and not self.imagesList:
+		if self.parseJsonFormat and not self.jsonlist and not self.imagesList:
 			return
 
 		for categorie in sorted(self.imagesList.keys(), reverse=True):
