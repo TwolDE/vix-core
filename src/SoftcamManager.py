@@ -1,4 +1,5 @@
 from __future__ import print_function
+import six
 
 import re
 from os import path, makedirs, remove, rename, symlink, mkdir, listdir
@@ -190,10 +191,13 @@ class VIXSoftcamManager(Screen):
 
 	def showActivecam2(self, result, retval, extra_args):
 		if retval == 0:
-			self.currentactivecamtemp = result
-			self.currentactivecam = "".join([s for s in self.currentactivecamtemp.splitlines(True) if s.strip("\r\n")])
+			if six.PY3:
+				self.currentactivecamtemp = result.decode
+			else:
+				self.currentactivecamtemp = result				
+				self.currentactivecam = "".join([s for s in self.currentactivecamtemp.splitlines(True) if s.strip("\r\n")])
 			self.currentactivecam = self.currentactivecam.replace("\n", ", ")
-			print("[SoftcamManager] Active: " + self.currentactivecam.replace("\n", ", "))
+			print("[SoftcamManager] Active:%s " % self.currentactivecam)
 			if path.exists("/tmp/SoftcamsScriptsRunning"):
 				file = open("/tmp/SoftcamsScriptsRunning")
 				SoftcamsScriptsRunning = file.read()

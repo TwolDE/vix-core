@@ -1,4 +1,5 @@
-from __future__ import print_function, division
+from __future__ import print_function
+from __future__ import division
 
 # required methods: Request, urlopen, HTTPError, URLError
 try: # python 3
