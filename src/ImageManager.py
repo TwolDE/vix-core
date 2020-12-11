@@ -250,8 +250,8 @@ class VIXImageManager(Screen):
 		self.session.openWithCallback(self.setupDone, Setup, "viximagemanager", "SystemPlugins/ViX", PluginLanguageDomain)
 
 	def doDownload(self):
-		self.choices = [("Local", 1), ("OpenViX", 2), ("OpenATV", 3), ("OpenPli", 4), ("ViXDev", 5)]
-		self.urlchoices = [config.imagemanager.imagefeed_User.value, config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value, config.imagemanager.imagefeed_Dev.value]
+		self.choices = [("OpenViX", 1), ("OpenATV", 2), ("OpenPli",3)]
+		self.urlchoices = [config.imagemanager.imagefeed_ViX.value, config.imagemanager.imagefeed_ATV.value, config.imagemanager.imagefeed_Pli.value]
 		self.message = _("Do you want to change download url")
 		self.session.openWithCallback(self.doDownload2, MessageBox, self.message, list=self.choices, default=1, simple=True)
 
@@ -289,11 +289,21 @@ class VIXImageManager(Screen):
 
 	def keyDelete(self):
 		self.sel = self["list"].getCurrent()
-		self["list"].instance.moveSelectionTo(0)
-		if self.sel.endswith(".zip"):
-			remove(self.BackupDirectory + self.sel)
+		if self.sel:
+			message = _("Are you sure you want to delete this image backup:\n ") + self.sel
+			ybox = self.session.openWithCallback(self.doDelete, MessageBox, message, MessageBox.TYPE_YESNO, default=False)
+			ybox.setTitle(_("Remove confirmation"))
 		else:
-			rmtree(self.BackupDirectory + self.sel)
+			self.session.open(MessageBox, _("There is no image to delete."), MessageBox.TYPE_INFO, timeout=10)
+
+	def doDelete(self, answer):
+		if answer is True:
+			self.sel = self["list"].getCurrent()
+			self["list"].instance.moveSelectionTo(0)
+			if self.sel.endswith(".zip"):
+				remove(self.BackupDirectory + self.sel)
+			else:
+				rmtree(self.BackupDirectory + self.sel)
 		self.refreshList()
 
 	def GreenPressed(self):
@@ -353,22 +363,31 @@ class VIXImageManager(Screen):
 			self.message = _("Recording(s) are in progress or coming up in few seconds!\nDo you still want to flash image\n%s?") % self.sel
 		else:
 			self.message = _("Do you want to flash image\n%s") % self.sel
-		if SystemInfo["canMultiBoot"] is False:
-			if config.imagemanager.autosettingsbackup.value:
-				self.doSettingsBackup()
-			else:
-				self.keyRestore3()
-		if SystemInfo["HasHiSi"]:
-			if pathExists("/dev/sda4"):
-				self.HasSDmmc = True
-		imagedict = GetImagelist()
-		choices = []
-		HIslot = len(imagedict) + 1
-		currentimageslot = GetCurrentImage()
-		print("ImageManager", currentimageslot, self.imagelist)
-		for x in range(1, HIslot):
-			choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]["imagename"]), (x)))
-		self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list = choices, default = currentimageslot, simple = True)
+		if getImageFileSystem().replace(" ","") in ("tar.bz2", "hd-emmc", "hdemmc", "octagonemmc", "dinobotemmc"):
+			message = _("You are about to flash an eMMC flash; we cannot take any responsibility for any errors or damage to your box during this process.\nProceed with CAUTION!:\nAre you sure you want to flash this image:\n ") + self.sel
+		else:
+			message = _("Are you sure you want to flash this image:\n ") + self.sel
+		ybox = self.session.openWithCallback(self.keyResstore0, MessageBox, message, MessageBox.TYPE_YESNO)
+		ybox.setTitle(_("Flash confirmation"))
+
+	def keyResstore0(self, answer):
+		if answer:
+			if SystemInfo["canMultiBoot"] is False:
+				if config.imagemanager.autosettingsbackup.value:
+					self.doSettingsBackup()
+				else:
+					self.keyRestore3()
+			if SystemInfo["HasHiSi"]:
+				if pathExists("/dev/sda4"):
+					self.HasSDmmc = True
+			imagedict = GetImagelist()
+			choices = []
+			HIslot = len(imagedict) + 1
+			currentimageslot = GetCurrentImage()
+			print("ImageManager", currentimageslot, self.imagelist)
+			for x in range(1, HIslot):
+				choices.append(((_("slot%s - %s (current image)") if x == currentimageslot else _("slot%s - %s")) % (x, imagedict[x]["imagename"]), (x)))
+			self.session.openWithCallback(self.keyRestore2, MessageBox, self.message, list = choices, default = currentimageslot, simple = True)
 
 	def keyRestore2(self, retval):
 		if retval:
@@ -434,7 +453,6 @@ class VIXImageManager(Screen):
 					CMD = "/usr/bin/ofgwrite -r%s -k%s '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
 				elif SystemInfo["HasHiSi"] and SystemInfo["canMultiBoot"][self.multibootslot]["rootsubdir"] is None:	# sf8008 type receiver using SD card in multiboot
 					CMD = "/usr/bin/ofgwrite -r%s -k%s -m0 '%s'" % (self.MTDROOTFS, self.MTDKERNEL, MAINDEST)
-					print("[ImageManager] running commnd:%s slot = %s" %(CMD, self.multibootslot))
 					if fileExists("/boot/STARTUP") and fileExists("/boot/STARTUP_6"):
 						copyfile("/boot/STARTUP_%s" % self.multibootslot, "/boot/STARTUP")
 				else:
@@ -1334,38 +1352,21 @@ class ImageManagerDownload(Screen):
 			self.boxtype = HardwareInfo().get_device_name()
 			if self.boxtype == "dm8000":
 				self.boxtype = getMachineMake()
-		versions = [6.4, 6.5]		# for Twol
-		if "Dev" in self.urlDistro:
-			if "login:pswd" in config.imagemanager.imagefeed_DevL.value:
-				return
-			else:
-				self.urlDistro = self.urlDistro.replace("login", "%s") % config.imagemanager.imagefeed_DevL.value
-				versions = [5.4, 5.5]	# for Dev
-		elif "www.openvix" in self.urlDistro:
-			versions = [4.2, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5]
-		subfolders = ("", "Archives") # i.e. check root folder and "Archives" folder. Images will appear in the UI in this order.
+		
 		if not self.parseJsonFormat and not self.imagesList: # OpenViX
-			print("[ImageManager]1 urldistro: %s" % self.urlDistro)
+			versions = [4.2, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5]
+
+			subfolders = ("", "Archives") # i.e. check root folder and "Archives" folder. Images will appear in the UI in this order.
 			for subfolder in subfolders:
-#				print("[ImageManager]2 urldistro: %s" % self.urlDistro)
 				tmp_image_list = []
-#				print("[ImageManager] subfolder: %s" % subfolder)
 				fullUrl = subfolder and path.join(self.urlDistro, self.boxtype, subfolder, "") or path.join(self.urlDistro, self.boxtype, "")
-#				print("[ImageManager] fullUrl: %s" % fullUrl)
 				html = None
 				try:
 					conn = urlopen(fullUrl)
 					html = conn.read()
 				except (HTTPError, URLError) as e:
 					print("[ImageManager] HTTPError: %s %s" % (getattr(e, "code", ""), getattr(e, "reason", "")))
-				if "Dev" in self.urlDistro:
-					lines = html.split("\n")
-					for line in lines:
-						if line.find("openvix") > -1 and line.find(".zip") > -1 and line.find(getMachineMake()) != -1 and line.find("recovery") == -1:
-							t = line.find("openvix")
-							lineb = (line[t:t + 51]).replace(" ", "")
-							countimage.append(lineb)
-				elif html:
+				if html:
 					soup = BeautifulSoup(html, features="lxml")
 					links = soup.find_all("a")
 					for tag in links:
@@ -1376,16 +1377,12 @@ class ImageManagerDownload(Screen):
 				for version in sorted(versions, reverse=True):
 					newversion = _("Image Version %s%s") % (version, " (%s)" % subfolder if subfolder else "")
 					for image in tmp_image_list:
-						# print "[ImageManager] image:%s, version:%s " % (image, version)
 						if "%s" % version in image:
 							if newversion not in self.imagesList:
 								self.imagesList[newversion] = {}
 							self.imagesList[newversion][image] = {}
 							self.imagesList[newversion][image]["name"] = image
-							if "Dev" in self.urlDistro:
-								self.imagesList[newversion][image]["link"] = "%s/%s" % (self.urlBox, image)
-							else:
-								self.imagesList[newversion][image]["link"] = "%s/%s/%s" % (self.urlDistro, self.boxtype, image)
+							self.imagesList[newversion][image]["link"] = "%s%s" % (fullUrl, image)
 
 		if self.parseJsonFormat and not self.imagesList:
 			if not self.jsonlist:
@@ -1405,12 +1402,10 @@ class ImageManagerDownload(Screen):
 				for image in sorted(self.imagesList[categorie].keys(), reverse=True):
 					imglist.append(ChoiceEntryComponent("verticalline", ((str(self.imagesList[categorie][image]["name"])), str(self.imagesList[categorie][image]["link"]))))
 			else:
-				# print("[ImageManager] [GetImageDistro] keys: %s" % list(self.imagesList[categorie].keys()))
 				for image in list(self.imagesList[categorie].keys()):
 					imglist.append(ChoiceEntryComponent("expandable", ((str(categorie)), "Expander")))
 					break
 		if imglist:
-			# print("[ImageManager] [GetImageDistro] imglist: %s" % imglist)
 			self["list"].setList(imglist)
 			if self.setIndex:
 				self["list"].moveToIndex(self.setIndex if self.setIndex < len(list) else len(list) - 1)
@@ -1474,20 +1469,13 @@ class ImageManagerDownload(Screen):
 			selectedimage = currentSelected[0][0]
 			fileurl = currentSelected[0][1]
 			fileloc = self.BackupDirectory + selectedimage
-#			print("[ImageManager] [getImageDistro] self.urlBox= %s, self.urlDistro= %s fileurl= %s fileloc= %s" % (self.urlBox, self.urlDistro, fileurl, fileloc))
-			if "Dev" in self.urlDistro:
-				try:
-					urlretrieve("%s" % fileurl, "%s" % fileloc)
-				except HTTPError as e:
-					print("[ImageManager] HTTP download ERROR: %s" % e.code)
-			else:
-				url_encode = "utf-8"
-				b_url = fileurl.encode(url_encode)
-				Tools.CopyFiles.downloadFile(b_url, fileloc, selectedimage.replace("_usb", ""))
-				for job in Components.Task.job_manager.getPendingJobs():
-					if job.name.startswith(_("Downloading")):
-						break
-				self.showJobView(job)
+			url_encode = "utf-8"
+			b_url = fileurl.encode(url_encode)
+			Tools.CopyFiles.downloadFile(b_url, fileloc, selectedimage.replace("_usb", ""))
+			for job in Components.Task.job_manager.getPendingJobs():
+				if job.name.startswith(_("Downloading")):
+					break
+			self.showJobView(job)
 			self.close()
 
 	def showJobView(self, job):

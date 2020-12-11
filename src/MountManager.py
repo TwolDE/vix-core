@@ -179,49 +179,33 @@ def buildPartitionInfo(partition, bplist):
 
 
 class VIXDevicesPanel(Screen):
-	skinTemplate = """
-	<screen position = "center, center" size = "%d, %d">
-		<widget source = "list" render = "Listbox" position = "%d, %d" size = "%d, %d" scrollbarMode = "showOnDemand">
-			<convert type="TemplatedMultiContent">
-				{
-				"template":
-					[
-					MultiContentEntryText(pos = (%d, 0), size = (%d, %d), font = 0, flags = RT_HALIGN_LEFT | RT_VALIGN_CENTER, text = 0),
-					MultiContentEntryText(pos = (%d, %d), size = (%d, %d), font = 1, flags = RT_HALIGN_LEFT | RT_VALIGN_TOP, text = 1),
-					MultiContentEntryPixmapAlphaBlend(pos = (%d, 0), size = (%d, %d), flags = BT_SCALE, png = 2),
-					],
-				"fonts": [gFont("Regular",%d), gFont("Regular",%d)],
-				"itemHeight": %d
+	skin = """
+	<screen position = "center, center" size = "640, 460">
+		<ePixmap pixmap = "skin_default/buttons/red.png" position = "25, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/green.png" position = "175, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/yellow.png" position = "325, 0" size = "140, 40" alphatest = "on"/>
+		<ePixmap pixmap = "skin_default/buttons/blue.png" position = "475, 0" size = "140, 40" alphatest = "on"/>
+		<widget name = "key_red" position = "25, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#9f1313" transparent = "1"/>
+		<widget name = "key_green" position = "175, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#1f771f" transparent = "1"/>
+		<widget name = "key_yellow" position = "325, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#a08500" transparent = "1"/>
+		<widget name = "key_blue" position = "475, 0" zPosition = "1" size = "140, 40" font = "Regular;20" halign = "center" valign = "center" backgroundColor = "#18188b" transparent = "1"/>
+		<widget source = "list" render = "Listbox" position = "10, 50" size = "620, 450" scrollbarMode = "showOnDemand">
+			<convert type = "TemplatedMultiContent">
+				{"template": [
+				MultiContentEntryText(pos = (90, 0), size = (600, 30), font = 0,  text = 0),
+				MultiContentEntryText(pos = (110, 30), size = (600, 50), font = 1, flags = RT_VALIGN_TOP, text = 1),
+				MultiContentEntryPixmapAlphaBlend(pos = (0, 0), size = (80, 80), png = 2),
+				],
+				"fonts": [gFont("Regular", 24),gFont("Regular", 20)],
+				"itemHeight":85
 				}
 			</convert>
 		</widget>
-		<widget name = "lab1" position = "%d, %d" size = "%d, %d" font = "Regular;%d" halign = "center" transparent = "1" valign = "center" zPosition = "+1" />
-		<widget source = "key_red" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_red" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
-		<widget source = "key_green" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_green" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
-		<widget source = "key_yellow" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_yellow" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
-		<widget source = "key_blue" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_blue" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign="center" />
+		<widget name = "lab1" zPosition = "2" position = "50,90" size = "600,40" font = "Regular;22" halign = "center" transparent = "1"/>
 	</screen>"""
-	scaleData = [
-		640, 495,
-		10, 10, 620, 425,
-		100, 520, 30,
-		120, 30, 500, 50,
-		10, 80, 80,
-		24, 20,
-		80,
-		10, 10, 620, 425, 25,
-		10, 50, 140, 40, 20,
-		160, 50, 140, 40, 20,
-		310, 50, 140, 40, 20,
-		460, 50, 140, 40, 20
-	]
-	skin = None
 
 	def __init__(self, session):
 		Screen.__init__(self, session)
-		if VIXDevicesPanel.skin is None:
-			# The skin template is designed for a HD screen so the scaling factor is 720.
-			VIXDevicesPanel.skin = VIXDevicesPanel.skinTemplate % tuple([x * getDesktop(0).size().height() / 720 for x in VIXDevicesPanel.scaleData])
 		self.setTitle(_("Mount manager"))
 		self["key_red"] = Label("")
 		self["key_green"] = Label(_("Setup mounts"))

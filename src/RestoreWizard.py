@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from os import listdir, path, stat
-from boxbranding import getMachineBrand, getMachineName, getImageDistro
+from boxbranding import getMachineBrand, getMachineName
 from . import _
 from .BackupManager import isRestorableSettings, isRestorablePlugins, isRestorableKernel
 
@@ -43,7 +43,6 @@ class RestoreWizard(WizardLanguage, Rc):
 		list = []
 		files = []
 		mtimes = []
-		defaultprefix = getImageDistro()[4:]
 
 		for dir in ["/media/%s/backup" % media for media in listdir("/media/") if path.isdir(path.join("/media/", media))]:
 			devmounts.append(dir)
@@ -58,7 +57,7 @@ class RestoreWizard(WizardLanguage, Rc):
 					files = []
 				if len(files):
 					for file in files:
-						if file.endswith(".tar.gz") and "vix" in file.lower() or file.startswith("%s" %defaultprefix):
+						if file.endswith(".tar.gz"):
 							mtimes.append((path.join(devpath, file), stat(path.join(devpath, file)).st_mtime)) # (filname, mtime)
 		for file in [x[0] for x in sorted(mtimes, key=lambda x: x[1], reverse=True)]: # sort by mtime
 			list.append((file, file))

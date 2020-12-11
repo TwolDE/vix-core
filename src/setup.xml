@@ -26,8 +26,6 @@
         <item level="2" text="Max image backups to keep (0==all)" requires="config.imagemanager.schedule" description="Backups to keep">config.imagemanager.number_to_keep</item>
         <item level="2" text="ImageLib_User" description="Http url for User Images">config.imagemanager.imagefeed_User</item>
         <item level="2" text="ImageLib_ViX" description="Http url for OpenViX Images">config.imagemanager.imagefeed_ViX</item>
-        <item level="2" text="ImageLib_Dev" description="Http url for OpenViX Dev Images">config.imagemanager.imagefeed_Dev</item>
-        <item level="2" text="ImageLib_DevL" description="login pswd details for ViXDev">config.imagemanager.imagefeed_DevL</item>
         <item level="2" text="ImageLib_ATV" description="Http url for OpenATV Images">config.imagemanager.imagefeed_ATV</item>
         <item level="2" text="ImageLib_Pli" description="Http url for OpenPli Images">config.imagemanager.imagefeed_Pli</item>
     </setup>
