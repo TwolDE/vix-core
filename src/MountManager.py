@@ -179,9 +179,9 @@ def buildPartitionInfo(partition, bplist):
 
 
 class VIXDevicesPanel(Screen):
-	skinTemplate = """
-	<screen position = "center, center" size = "%d, %d">
-		<widget source = "list" render = "Listbox" position = "%d, %d" size = "%d, %d" scrollbarMode = "showOnDemand">
+	skin = ["""
+	<screen position="center,center" size="%d,%d">
+		<widget source="list" render="Listbox" position="%d,%d" size="%d,%d" scrollbarMode="showOnDemand">
 			<convert type="TemplatedMultiContent">
 				{
 				"template":
@@ -195,13 +195,12 @@ class VIXDevicesPanel(Screen):
 				}
 			</convert>
 		</widget>
-		<widget name = "lab1" position = "%d, %d" size = "%d, %d" font = "Regular;%d" halign = "center" transparent = "1" valign = "center" zPosition = "+1" />
-		<widget source = "key_red" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_red" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
-		<widget source = "key_green" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_green" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
-		<widget source = "key_yellow" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_yellow" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign = "center" />
-		<widget source = "key_blue" render = "Label" position = "%d, e-%d" size = "%d, %d" backgroundColor = "key_blue" font = "Regular;%d" foregroundColor = "key_text" halign = "center" valign="center" />
-	</screen>"""
-	scaleData = [
+		<widget name="lab1" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" transparent="1" valign="center" zPosition="+1" />
+		<widget source="key_red" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_red" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
+		<widget source="key_green" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_green" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
+		<widget source="key_yellow" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_yellow" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
+		<widget source="key_blue" render="Label" position="%d,e-%d" size="%d,%d" backgroundColor="key_blue" font="Regular;%d" foregroundColor="key_text" halign="center" valign="center" />
+	</screen>""",
 		640, 495,
 		10, 10, 620, 425,
 		100, 520, 30,
@@ -215,7 +214,6 @@ class VIXDevicesPanel(Screen):
 		310, 50, 140, 40, 20,
 		460, 50, 140, 40, 20
 	]
-	skin = None
 
 	def __init__(self, session):
 		Screen.__init__(self, session)
