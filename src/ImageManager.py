@@ -1354,7 +1354,7 @@ class ImageManagerDownload(Screen):
 				for version in sorted(versions, reverse=True):
 					newversion = _("Image Version %s%s") % (version, " (%s)" % subfolder if subfolder else "")
 					for image in tmp_image_list:
-						# print "[ImageManager] image:%s, version:%s " % (image, version)
+						# print("[ImageManager] image:%s, version:%s " % (image, version))
 						if "%s" % version in image:
 							if newversion not in self.imagesList:
 								self.imagesList[newversion] = {}
@@ -1372,7 +1372,7 @@ class ImageManagerDownload(Screen):
 				and config.imagemanager.developer_password.value \
 				and config.imagemanager.developer_password.value != config.imagemanager.developer_password.default:
 				boxtype = path.join(boxtype, config.imagemanager.developer_username.value, config.imagemanager.developer_password.value)
-			print "[ImageManager] boxtype:%s" % (boxtype)
+			# print("[ImageManager] boxtype:%s" % (boxtype))
 			try:
 				urljson = path.join(self.ConfigObj.value, boxtype)
 				self.imagesList = dict(json.load(urlopen("%s" % urljson)))
