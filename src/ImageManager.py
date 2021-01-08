@@ -64,7 +64,7 @@ config.imagemanager.scheduletime = ConfigClock(default=0)  # 1:00
 config.imagemanager.query = ConfigYesNo(default=True)
 config.imagemanager.lastbackup = ConfigNumber(default=0)
 config.imagemanager.number_to_keep = ConfigNumber(default=0)
-config.imagemanager.imagefeed_User = ConfigText(default = "http://192.168.0.171/openvix-builds/", fixed_size=False)
+config.imagemanager.imagefeed_User = ConfigText(default = "http://192.168.0.171/json", fixed_size=False)
 config.imagemanager.imagefeed_ViX = ConfigText(default="https://www.openvix.co.uk/json", fixed_size=False)
 config.imagemanager.imagefeed_ATV = ConfigText(default="http://images.mynonpublic.com/openatv/json", fixed_size=False)
 config.imagemanager.imagefeed_Pli = ConfigText(default="http://downloads.openpli.org/json", fixed_size=False)
@@ -1312,54 +1312,16 @@ class ImageManagerDownload(Screen):
 		self.setIndex = 0
 		self.expanded = []
 		self["list"] = ChoiceList(list=[ChoiceEntryComponent("", ((_("No images found on the selected download server...if password check validity")), "Waiter"))])
-		self.imagesList = {}
 		self.getImageDistro()
 
 	def getImageDistro(self):
 		if not path.exists(self.BackupDirectory):
 			mkdir(self.BackupDirectory, 0o755)
 		self.boxtype = getMachineMake()
-		self.imagesList = {}
 		if self.ConfigObj is config.imagemanager.imagefeed_Pli:
 			self.boxtype = HardwareInfo().get_device_name()
 			if self.boxtype == "dm8000":
 				self.boxtype = getMachineMake()
-
-		if self.ConfigObj == config.imagemanager.imagefeed_User: # Local
-			from bs4 import BeautifulSoup
-			self.boxtype = getMachineMake()
-			versions = [6.4, 6.5]		# for Twol
-			subfolders = ("", "Archives") # i.e. check root folder and "Archives" folder. Images will appear in the UI in this order.
-			for subfolder in subfolders:
-				tmp_image_list = []
-				print("[ImageManager] subfolder: %s" % subfolder)
-				fullUrl = subfolder and path.join(self.ConfigObj.value, self.boxtype, subfolder, "") or path.join(self.ConfigObj.value, self.boxtype, "")
-				print("[ImageManager] fullUrl: %s" % fullUrl)
-				html = None
-				try:
-					conn = urlopen(fullUrl)
-					html = conn.read()
-				except (HTTPError, URLError) as e:
-					print("[ImageManager] HTTPError: %s %s" % (getattr(e, "code", ""), getattr(e, "reason", "")))
-				print("[ImageManager] html: %s" % html)
-				if html:
-					soup = BeautifulSoup(html, features="lxml")
-					links = soup.find_all("a")
-					for tag in links:
-						link = tag.get("href", None)
-						if link is not None and link.endswith("zip") and link.find(getMachineMake()) != -1 and link.find("recovery") == -1:
-							tmp_image_list.append(str(link))
-
-				for version in sorted(versions, reverse=True):
-					newversion = _("Image Version %s%s") % (version, " (%s)" % subfolder if subfolder else "")
-					for image in tmp_image_list:
-						# print("[ImageManager] image:%s, version:%s " % (image, version))
-						if "%s" % version in image:
-							if newversion not in self.imagesList:
-								self.imagesList[newversion] = {}
-							self.imagesList[newversion][image] = {}
-							self.imagesList[newversion][image]["name"] = image
-							self.imagesList[newversion][image]["link"] = "%s/%s/%s" % (self.ConfigObj.value, self.boxtype, image)
 
 		if not self.imagesList:
 			boxtype = self.boxtype
@@ -1376,7 +1338,7 @@ class ImageManagerDownload(Screen):
 				urljson = path.join(self.ConfigObj.value, boxtype)
 				self.imagesList = dict(json.load(urlopen("%s" % urljson)))
 			except Exception:
-				print("[ImageManager] no images available for: the '%s' at '%s'" % (self.boxtype, ConfigObj.value))
+				print("[ImageManager] no images available for: the '%s' at '%s'" % (self.boxtype, self.ConfigObj.value))
 				return
 
 		if not self.imagesList: # Nothing has been found on that server so we might as well give up.
